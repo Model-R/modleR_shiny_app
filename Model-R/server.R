@@ -1,7 +1,9 @@
 ############################
-## MODEL-R                ##    
+## MODEL-R                ##
 ## RAFAEL OLIVEIRA LIMA   ##
-## 26 DE ABRIL DE 2016    ##
+## ANDREA SÁNCHEZ TAPIA   ##
+## FELIPE SODRÉ BARROS    ##
+## 05 DE JULHO DE 2017    ##
 ############################
 
 
@@ -18,12 +20,12 @@ home <-'/'
 
 
 t <- 7
-ext1 <- -90 
+ext1 <- -90
 ext2 <- -33
 ext3 <- -32
 ext4 <- 23
 
-ext12 <- -90 
+ext12 <- -90
 ext22 <- -33
 ext32 <- -32
 ext42 <- 23
@@ -37,39 +39,39 @@ spname <<- ''
 
 
 limparResultadosAnteriores<-function()({
-  
+
   ## LIMPANDO OS RESULTADOS ANTERIORES
-  
+
   lista <- list.files(paste0("www/",projeto,"/models/",full.names=T,pattern=paste0(".")))
   if (length(lista>0))
   {
     file.remove(paste0("www/",projeto,"/models/",lista))
   }
-  
+
   lista <- list.files(paste0("www/",projeto,"/final/",full.names=T,pattern=paste0(".")))
   if (length(lista>0))
   {
     file.remove(paste0("www/",projeto,"/final/",lista))
   }
-  
+
   lista <- list.files(paste0("www/",projeto,"/proj/",full.names=T,pattern=paste0(".")))
   if (length(lista>0))
   {
     file.remove(paste0("www/",projeto,"/proj/",lista))
   }
-  
+
   lista <- list.files(paste0("www/",projeto,"/futuro/",full.names=T,pattern=paste0(".")))
   if (length(lista>0))
   {
     file.remove(paste0("www/",projeto,"/futuro/",lista))
   }
-  
+
   lista <- list.files(paste0("www/",projeto,"/jpg/",full.names=T,pattern=paste0(".jpg")))
   if (length(lista>0))
   {
     file.remove(paste0("www/",projeto,"/jpg/",lista))
-  }  
-  
+  }
+
 })
 
 getOcorrencia <-
@@ -82,15 +84,15 @@ getOcorrencia <-
     final_data <- do.call(rbind, json_data)
     write.csv(final_data, "final_data.csv")
     y2 <- final_data[,c("taxoncompleto", "longitude", "latitude")]
-    
+
     y2 <- cbind(
       as.numeric(y2[ ,2]),
       as.numeric(y2[ ,3])
-    )  
-    
+    )
+
     colnames(y2) <- c("Longitude", "Latitude")
     y2 <- data.frame(y2)
-    return (y2) 
+    return (y2)
   }
 
 options(shiny.maxRequestSize = 100*1024^2)
@@ -103,7 +105,7 @@ dirColors <-c("1"="#595490", "2"="#527525", "3"="#A93F35", "4"="#BA48AA")
 function(input, output, session) {
   especie <<- NULL
 
-  
+
   #rm(especie)
   library(maps)
   library(rgdal)
@@ -137,9 +139,9 @@ function(input, output, session) {
                         future.model=F, # faz modelos futuros
                         future.raster=newdata, # vari?veis futuras
                         write.future=F, # escreve modelos futuros
-                        write.projecao=F) 
-  
-  
+                        write.projecao=F)
+
+
 {
     ## Carregando bibliotecas
     library(dismo)
@@ -165,82 +167,82 @@ function(input, output, session) {
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
     cat(paste0("library(maps)"),file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    
+
 
 ## DELETE OS ARQUIVOS ANTIGOS ANTES DE GERAR UM NOVO
-    
+
     unlink(paste0("www/",projeto,'/models/evaluate_.txt'), recursive=TRUE)
     unlink(paste0("www/",projeto,'/models/statsALL.txt'), recursive=TRUE)
     unlink(paste0("www/",projeto,'/models/evaluate_ALL_models.txt'), recursive=TRUE)
 
-    isolate({    
-    
+    isolate({
+
     print(date())
-    
+
     cat(paste("Modeling",sp,"...",'\n'))
     coord <- especie
-    
+
     cat(paste0("coord<-especie"),file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    
+
     n <- nrow(coord)
 
     cat(paste0("n<-nrow(coord)"),file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    
+
     ## Extraindo os valores das vari?veis onde h? pontos de registros
-    
+
     presvals<- extract(var,coord)
 
     cat(paste0("presvals<-extract(var,coord)"),file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    
+
     ## Seeting seed para sempre criar os mesmos pontos aleat?rios
     set.seed(seed)
-    
+
     ## Gerando as pseudoaus?ncias aleatoriamente
 
     backgr <- randomPoints(var, numpontos)
-    
+
     cat(paste0("backgr<-randomPoints(var,",numpontos,")"),file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    
+
     ## Determina os nomes da colunas de coordenadas para os pontos de background
     colnames(backgr) = c('Longitude', 'Latitude')
 
     cat(paste0("colnames(backgr)=c('Longitude','Latitude')"),file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    
+
     ## Extraindo os valores das vari?veis onde h? pseudoaus?ncias
     absvals <- extract(var, backgr)
-    
+
     cat(paste0("absvals <- extract(var,backgr)"),file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
     ## Cria um vetor contendo algarismo "1" e "0" correspondendo ao n?mero de registros presen?as e aus?ncias respectivamente.
     pre_abs <- c(rep(1, nrow(presvals)), rep(0, nrow(absvals)))
-    
+
     cat(paste0("pre_abs<-c(rep(1,nrow(presvals)),rep(0,nrow(absvals)))"),file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    
+
     ## N?mero de parti??es
     if (n<10) part<-n else part <- part
 
     cat(paste0("if (n<10) part<-n else part <- part"),file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    
+
     ## Setting seed para distribuir as presen?as sempre para as mesmas parti??es
     set.seed(seed)
-    
+
     ## Separando as presen?as e pseudoaus?ncias nos grupos das parti??es
     group_pre <- kfold(coord,part)
     set.seed(seed)
     group_abs <- kfold(backgr,part)
-    
+
     cat(paste0("group_pre <- kfold(coord,part)"),file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
     cat(paste0("group_abs <- kfold(backgr,part)"),file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    
+
     # Cosntruindo o data.frame com todos os dados
     append_1 <- append(group_pre,group_abs)
     cbind_1 <- cbind(coord,presvals)
@@ -254,38 +256,38 @@ function(input, output, session) {
 
     cat(paste0("append_1 <- append(group_pre,group_abs)"),file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    
+
     cat(paste0("cbind_1 <- cbind(coord,presvals)"),file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    
+
     cat(paste0("cbind_2 <- cbind(backgr,absvals)"),file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
 
     cat(paste0("rbind_1 <- rbind(cbind_1,cbind_2)"),file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    
+
     cat(paste0("sdmdata <- data.frame(cbind(append_1,pre_abs,rbind_1))"),file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    
+
     cat(paste0("sdmdata2 <- sdmdata[-1]"),file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    
+
     cat(paste0("sdmdata2 <- sdmdata2[-1]"),file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    
+
     cat(paste0("sdmdata2 <- sdmdata2[-1]"),file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    
+
     cat(paste0("sdmdata2 <- sdmdata2[-1]"),file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    
+
     colnames(sdmdata)[1] <- "group"
 
     cat(paste0("colnames(sdmdata)[1] <- \"group\""),file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
 
     for (i in unique(group_pre)){
-      
+
       if (i==1)
       {
       cat(paste0("for (i in unique(group_pre)){"),file=ARQUIVO_SAIDA,append=TRUE)
@@ -297,19 +299,19 @@ function(input, output, session) {
       cat(paste0("envtrain <- subset(sdmdata_train,select= c(-group,-Longitude,-Latitude))"),file=ARQUIVO_SAIDA,append=TRUE)
       cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
       cat(paste0("envtest_pre <- subset(sdmdata_teste,pre_abs==1,select= c(-group,-Latitude,-Latitude,-pre_abs))"),file=ARQUIVO_SAIDA,append=TRUE)
-      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)      
+      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
       cat(paste0("envtest_abs <- subset(sdmdata_teste,pre_abs==0,select= c(-group,-Latitude,-Latitude,-pre_abs))"),file=ARQUIVO_SAIDA,append=TRUE)
-      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)      
+      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
       cat(paste0("coord_pres_train <- subset(sdmdata_train,pre_abs==1,select= c(Longitude,Latitude))"),file=ARQUIVO_SAIDA,append=TRUE)
-      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)      
+      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
       cat(paste0("coord_pres_teste <- subset(sdmdata_teste,pre_abs==1,select= c(Longitude,Latitude))"),file=ARQUIVO_SAIDA,append=TRUE)
-      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)      
+      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
       cat(paste0("coord_abs_train <- subset(sdmdata_train,pre_abs==0,select= c(Longitude,Latitude))"),file=ARQUIVO_SAIDA,append=TRUE)
-      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)      
+      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
       cat(paste0("coord_abs_teste <- subset(sdmdata_teste,pre_abs==0,select= c(Longitude,Latitude))"),file=ARQUIVO_SAIDA,append=TRUE)
-      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)      
+      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
       }
-      
+
       progress$set(message = paste("Processando a modelagem",i), value = 0)
       # Separar o sdmdata entre teste e treino
       sdmdata_train <- subset(sdmdata,group!=i)
@@ -321,7 +323,7 @@ function(input, output, session) {
       # Preparando sdmdata test para avaliar modelos que n?o usam s? presen?a
       envtest_pre <- subset(sdmdata_teste,pre_abs==1,select= c(-group,-Latitude,-Latitude,-pre_abs))
       envtest_abs <- subset(sdmdata_teste,pre_abs==0,select= c(-group,-Latitude,-Latitude,-pre_abs))
-      
+
       ### Separando os dados (apenas coordenadas) para fazer BioClim, Maxent e Mahalanobis que usam s? presen?a
       coord_pres_train <- subset(sdmdata_train,pre_abs==1,select= c(Longitude,Latitude))
       coord_pres_teste <- subset(sdmdata_teste,pre_abs==1,select= c(Longitude,Latitude))
@@ -330,44 +332,44 @@ function(input, output, session) {
 
       ### FAZ OS MODELOS
       cat(paste("Modeling...",sp,"Partition",i,'\n'))
-      
+
       if (Bioclim==T){
         cat(paste("#Bioclim",'\n'))
         # Constr?i o modelo no espa?o ambiental
         bc <- bioclim (var, coord_pres_train)
-        
+
         if (i==1)
         {
         cat(paste0("#BIOCLIM"),file=ARQUIVO_SAIDA,append=TRUE)
-        cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
-        
+        cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+
         cat(paste0(" bc <- bioclim (var, coord_pres_train)"),file=ARQUIVO_SAIDA,append=TRUE)
-        cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
+        cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
         cat(paste0("ebc <<- evaluate (coord_pres_teste,coord_abs_teste,bc,var)"),file=ARQUIVO_SAIDA,append=TRUE)
-        cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
+        cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
         cat(paste0("bcTSS <- max(ebc@TPR + ebc@TNR)-1"),file=ARQUIVO_SAIDA,append=TRUE)
-        cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
+        cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
         cat(paste0("tbc <- threshold (ebc,'spec_sens')"),file=ARQUIVO_SAIDA,append=TRUE)
-        cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
+        cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
         cat(paste0("bc_cont <- predict (var,bc,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
-        cat("\n",file=ARQUIVO_SAIDA,append=TRUE)       
+        cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
         cat(paste0("bc_cont_proj <- predict (var2,bc,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
-        cat("\n",file=ARQUIVO_SAIDA,append=TRUE)                  
+        cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
         cat(paste0("bc_bin <- bc_cont>tbc"),file=ARQUIVO_SAIDA,append=TRUE)
-        cat("\n",file=ARQUIVO_SAIDA,append=TRUE)                  
+        cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
         cat(paste0(" bc_mult <- bc_bin*bc_cont"),file=ARQUIVO_SAIDA,append=TRUE)
-        cat("\n",file=ARQUIVO_SAIDA,append=TRUE)                  
+        cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
         cat(paste0("bc_mult <- bc_mult/maxValue(bc_mult)"),file=ARQUIVO_SAIDA,append=TRUE)
-        cat("\n",file=ARQUIVO_SAIDA,append=TRUE)                  
+        cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
         }
-        
+
         # Validacao da performance
         ebc <<- evaluate (coord_pres_teste,coord_abs_teste,bc,var)
         # C?lculo do TSS
         bcTSS <- max(ebc@TPR + ebc@TNR)-1
         # Extrai o valor do limiar que maximiza a soma da especificidade e sensibilidade
         tbc <- threshold (ebc,'spec_sens')
-        # Projeta no espa?o geografico o modelo contnuo 
+        # Projeta no espa?o geografico o modelo contnuo
         bc_cont <- predict (var,bc,progress='text')
         bc_cont_proj <- predict (var2,bc,progress='text')
         # Transforma em binario o modelo continuo cortando-o pelo limiar tbc
@@ -379,45 +381,45 @@ function(input, output, session) {
         # Faz os modelos futuros
         if (future.model==T){
           # Projeta o modelo nas variiveis futuras
-          bc_future <- predict(future.raster,bc,progress='text') 
+          bc_future <- predict(future.raster,bc,progress='text')
           # Transforma em bin?rio o modelo futuro cont?nuo pelo threshold do modelo presente
-          if (bin ==T) {bc_future_bin <- bc_future > tbc} 
+          if (bin ==T) {bc_future_bin <- bc_future > tbc}
           # Resgata os valores continuos ao multiplicar o modelo binario pelo continuo
           if (mult==T) {
             bc_future_mult <- bc_future_bin * bc_future
             # Normaliza o modelo mult
-            bc_future_mult <- bc_future_mult/maxValue(bc_future_mult)} 
+            bc_future_mult <- bc_future_mult/maxValue(bc_future_mult)}
         } # Fecha o modelo futuro
       } # Fecha o algoritmo Bioclim
-      
+
 
       if (Domain==T){
         cat(paste("Domain",'\n'))
-        
+
         if (i==1)
         {
-          
+
           cat(paste0("DOMAIN"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
-          
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+
           cat(paste0("  do <- domain (var, coord_pres_train)"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("edo <<- evaluate (coord_pres_teste,coord_abs_teste,do,var)"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("doTSS <- max(edo@TPR + edo@TNR)-1"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("tdo <- threshold (edo,'spec_sens')"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0(" do_cont <- predict (var,do,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)       
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("do_cont_proj <- predict (var2,do,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)                  
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("do_bin <- do_cont>tdo"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)                  
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("do_mult <- do_bin*do_cont"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)                  
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("do_mult <- do_mult/maxValue(do_mult)"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)                  
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
         }
         # Constr?i o modelo no espa?o ambiental
         do <- domain (var, coord_pres_train)
@@ -427,10 +429,10 @@ function(input, output, session) {
         doTSS <- max(edo@TPR + edo@TNR)-1
         # Extrai o valor do limiar que maximiza a soma da especificidade e sensibilidade
         tdo <- threshold (edo,'spec_sens')
-        # Projeta no espa?o geogr?fico o modelo cont?nuo 
+        # Projeta no espa?o geogr?fico o modelo cont?nuo
         do_cont <- predict (var,do,progress='text')
         do_cont_proj <- predict (var2,do,progress='text')
-        
+
         # Transforma em bin?rio o modelo cont?nuo cortando-o pelo limiar tbc
         do_bin <- do_cont>tdo
         # Resgata os valores cont?nuos ao multiplicar o modelo bin?rio pelo cont?nuo
@@ -440,105 +442,105 @@ function(input, output, session) {
         # Faz os modelos futuros
         if (future.model==T){
           # Projeta o modelo nas vari?veis futuras
-          do_future <- predict(future.raster,do,progress='text') 
+          do_future <- predict(future.raster,do,progress='text')
           # Transforma em bin?rio o modelo futuro cont?nuo pelo threshold do modelo presente
-          if (bin ==T) {do_future_bin <- do_future > tdo} 
+          if (bin ==T) {do_future_bin <- do_future > tdo}
           # Resgata os valores cont?nuos ao multiplicar o modelo bin?rio pelo cont?nuo
           if (mult==T) {
             do_future_mult <- do_future_bin * do_future
             # Normaliza o modelo mult
-            do_future_mult <- do_future_mult/maxValue(do_future_mult)} 
+            do_future_mult <- do_future_mult/maxValue(do_future_mult)}
         } # Fecha o modelo futuro
       } # Fecha o algoritmo Bioclim
-      
+
       if (maxent==T){
-        
+
         if (i==1)
         {
           cat(paste0("MAXENT"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
-          
-          
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+
+
           cat(paste0("mx <- maxent (var, coord_pres_train)"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("emx <- evaluate (coord_pres_teste,coord_abs_teste,mx,var)"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("mxTSS <- max(emx@TPR + emx@TNR)-1"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("tmx <- threshold (emx,'spec_sens')"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("mx_cont <- predict (var,mx,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)       
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("mx_cont_proj <- predict (var2,mx,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)                  
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("mx_bin <- mx_cont>tmx"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)                  
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("mx_mult <- mx_bin*mx_cont"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)                  
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("mx_mult <- mx_mult/maxValue(mx_mult)"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)                  
-        }        
-        
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+        }
+
         cat(paste("Maxent",'\n'))
         # Constr?i o modelo no espa?o ambiental
         mx <- maxent (var, coord_pres_train)
         # Valida??o da performance
         emx <- evaluate (coord_pres_teste,coord_abs_teste,mx,var)
         # C?lculo do TSS
-        mxTSS <- max(emx@TPR + emx@TNR)-1 
+        mxTSS <- max(emx@TPR + emx@TNR)-1
         # Extrai o valor do limiar que maximiza a soma da especificidade e sensibilidade
         tmx <- threshold (emx,'spec_sens')
-        # Projeta no espa?o geogr?fico o modelo cont?nuo 
+        # Projeta no espa?o geogr?fico o modelo cont?nuo
         mx_cont <- predict (var,mx,progress='text')
         mx_cont_proj <- predict (var2,mx,progress='text')
-        
+
         # Transforma em bin?rio o modelo cont?nuo cortando-o pelo limiar tbc
         mx_bin <- mx_cont>tmx
         # Resgata os valores cont?nuos ao multiplicar o modelo bin?rio pelo cont?nuo
-        mx_mult <- mx_bin*mx_cont 
+        mx_mult <- mx_bin*mx_cont
         # Normaliza o modelo mult
         mx_mult <- mx_mult/maxValue(mx_mult)
         if (future.model==T){
           # Projeta o modelo nas vari?veis futuras
-          mx_future <- predict(future.raster,mx,progress='text') 
+          mx_future <- predict(future.raster,mx,progress='text')
           # Transforma em bin?rio o modelo futuro cont?nuo pelo threshold do modelo presente
-          if (bin ==T) {mx_future_bin <- mx_future > tmx} 
+          if (bin ==T) {mx_future_bin <- mx_future > tmx}
           # Resgata os valores cont?nuos ao multiplicar o modelo bin?rio pelo cont?nuo
           if (mult==T) {
             mx_future_mult <- mx_future_bin * mx_future
             # Normaliza o modelo mult
-            mx_future_mult <- mx_future_mult/maxValue(mx_future_mult)} 
+            mx_future_mult <- mx_future_mult/maxValue(mx_future_mult)}
         } # Fecha o modelo futuro
       } # Fecha o algoritmo Maxent
-      
+
       if (GLM==T){
         cat(paste("GLM",'\n'))
-        
+
         if (i==1)
         {
           cat(paste0("GLM"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
-          
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+
           cat(paste0("mglm <- glm(pre_abs~.,data=envtrain)"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("eglm <- evaluate(envtest_pre,envtest_abs,mglm)"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("glmTSS <- max(eglm@TPR + eglm@TNR)-1"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("tglm <- threshold (eglm,'spec_sens')"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("glm_cont <- predict (var,mglm,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)       
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("glm_cont_proj <- predict (var2,mglm,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)                  
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("glm_bin <- glm_cont>tglm"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)                  
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("glm_mult <- glm_bin*glm_cont "),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)                  
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("glm_mult <- glm_mult/maxValue(glm_mult)"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)                  
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
         }
-        
+
         # Constr?i o modelo no espa?o ambiental
         mglm <- glm(pre_abs~.,data=envtrain)
         # Valida??o da performance
@@ -547,58 +549,58 @@ function(input, output, session) {
         glmTSS <- max(eglm@TPR + eglm@TNR)-1
         # Extrai o valor do limiar que maximiza a soma da especificidade e sensibilidade
         tglm <- threshold (eglm,'spec_sens')
-        # Projeta no espa?o geogr?fico o modelo cont?nuo 
+        # Projeta no espa?o geogr?fico o modelo cont?nuo
         glm_cont <- predict (var,mglm,progress='text')
         glm_cont_proj <- predict (var2,mglm,progress='text')
-        
+
         #plot(glm_cont)
         # Transforma em bin?rio o modelo cont?nuo cortando-o pelo limiar tbc
         glm_bin <- glm_cont>tglm
         # Resgata os valores cont?nuos ao multiplicar o modelo bin?rio pelo cont?nuo
-        glm_mult <- glm_bin*glm_cont 
+        glm_mult <- glm_bin*glm_cont
         # Normaliza o modelo mult
         glm_mult <- glm_mult/maxValue(glm_mult)
         if (future.model==T){
           # Projeta o modelo nas vari?veis futuras
-          glm_future <- predict(future.raster,mglm,progress='text') 
+          glm_future <- predict(future.raster,mglm,progress='text')
           # Transforma em bin?rio o modelo futuro cont?nuo pelo threshold do modelo presente
-          if (bin ==T) {glm_future_bin <- glm_future > tglm} 
+          if (bin ==T) {glm_future_bin <- glm_future > tglm}
           # Resgata os valores cont?nuos ao multiplicar o modelo bin?rio pelo cont?nuo
           if (mult==T) {
             glm_future_mult <- glm_future_bin * glm_future
             # Normaliza o modelo mult
-            glm_future_mult <- glm_future_mult/maxValue(glm_future_mult)}  
+            glm_future_mult <- glm_future_mult/maxValue(glm_future_mult)}
         } # Fecha o modelo futuro
       } # Fecha o algoritmo GLM
-      
+
       if (RF==T){
         cat(paste("RF",'\n'))
 
         if (i==1)
         {
           cat(paste0("RF"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
-          
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+
           cat(paste0("rf1 <- randomForest (pre_abs~.,data=envtrain)"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("erf1 <- evaluate(envtest_pre,envtest_abs, rf1)"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("rfTSS1 <- max(erf1@TPR + erf1@TNR)-1"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("trf1 <- threshold (erf1,'spec_sens')"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("rf1_cont <- predict (var,rf1,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)       
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("rf1_cont_proj <- predict (var2,rf1,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)                  
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("rf1_bin <- rf1_cont>trf1"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)                  
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("rf1_mult <- rf1_bin*rf1_cont "),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)                  
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("rf1_mult <- rf1_mult/maxValue(rf1_mult)"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)                  
-        }        
-        
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+        }
+
         # Constr?i o modelo no espa?o ambiental
         ##rf1 <- randomForest (pre_abs~.,data=envtrain) # porque da mensagem de aviso ao usar rf1(regression)?
         ##envtrain
@@ -615,7 +617,7 @@ function(input, output, session) {
         # Extrai o valor do limiar que maximiza a soma da especificidade e sensibilidade
         trf1 <- threshold (erf1,'spec_sens')
         #trf2 <- threshold (erf2,'spec_sens') # tbm d? mensagem de erro
-        # Projeta no espa?o geogr?fico o modelo cont?nuo 
+        # Projeta no espa?o geogr?fico o modelo cont?nuo
         rf1_cont <- predict (var,rf1,progress='text')
         rf1_cont_proj <- predict (var2,rf1,progress='text')
         #rf_cont2 <- predict (var,rf2,progress='text') # o cont?nuo fica igual ao bin?rio!
@@ -623,50 +625,50 @@ function(input, output, session) {
         rf1_bin <- rf1_cont>trf1
         #rf_bin2 <- rf_cont2>trf2
         # Resgata os valores cont?nuos ao multiplicar o modelo bin?rio pelo cont?nuo
-        rf1_mult <- rf1_bin*rf1_cont 
+        rf1_mult <- rf1_bin*rf1_cont
         #rf_mult2 <- rf_bin2*rf_cont2
         # Normaliza o modelo mult
         rf1_mult <- rf1_mult/maxValue(rf1_mult)
-        
+
         if (future.model==T){
           # Projeta o modelo nas vari?veis futuras
-          rf1_future <- predict(future.raster,rf1,progress='text') 
+          rf1_future <- predict(future.raster,rf1,progress='text')
           # Transforma em bin?rio o modelo futuro cont?nuo pelo threshold do modelo presente
-          if (bin ==T) {rf1_future_bin <- rf1_future > trf1} 
+          if (bin ==T) {rf1_future_bin <- rf1_future > trf1}
           # Resgata os valores cont?nuos ao multiplicar o modelo bin?rio pelo cont?nuo
           if (mult==T) {
             rf1_future_mult <- rf1_future_bin * rf1_future
             # Normaliza o modelo mult
-            rf1_future_mult <- rf1_future_mult/maxValue(rf1_future_mult)}  
+            rf1_future_mult <- rf1_future_mult/maxValue(rf1_future_mult)}
         } # Fecha o modelo futuro
       } # Fecha o algoritmo RandomForest
-      
+
       if (SVM==T){
-        
+
         if (i==1)
         {
           cat(paste0("SVM"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
-          
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+
           cat(paste0("msvm <- ksvm(pre_abs~.,data=envtrain)"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("esvm <- evaluate(envtest_pre,envtest_abs,msvm)"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("svmTSS <- max(esvm@TPR + esvm@TNR)-1"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("tsvm <- threshold (esvm,'spec_sens')"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("svm_cont <- predict (var,msvm,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)       
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("svm_cont_proj <- predict (var2,msvm,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)                  
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("svm_bin <- svm_cont>tsvm"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)                  
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("svm_mult <- svm_bin*svm_cont"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)                  
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("svm_mult <- svm_mult/maxValue(svm_mult)"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)                  
-        }        
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+        }
         cat(paste("SVM",'\n'))
         # Constr?i o modelo no espa?o ambiental
         msvm <- ksvm(pre_abs~.,data=envtrain)
@@ -676,7 +678,7 @@ function(input, output, session) {
         svmTSS <- max(esvm@TPR + esvm@TNR)-1
         # Extrai o valor do limiar que maximiza a soma da especificidade e sensibilidade
         tsvm <- threshold (esvm,'spec_sens')
-        # Projeta no espa?o geogr?fico o modelo cont?nuo 
+        # Projeta no espa?o geogr?fico o modelo cont?nuo
         svm_cont <- predict (var,msvm,progress='text')
         svm_cont_proj <- predict (var2,msvm,progress='text')
         # Transforma em bin?rio o modelo cont?nuo cortando-o pelo limiar tbc
@@ -687,20 +689,20 @@ function(input, output, session) {
         svm_mult <- svm_mult/maxValue(svm_mult)
         if (future.model==T){
           # Projeta o modelo nas vari?veis futuras
-          svm_future <- predict(future.raster,msvm,progress='text') 
+          svm_future <- predict(future.raster,msvm,progress='text')
           # Transforma em bin?rio o modelo futuro cont?nuo pelo threshold do modelo presente
-          if (bin ==T) {svm_future_bin <- svm_future > tsvm} 
+          if (bin ==T) {svm_future_bin <- svm_future > tsvm}
           # Resgata os valores cont?nuos ao multiplicar o modelo bin?rio pelo cont?nuo
           if (mult==T) {
             svm_future_mult <- svm_future_bin * svm_future
             # Normaliza o modelo mult
-            svm_future_mult <- svm_future_mult/maxValue(svm_future_mult)}   
+            svm_future_mult <- svm_future_mult/maxValue(svm_future_mult)}
         } # Fecha o modelo futuro
       } # Fecha o algoritmo SVM
-      
+
       if (Mahal==T){
         cat(paste("Mahal",'\n'))
-        
+
         # Checa se o n?mero de registros de presen?a ? maior que o n?mero de vari?veis
         condicao_Mahal<- nrow(coord_pres_train)>length(names(var))
         if (condicao_Mahal==TRUE){
@@ -708,31 +710,31 @@ function(input, output, session) {
 
           if (i==1)
           {
-            
+
             cat(paste0("MAHALANOBIS"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)                    
-            
+            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+
             cat(paste0("ma <- mahal (var, coord_pres_train)"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
+            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
             cat(paste0("ema <- evaluate (coord_pres_teste,coord_abs_teste,ma,var)"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
+            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
             cat(paste0("maTSS <- max(ema@TPR + ema@TNR)-1"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
+            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
             cat(paste0("tma <- threshold (ema,'spec_sens')"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)           
+            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
             cat(paste0("ma_cont <- predict (var,ma,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)       
+            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
             cat(paste0("ma_cont_proj <- predict (var2,ma,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)                  
+            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
             cat(paste0("ma_cont_invert <- ma_cont+(-1*minValue(ma_cont))"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)                  
+            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
             cat(paste0("ma_bin <- ma_cont>tma"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)                  
+            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
             cat(paste0("ma_mult <- ma_bin * ma_cont_invert"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)                  
+            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
             cat(paste0("ma_mult <- ma_mult/maxValue(ma_mult)"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)                  
-          }          
+            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          }
           ma <- mahal (var, coord_pres_train)
           # validacao da performance
           ema <- evaluate (coord_pres_teste,coord_abs_teste,ma,var)
@@ -740,7 +742,7 @@ function(input, output, session) {
           maTSS <- max(ema@TPR + ema@TNR)-1
           # Extrai o valor do limiar que maximiza a soma da especificidade e sensibilidade
           tma <- threshold (ema,'spec_sens')
-          # Projeta no espaco geografico o modelo continuo 
+          # Projeta no espaco geografico o modelo continuo
           ma_cont <- predict (var,ma,progress='text')
           ma_cont_proj <- predict (var2,ma,progress='text')
           # Invertendo os valores dos pixel, porque o valor 0 corresponde ao maior valor de adequabilidade
@@ -754,29 +756,29 @@ function(input, output, session) {
           # Faz os modelos futuros
           if (future.model==T){
             # Projeta o modelo nas variaveis futuras
-            ma_future <- predict(future.raster,ma,progress='text') 
+            ma_future <- predict(future.raster,ma,progress='text')
             # Invertendo os valores dos pixel, porque o valor 0 corresponde ao maior valor de adequabilidade
             ma_future_invert <- ma_future+(-1*minValue(ma_future))
             # Transforma em binario o modelo futuro continuo pelo threshold do modelo presente
-            if (bin ==T) {ma_future_bin <- ma_future > tma} 
+            if (bin ==T) {ma_future_bin <- ma_future > tma}
             # Resgata os valores continuos ao multiplicar o modelo binario pelo continuo
             if (mult==T) {
               ma_future_mult <- ma_future_bin * ma_future_invert
               # Normaliza o modelo mult
-              ma_future_mult <- ma_future_mult/maxValue(ma_future_mult)} 
+              ma_future_mult <- ma_future_mult/maxValue(ma_future_mult)}
           } # Fecha o modelo futuro
         } # Fecha o algoritmo Mahalanobis
         else {
-		
+
 			}
       }
-      
+
       ### ESCREVE OS MODELOS
-      
+
       ## Modelos continuos
       if (write.cont==T){
         cat(paste("Salvando modelos continuos...",sp,i,'\n'))
-        
+
         if(Bioclim==T){
           writeRaster(x=bc_cont,filename=paste0("./www/",projeto,"/models/pre_",i,"_bc_con",".tif"),overwrite=T)
           png(filename=paste0("./www/",projeto,"/jpg/pre_",i,"_bc_con",".jpg"))
@@ -784,10 +786,10 @@ function(input, output, session) {
           if (i==1)
           {
           cat(paste0("plot(bc_cont,main=paste(\"BioClim - \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)     
+          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           }
           dev.off()
-          
+
           if (write.projecao==T)
           {
             writeRaster(x=bc_cont_proj,filename=paste0("./www/",projeto,"/proj/pre_",i,"_bc_con_proj",".tif"),overwrite=T)
@@ -800,27 +802,27 @@ function(input, output, session) {
             if (i==1)
             {
               cat(paste0("plot(bc_future,main=paste(\"BioClim - Fut \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
-              cat("\n",file=ARQUIVO_SAIDA,append=TRUE)     
+              cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
             }
-            
+
             dev.off()
           }
         }
-        
+
         if(Domain==T){
           writeRaster(x=do_cont,filename=paste0("./www/",projeto,"/models/pre_",i,"_do_con",".tif"),overwrite=T)
-          
+
           png(filename=paste0("./www/",projeto,"/jpg/pre_",i,"_do_con",".jpg"))
           plot(do_cont,main=paste("Domain - ",i))
 
           if (i==1)
           {
             cat(paste0("plot(do_cont,main=paste(\"Domain - \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)     
+            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           }
-          
+
           dev.off()
-          
+
           if (write.projecao==T)
           {
             writeRaster(x=do_cont_proj,filename=paste0("./www/",projeto,"/proj/pre_",i,"_do_con_proj",".tif"),overwrite=T)
@@ -832,7 +834,7 @@ function(input, output, session) {
             dev.off()
           }
         }
-        
+
           if(maxent==T){
           writeRaster(x=mx_cont,filename=paste0("./www/",projeto,"/models/pre_",i,"_mx_con",".tif"),overwrite=T)
           png(filename=paste0("./www/",projeto,"/jpg/pre_",i,"_mx_con",".jpg"))
@@ -841,10 +843,10 @@ function(input, output, session) {
           if (i==1)
           {
             cat(paste0("plot(mx_cont,main=paste(\"Maxent - \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)     
+            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           }
           dev.off()
-          
+
           if (write.projecao==T)
           {
             writeRaster(x=mx_cont_proj,filename=paste0("./www/",projeto,"/proj/pre_",i,"_mx_con_proj",".tif"),overwrite=T)
@@ -856,7 +858,7 @@ function(input, output, session) {
             dev.off()
           }
         }
-        
+
         if(GLM==T){
           writeRaster(x=glm_cont,filename=paste0("./www/",projeto,"/models/pre_",i,"_glm_con",".tif"),overwrite=T)
           png(filename=paste0("./www/",projeto,"/jpg/pre_",i,"_glm_con",".jpg"))
@@ -865,8 +867,8 @@ function(input, output, session) {
           if (i==1)
           {
             cat(paste0("plot(glm_cont,main=paste(\"GLM - \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)     
-          }          
+            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          }
           dev.off()
           if (write.projecao==T)
           {
@@ -880,20 +882,20 @@ function(input, output, session) {
             dev.off()
           }
         }
-        
+
         if(RF==T){
           writeRaster(x=rf1_cont,filename=paste0("./www/",projeto,"/models/pre_",i,"_rf_con",".tif"),overwrite=T)
           png(filename=paste0("./www/",projeto,"/jpg/pre_",i,"_rf_con",".jpg"))
           plot(rf1_cont,main=paste("RF - ",i))
-          
+
           if (i==1)
           {
             cat(paste0("plot(rf1_cont,main=paste(\"RF - \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)     
-          }          
-          
+            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          }
+
           dev.off()
-          
+
           if (write.projecao==T)
           {
             writeRaster(x=rf1_cont_proj,filename=paste0("./www/",projeto,"/proj/pre_",i,"_rf_con_proj",".tif"),overwrite=T)
@@ -905,7 +907,7 @@ function(input, output, session) {
             dev.off()
           }
         }
-        
+
         if(SVM==T){
           writeRaster(x=svm_cont,filename=paste0("./www/",projeto,"/models/pre_",i,"_svm_con",".tif"),overwrite=T)
           png(filename=paste0("./www/",projeto,"/jpg/pre_",i,"_svm_con",".jpg"))
@@ -914,9 +916,9 @@ function(input, output, session) {
           if (i==1)
           {
             cat(paste0("plot(svm_cont,main=paste(\"SVM - \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)     
-          }          
-          
+            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          }
+
           dev.off()
           if (write.projecao==T)
           {
@@ -929,18 +931,18 @@ function(input, output, session) {
             dev.off()
           }
         }
-        
+
         if(Mahal==T && condicao_Mahal==TRUE){
           writeRaster(x=ma_cont,filename=paste0("./www/",projeto,"/models/pre_",i,"_ma_con",".tif"),overwrite=T)
           png(filename=paste0("./www/",projeto,"/jpg/pre_",i,"_ma_con",".jpg"))
           plot(ma_cont,main=paste("Mahalanobis - ",i))
-          
+
           if (i==1)
           {
             cat(paste0("plot(ma_cont,main=paste(\"Mahalanobis - \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)     
-          }             
-          
+            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          }
+
           dev.off()
           if (write.projecao==T)
           {
@@ -953,13 +955,13 @@ function(input, output, session) {
             dev.off()
           }
         }
-        
+
       } # Fecha escrita de modelos cont?nuos
-      
+
       ## Modelos bin?rios
       if (write.bin==T){
         cat(paste("Salvando modelos binários...",sp,i,'\n'))
-        
+
         if(Bioclim==T){
           writeRaster(x=bc_bin,filename=paste0("./www/",projeto,"/models/pre_",i,"_bc_bin",".tif"),overwrite=T)
           png(filename=paste0("./www/",projeto,"/jpg/pre_",i,"_bc_bin",".jpg"))
@@ -968,41 +970,41 @@ function(input, output, session) {
           if (i==1)
           {
             cat(paste0("plot(bc_bin,main=paste(\"Bioclim - Bin \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)    
+            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           }
           dev.off()
-          
+
           if(write.future==T) { writeRaster(x=bc_future_bin,filename=paste0("./www/",projeto,"/futuro/fut_",i,"_bc_bin",".tif"),overwrite=T)}}
-        
+
         if(Domain==T){
           writeRaster(x=do_bin,filename=paste0("./www/",projeto,"/models/pre_",i,"_do_bin",".tif"),overwrite=T)
           png(filename=paste0("./www/",projeto,"/jpg/pre_",i,"_do_bin",".jpg"))
           plot(do_bin,main=paste("Domain - Bin ",i))
-          
+
           if (i==1)
           {
             cat(paste0("plot(do_bin,main=paste(\"Domain - Bin \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)    
+            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           }
           dev.off()
-          
+
           if(write.future==T) { writeRaster(x=do_future_bin,filename=paste0("./www/",projeto,"/futuro/fut_",i,"_do_bin",".tif"),overwrite=T)}}
 
         if(maxent==T){
           writeRaster(x=mx_bin,filename=paste0("./www/",projeto,"/models/pre_",i,"_mx_bin",".tif"),overwrite=T)
           png(filename=paste0("./www/",projeto,"/jpg/pre_",i,"_mx_bin",".jpg"))
           plot(mx_bin,main=paste("Maxent - Bin ",i))
-          
+
           if (i==1)
           {
             cat(paste0("plot(mx_bin,main=paste(\"Maxent - Bin \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)    
-          }          
-          
+            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          }
+
           dev.off()
-          
+
           if(write.future==T) { writeRaster(x=mx_future_bin,filename=paste0("./www/",projeto,"/futuro/fut_",i,"_mx_bin",".tif"),overwrite=T)}}
-        
+
         if(GLM==T){
           writeRaster(x=glm_bin,filename=paste0("./www/",projeto,"/models/pre_",i,"_glm_bin",".tif"),overwrite=T)
           png(filename=paste0("./www/",projeto,"/jpg/pre_",i,"_glm_bin",".jpg"))
@@ -1011,11 +1013,11 @@ function(input, output, session) {
           if (i==1)
           {
             cat(paste0("plot(glm_bin,main=paste(\"GLM - Bin \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)    
-          }          
+            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          }
           dev.off()
-          
-          if(write.future==T) { writeRaster(x=glm_future_bin,filename=paste0("./www/",projeto,"/futuro/fut_",i,"_glm_bin",".tif"),overwrite=T)}}       
+
+          if(write.future==T) { writeRaster(x=glm_future_bin,filename=paste0("./www/",projeto,"/futuro/fut_",i,"_glm_bin",".tif"),overwrite=T)}}
 
         if(RF==T){
           writeRaster(x=rf1_bin,filename=paste0("./www/",projeto,"/models/pre_",i,"_rf_bin",".tif"),overwrite=T)
@@ -1025,77 +1027,77 @@ function(input, output, session) {
           if (i==1)
           {
             cat(paste0("plot(rf1_bin,main=paste(\"RF - Bin \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)    
-          }          
-          
+            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          }
+
           dev.off()
           if(write.future==T) { writeRaster(x=rf1_future_bin,filename=paste0("./www/",projeto,"/futuro/fut_",i,"_rf_bin",".tif"),overwrite=T)}}
-        
+
         if(SVM==T){
           writeRaster(x=svm_bin,filename=paste0("./www/",projeto,"/models/pre_",i,"_svm_bin",".tif"),overwrite=T)
           png(filename=paste0("./www/",projeto,"/jpg/pre_",i,"_svm_bin",".jpg"))
           plot(svm_bin,main=paste("SVM - Bin ",i))
-          
+
           if (i==1)
           {
             cat(paste0("plot(svm_bin,main=paste(\"SVM - Bin \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)    
-          }             
-          
+            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          }
+
           dev.off()
           if(write.future==T) { writeRaster(x=svm_future_bin,filename=paste0("./www/",projeto,"/futuro/fut_",i,"_svm_bin",".tif"),overwrite=T)}}
-        
+
         if(Mahal==T && condicao_Mahal==TRUE){
           writeRaster(x=ma_bin,filename=paste0("./www/",projeto,"/models/pre_",i,"_ma_bin",".tif"),overwrite=T)
           png(filename=paste0("./www/",projeto,"/jpg/pre_",i,"_ma_bin",".jpg"))
           plot(ma_bin,main=paste("Mahalanobis - Bin ",i))
-          
+
           if (i==1)
           {
             cat(paste0("plot(ma_bin,main=paste(\"Mahalanobis - Bin \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)    
-          }            
-          
+            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          }
+
           dev.off()
           if(write.future==T) { writeRaster(x=ma_future_bin,filename=paste0("./www/",projeto,"/futuro/fut_",i,"_ma_bin",".tif"),overwrite=T)}}
-        
-        
-      } # Fecha escrita de modelos binarios   
-      
+
+
+      } # Fecha escrita de modelos binarios
+
       ## Modelos multiplicados
       if (write.mult==T){
         cat(paste("Salvando modelos multiplicados...",sp,i,'\n'))
-        
+
         if(Bioclim==T){
           writeRaster(x=bc_mult,filename=paste0("./www/",projeto,"/models/pre_",i,"_bc_mult",".tif"),overwrite=T)
           if(write.future==T) { writeRaster(x=bc_future_mult,filename=paste0("./www/",projeto,"/futuro/fut_",i,"_bc_mult",".tif"),overwrite=T)}}
-        
+
         if(Domain==T){
           writeRaster(x=do_mult,filename=paste0("./www/",projeto,"/models/pre_",i,"_do_mult",".tif"),overwrite=T)
           if(write.future==T) { writeRaster(x=do_future_mult,filename=paste0("./www/",projeto,"/futuro/fut_",i,"_do_mult",".tif"),overwrite=T)}}
-        
-        
+
+
         if(maxent==T){
           writeRaster(x=mx_mult,filename=paste0("./www/",projeto,"/models/pre_",i,"_mx_mult",".tif"),overwrite=T)
           if(write.future==T) { writeRaster(x=mx_future_mult,filename=paste0("./www/",projeto,"/futuro/fut_",i,"_mx_mult",".tif"),overwrite=T)}}
-        
+
         if(GLM==T){
           writeRaster(x=glm_mult,filename=paste0("./www/",projeto,"/models/pre_",i,"_glm_mult",".tif"),overwrite=T)
           if(write.future==T) { writeRaster(x=glm_future_mult,filename=paste0("./www/",projeto,"/futuro/fut_",i,"_glm_mult",".tif"),overwrite=T)}}
-        
+
         if(RF==T){
           writeRaster(x=rf1_mult,filename=paste0("./www/",projeto,"/models/pre_",i,"_rf_mult",".tif"),overwrite=T)
           if(write.future==T) { writeRaster(x=rf1_future_mult,filename=paste0("./www/",projeto,"/futuro/fut_",i,"_rf_mult",".tif"),overwrite=T)}}
-        
+
         if(SVM==T){
           writeRaster(x=svm_mult,filename=paste0("./www/",projeto,"/models/pre_",i,"_svm_mult",".tif"),overwrite=T)
           if(write.future==T) { writeRaster(x=svm_future_mult,filename=paste0("./www/",projeto,"/futuro/fut_",i,"_svm_mult",".tif"),overwrite=T)}}
-        
+
         if(Mahal==T && condicao_Mahal==TRUE){
           writeRaster(x=ma_mult,filename=paste0("./www/",projeto,"/models/pre_",i,"_ma_mult",".tif"),overwrite=T)
           if(write.future==T) { writeRaster(x=ma_future_mult,filename=paste0("./www/",projeto,"/models/fut_",i,"_ma_mult",".tif"),overwrite=T)}}
       } # Fecha escrita de modelos multiplicados
-      
+
       ### SALVA ARQUIVOS DE VALIDA??O DE PERFORMANCE
       ##
       cat(paste("Salavando o arquivo de valida??o...",sp,i,'\n'))
@@ -1115,7 +1117,7 @@ function(input, output, session) {
       if(Mahal==T && condicao_Mahal==TRUE){
         print(paste(sp,sp,i,"Mahal",round(ema@auc,3),round(maTSS,3),round(tma,3),round(threshold(ema)$kappa,3),round(threshold(ema)$equal_sens_spec,3),round(threshold(ema)$no_omission,3),round(threshold(ema)$prevalence,3),round(threshold(ema)$sensitivity,3),ema@np,ema@na,round(ema@cor,3),sep=","))}
       sink()
-      
+
  #     cat(paste("Salvando arquivos de validação para todas as espécies...",sp,i,'\n'))
       sink(file=paste0("./www/",projeto,"/models/evaluate_ALL_models.txt"),split=T,append=T)
       if(Bioclim==T){
@@ -1133,7 +1135,7 @@ function(input, output, session) {
       if(Mahal==T && condicao_Mahal==TRUE){
         print(paste(sp,spname,i,"Mahal",round(ema@auc,3),round(maTSS,3),round(tma,3),round(threshold(ema)$kappa,3),round(threshold(ema)$equal_sens_spec,3),round(threshold(ema)$no_omission,3),round(threshold(ema)$prevalence,3),round(threshold(ema)$sensitivity,3),ema@np,ema@na,round(ema@cor,3),sep=","))}
       sink()
-      
+
       stats <- read.delim(file=paste0("./www/",projeto,"/models/evaluate_ALL_models.txt"),header=F,sep=",",quote="",col.names=c("id","sp","part","algorithm","AUC","TSS","TSSth", "Kappa","Equal_sens_spec","No_omission","Prevalence","Sensitivity","np","na","Cor" ))
       #stats
       stats$Sensitivity<-as.numeric(sub(pattern="\"","",stats$Sensitivity))
@@ -1141,24 +1143,24 @@ function(input, output, session) {
       stats20 <- stats[order(stats$sp,stats$algorithm,stats$part),-1]
       write.table(stats20,paste0("./www/",projeto,"/models/statsALL.txt"))
       output$dbgridresultado <- renderDataTable({
-        stats20  
+        stats20
       }, options = list(lengthMenu = c(5, 30, 50), pageLength = 10)
-      ) 
-      
+      )
+
     } # Fecha o for loop
     cat(paste0("} # Fecha o for loop"),file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)     
+    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
 
     output$dbgridresultado <- renderDataTable({
       cat(c(date(),"Mostrando o resultado de stats20",'\n','\n'))
-      stats20  
+      stats20
     }, options = list(lengthMenu = c(5, 30, 50), pageLength = 10)
-    ) 
-    
+    )
+
     # The sinked files are re-read and tranformed into a proper data frame...
 
     cat(c(date(),"====FIM====",'\n','\n'))
-	
+
     conta_alg = 0;
     algoritmos = ''
 
@@ -1234,7 +1236,7 @@ function(input, output, session) {
       points(especie, bg='red', cex=1,pch=21)
       dev.off()
     }
-    
+
     if (input$SVM==TRUE)
     {
       conta_alg = conta_alg + 1
@@ -1248,7 +1250,7 @@ function(input, output, session) {
       plot(ensemble.svm,main=paste("SVM - Ensemble"))
       points(especie, bg='red', cex=1,pch=21)
       dev.off()
-    }        
+    }
     if (input$MAXENT==TRUE)
     {
       conta_alg = conta_alg + 1
@@ -1274,10 +1276,10 @@ function(input, output, session) {
       points(especie, bg='red', cex=1,pch=21)
       dev.off()
     }
-    
+
     if (future.model == T)
     {
-      ## ENSEMBLE FUTURO        
+      ## ENSEMBLE FUTURO
       ensemble_futuro_arquivos <- list.files(paste0("./www/",projeto,"/futuro/"),full.names=T,pattern=paste0("con"))
       ensemble_futuro_raster<-stack(ensemble_futuro_arquivos)
       ensemble_futuro.geral<-mean(ensemble_futuro_raster,ensemble_futuro_raster)
@@ -1286,9 +1288,9 @@ function(input, output, session) {
       png(filename=paste0("./www/",projeto,"/jpg/ensemble_futuro",".jpg"))
       plot(ensemble_futuro.geral,main=paste("Ensemble Futuro ",''))
       dev.off()
-      ## FIM ENSEMBLE FUTURO        
+      ## FIM ENSEMBLE FUTURO
     }
-    
+
     if (write.projecao==T)
     {
       ensemble_arquivos_projecao <- list.files(paste0("./www/",projeto,"/proj/"),full.names=T,pattern=paste0("proj.tif"))
@@ -1296,14 +1298,14 @@ function(input, output, session) {
       ensemble.projecao<-mean(ensemble_raster_projecao,ensemble_raster_projecao)
       writeRaster(ensemble.projecao,filename=paste0("www/",projeto,"/final/","proj_ensemble.tif"), format='GTiff', overwrite=T)
       plot(ensemble.projecao, main=paste("Ensemble Projeção"))
-      
+
       png(filename=paste0("./www/",projeto,"/jpg/ensemble_projecao",".jpg"))
       plot(ensemble.projecao,main=paste("Ensemble Projeção"))
       dev.off()
     }
-    
+
     })# ISOLATE
-    
+
     library("data.table")
     cat(paste("Reading the evaluation files","\n"))
     evall3<- list.files(path = paste0("./www/",projeto,"/models","/"),pattern=paste0("statsALL.txt"),full.names = T)
@@ -1313,11 +1315,11 @@ function(input, output, session) {
     }
     stats3<-rbindlist(lista3)
     stats3<-as.data.frame(stats3)
-    
+
     #      Extracts only for the selected algorithm
     algoritmos <- unique(stats3$algorithm)
 
-    #algoritmos    
+    #algoritmos
     for (algo in algoritmos){
       #algo
       stats2 <- stats3[stats3$algorithm==algo,]
@@ -1350,65 +1352,65 @@ function(input, output, session) {
       {
         algo<-'do'
       }
-      
+
       part <- nrow(stats2)#How many partitions were there
       #part
-      
+
       cat(paste("Reading models from .tif files","\n"))
       modelos <- list.files(path = paste0('./www/',projeto,'/models',"/"),full.names=T,pattern=paste0(algo,"_con"))
       #        modelos
       mod<-stack(modelos)#(0)
       names(mod)<-paste0("Partition",1:part)
-      
+
       #Binary by TSSth and Cut
       bin <- mod>stats2[,names(stats2)=="Equal_sens_spec"]#stack
       cut <- bin * mod#stack
       #TSS.value<-0.2
-      
+
       sel.index<- which(stats2[,"TSS"]>=TSS.value)
       mod.sel<- mod[[sel.index]]
       if (length(sel.index)==0) cat(paste("No partition was selected for","\n"))
       if (length(sel.index)>0){
-        
+
         mod.sel<- mod[[sel.index]] #(1)
         bin.sel<-mod.sel>stats2[,names(stats2)=="Equal_sens_spec"][sel.index] #(5)
         cut.sel<-bin.sel*mod.sel#(8)
-        
+
         th.mean<-mean(stats2[,names(stats2)=="Equal_sens_spec"][sel.index])
-        
+
       }
       #en caso de que sea solo uno varios modelos son el mismo
       if (length(sel.index)==1){
         cat(paste(length(sel.index), "partitions was selected for",sp))
-        
+
         final.sel.cont<-mod.sel#(1)(2)
         final.sel.bin<-bin.sel#(5)(3)(7) (8)
         final.sel.cut<-cut.sel#(4)(6)(9)(10)
-        
+
         final <- stack(mod.sel,bin.sel,cut.sel,bin.sel,bin.sel,cut.sel,cut.sel)
         names(final) <- c("2_Final_cont_mean_","3_Final_bin_mean_","4_Final_cut_mean_","7_Final_mean_bin_","8_Final_inter_bin_","9_Mean_cut_sel_","10_inter_cut_sel_")
-        
+
       }
-      
-      #en caso de que sean aplica el mapa          
+
+      #en caso de que sean aplica el mapa
       if (length(sel.index)>1){
         cat(paste(length(sel.index), "partitions were selected for"))
         final.cont.mean <- mean(mod.sel)#(2)
         final.bin.mean <- (final.cont.mean>th.mean)#(3)
         final.cut.mean <- final.bin.mean*final.cont.mean #(4)
-        
+
         final.sel.bin <- mean(bin.sel)#(7)
         final.inter<-prod(bin.sel)#(8)
-        
+
         mean.cut.sel <- mean(cut.sel)#(9)
         inter.cut.sel <- prod(cut.sel)#(10)
-        
+
         final <- stack(final.cont.mean,final.bin.mean,final.cut.mean,final.sel.bin,final.inter,mean.cut.sel,inter.cut.sel)
         names(final) <- c("2_Final.cont.mean_","3_Final.bin.mean_","4_Final.cut.mean_","7_Final.mean.bin_","8_Final.inter.bin_","9_Mean.cut.sel_","10_inter.cut.sel_")
-        
+
         writeRaster(x=final.cont.mean,filename=paste0("./www/",projeto,"/final","/2_Final_cont_mean_",algo),overwrite=T,format="GTiff")
         writeRaster(x=final.bin.mean,filename=paste0("./www/",projeto,"/final","/3_Final_bin_mean_",algo),overwrite=T,format="GTiff")
-        
+
         writeRaster(x=final.cut.mean,filename=paste0("./www/",projeto,"/final","/4_Final_cut_mean_",algo),overwrite=T,format="GTiff")
         writeRaster(x=final.sel.bin,filename=paste0("./www/",projeto,"/final","/7_Final_mean_bin_",algo),overwrite=T,format="GTiff")
         writeRaster(x=final.inter,filename=paste0("./www/",projeto,"/final","/8_Final_inter_bin_",algo),overwrite=T,format="GTiff")
@@ -1426,18 +1428,18 @@ function(input, output, session) {
         }
       }
 
-    } # for 
+    } # for
 } # Fecha a fun??o dismo.mod
-  
+
 ##############################
 # INICIO FUNÃÃO MODELAGEM
 ##############################
 
     modelagem <- function() ({
-      
+
     ## LIMPANDO OS RESULTADOS ANTERIORES
    limparResultadosAnteriores()
-    
+
     library(raster)
     numpontos = input$edtnumpontos
     numparticoes <- input$edtnumgrupo
@@ -1486,82 +1488,82 @@ function(input, output, session) {
 
     cat("head(especie)",file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    
+
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    
+
     cat("arquivo <- list()",file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    
+
     cat("# ADICIONE OS RASTERS",file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    
-    
+
+
     if (length(arquivo2>0))
     {
       for (i in 1:length(arquivo2)){
         cat(paste0("arquivo <- c(arquivo,paste('",arquivo2[[i]],"',sep=''))"),file=ARQUIVO_SAIDA,append=TRUE)
         cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
       }
-    }   
+    }
 
     cat("arquivo",file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    
+
     cat("predictors <- stack(arquivo)",file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    
+
     cat("pred_nf <- predictors",file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    
+
     #cat(paste0("ext <- extent(",input$edtextend1,",",input$edtextend2,",",input$edtextend3,",",input$edtextend4,")"),file=ARQUIVO_SAIDA,append=TRUE)
     cat(paste0("ext <- extent(",ext1,",",ext3,",",ext2,",",ext4,")"),file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    
+
     cat("pred_nf <- crop(pred_nf, ext)",file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    
+
     cat("plot(pred_nf, 1)",file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    
+
     cat("especie <<- especie[,2:3]",file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
 
     cat("points(especie, bg='red', cex=1,pch=21)",file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    
+
     cat("presvals <- extract(pred_nf, especie)",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)    
-    
+    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+
     cat("var <- pred_nf",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)    
-    
+    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+
     cat("var2 <- pred_nf2",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)    
+    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
 
     cat(paste0("part <- ",numparticoes),file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    
+
     dismo.mod("",especie,pred_nf,pred_nf2,input$MAXENT,input$BIOCLIM,input$GLM,input$RF,input$SVM,input$MAHALANOBIS,input$DOMAIN,input$SVM2,numparticoes,numpontos,123,T,T,T,F,F,input$TSS,futuro,pred_nffuturo,futuro,write.projecao)
-    
+
     progress$set(message = paste("Gerando script"), value = 0)
-    
+
     # script gerado pelo sistema
-    
+
     progress$set(message = "Salvando dados...", value = 0)
-    
+
     write.csv(especie, file = paste0("www/",projeto,"/csv/dados.csv"))
-    
+
     #######################################################################
     ## PARA CADA ALGORITMO SELECIONADO MONTO UM MAPA COM O RASTER GERADO
     #######################################################################
-    
+
     # verificando se foi gerado o arquivo de projeto ensemble final
     # gero o arquivo raster para ser colocado no mapa
     if (file.exists(paste0('www/',projeto,'/final/proj_ensemble.tif')))
     {
       rproj <- raster::raster(paste0("www/",projeto,"/final/proj_ensemble.tif"))
     }
-    
+
     output$maparesultadomax <- renderLeaflet({
       input$btnModelar
       if (file.exists(paste0('www/',projeto,'/final/mx_ensemble.tif')))
@@ -1570,32 +1572,32 @@ function(input, output, session) {
         pal <- colorNumeric(c("#FFFFFF","#FDBB84","#31A354"),values(r),na.color = "transparent")
         if (file.exists(paste0('www/',projeto,'/final/proj_ensemble.tif')))
         {
-          map = leaflet() %>% addTiles %>%  
-          addRasterImage(r,colors = pal,opacity = 0.8) %>% 
-          addRasterImage(rproj,colors = pal,opacity = 0.8) %>% 
+          map = leaflet() %>% addTiles %>%
+          addRasterImage(r,colors = pal,opacity = 0.8) %>%
+          addRasterImage(rproj,colors = pal,opacity = 0.8) %>%
           addLegend(pal = pal, values = values(r),
-                    title = "Maxent") %>% 
-            addCircles(color = "red", lat = especie[,2], lng = especie[,1])  %>%  
-            #addMarkers(especie[,1], especie[,2]) %>% 
+                    title = "Maxent") %>%
+            addCircles(color = "red", lat = especie[,2], lng = especie[,1])  %>%
+            #addMarkers(especie[,1], especie[,2]) %>%
           addRectangles(
             ext1, ext3, ext2, ext4, color = 'green', fill = FALSE, dashArray = '5,5', weight = 3
           )
         }else
         {
-          map = leaflet() %>% addTiles %>%  
-            addRasterImage(r,colors = pal,opacity = 0.8) %>% 
+          map = leaflet() %>% addTiles %>%
+            addRasterImage(r,colors = pal,opacity = 0.8) %>%
             addLegend(pal = pal, values = values(r),
-                      title = "Maxent") %>% 
-            addCircles(color = "red", lat = especie[,2], lng = especie[,1])  %>%  
-            #addMarkers(especie[,1], especie[,2]) %>% 
+                      title = "Maxent") %>%
+            addCircles(color = "red", lat = especie[,2], lng = especie[,1])  %>%
+            #addMarkers(especie[,1], especie[,2]) %>%
             addRectangles(
               ext1, ext3, ext2, ext4, color = 'green', fill = FALSE, dashArray = '5,5', weight = 3
             )
         }
         map
       }
-    })      
-    
+    })
+
     output$maparesultadosvm <- renderLeaflet({
       input$btnModelar
       if (file.exists(paste0('www/',projeto,'/final/svm_ensemble.tif')))
@@ -1604,33 +1606,33 @@ function(input, output, session) {
         pal <- colorNumeric(c("#FFFFFF","#FDBB84","#31A354"),values(r),na.color = "transparent")
         if (file.exists(paste0('www/',projeto,'/final/proj_ensemble.tif')))
         {
-          map = leaflet() %>% addTiles %>%  
-          addRasterImage(r,colors = pal,opacity = 0.8) %>% 
-          addRasterImage(rproj,colors = pal,opacity = 0.8) %>% 
+          map = leaflet() %>% addTiles %>%
+          addRasterImage(r,colors = pal,opacity = 0.8) %>%
+          addRasterImage(rproj,colors = pal,opacity = 0.8) %>%
           addLegend(pal = pal, values = values(r),
-                    title = "SVM") %>% 
-            addCircles(color = "red", lat = especie[,2], lng = especie[,1])  %>%  
-            #addMarkers(especie[,1], especie[,2]) %>% 
+                    title = "SVM") %>%
+            addCircles(color = "red", lat = especie[,2], lng = especie[,1])  %>%
+            #addMarkers(especie[,1], especie[,2]) %>%
           addRectangles(
             ext1, ext3, ext2, ext4, color = 'green', fill = FALSE, dashArray = '5,5', weight = 3
           )
         }
         else
         {
-          map = leaflet() %>% addTiles %>%  
-            addRasterImage(r,colors = pal,opacity = 0.8) %>% 
+          map = leaflet() %>% addTiles %>%
+            addRasterImage(r,colors = pal,opacity = 0.8) %>%
             addLegend(pal = pal, values = values(r),
-                      title = "SVM") %>% 
-            addCircles(color = "red", lat = especie[,2], lng = especie[,1])  %>%  
-            #addMarkers(especie[,1], especie[,2]) %>% 
+                      title = "SVM") %>%
+            addCircles(color = "red", lat = especie[,2], lng = especie[,1])  %>%
+            #addMarkers(especie[,1], especie[,2]) %>%
             addRectangles(
               ext1, ext3, ext2, ext4, color = 'green', fill = FALSE, dashArray = '5,5', weight = 3
             )
         }
         map
       }
-    })    
-    
+    })
+
     output$maparesultadomh <- renderLeaflet({
       input$btnModelar
       if (file.exists(paste0('www/',projeto,'/final/ma_ensemble.tif')))
@@ -1639,34 +1641,34 @@ function(input, output, session) {
         pal <- colorNumeric(c("#FFFFFF","#FDBB84","#31A354"),values(r),na.color = "transparent")
         if (file.exists(paste0('www/',projeto,'/final/proj_ensemble.tif')))
         {
-          map = leaflet() %>% addTiles %>%  
-          addRasterImage(r,colors = pal,opacity = 0.8) %>% 
-          addRasterImage(rproj,colors = pal,opacity = 0.8) %>% 
+          map = leaflet() %>% addTiles %>%
+          addRasterImage(r,colors = pal,opacity = 0.8) %>%
+          addRasterImage(rproj,colors = pal,opacity = 0.8) %>%
           addLegend(pal = pal, values = values(r),
-                    title = "Maha") %>% 
-            addCircles(color = "red", lat = especie[,2], lng = especie[,1])  %>%  
-            #addMarkers(especie[,1], especie[,2]) %>% 
+                    title = "Maha") %>%
+            addCircles(color = "red", lat = especie[,2], lng = especie[,1])  %>%
+            #addMarkers(especie[,1], especie[,2]) %>%
           addRectangles(
             ext1, ext3, ext2, ext4, color = 'green', fill = FALSE, dashArray = '5,5', weight = 3
           )
         }
         else
         {
-          map = leaflet() %>% addTiles %>%  
-            addRasterImage(r,colors = pal,opacity = 0.8) %>% 
+          map = leaflet() %>% addTiles %>%
+            addRasterImage(r,colors = pal,opacity = 0.8) %>%
             addLegend(pal = pal, values = values(r),
-                      title = "Maha") %>% 
-            addCircles(color = "red", lat = especie[,2], lng = especie[,1])  %>%  
-            #addMarkers(especie[,1], especie[,2]) %>% 
+                      title = "Maha") %>%
+            addCircles(color = "red", lat = especie[,2], lng = especie[,1])  %>%
+            #addMarkers(especie[,1], especie[,2]) %>%
             addRectangles(
               ext1, ext3, ext2, ext4, color = 'green', fill = FALSE, dashArray = '5,5', weight = 3
             )
-          
+
         }
         map
       }
-    })   
-    
+    })
+
     output$maparesultadorf <- renderLeaflet({
       input$btnModelar
       if (file.exists(paste0('www/',projeto,'/final/rf_ensemble.tif')))
@@ -1675,24 +1677,24 @@ function(input, output, session) {
         pal <- colorNumeric(c("#FFFFFF","#FDBB84","#31A354"),values(r),na.color = "transparent")
         if (file.exists(paste0('www/',projeto,'/final/proj_ensemble.tif')))
         {
-          map = leaflet() %>% addTiles %>%  
-          addRasterImage(r,colors = pal,opacity = 0.8) %>% 
-          addRasterImage(rproj,colors = pal,opacity = 0.8) %>% 
+          map = leaflet() %>% addTiles %>%
+          addRasterImage(r,colors = pal,opacity = 0.8) %>%
+          addRasterImage(rproj,colors = pal,opacity = 0.8) %>%
           addLegend(pal = pal, values = values(r),
-                    title = "RF") %>% 
-            addCircles(color = "red", lat = especie[,2], lng = especie[,1])  %>%  
-            #addMarkers(especie[,1], especie[,2]) %>% 
+                    title = "RF") %>%
+            addCircles(color = "red", lat = especie[,2], lng = especie[,1])  %>%
+            #addMarkers(especie[,1], especie[,2]) %>%
           addRectangles(
             ext1, ext3, ext2, ext4, color = 'green', fill = FALSE, dashArray = '5,5', weight = 3
           )
         }else
         {
-          map = leaflet() %>% addTiles %>%  
-            addRasterImage(r,colors = pal,opacity = 0.8) %>% 
+          map = leaflet() %>% addTiles %>%
+            addRasterImage(r,colors = pal,opacity = 0.8) %>%
             addLegend(pal = pal, values = values(r),
-                      title = "RF") %>% 
-            addCircles(color = "red", lat = especie[,2], lng = especie[,1])  %>%  
-            #addMarkers(especie[,1], especie[,2]) %>% 
+                      title = "RF") %>%
+            addCircles(color = "red", lat = especie[,2], lng = especie[,1])  %>%
+            #addMarkers(especie[,1], especie[,2]) %>%
             addRectangles(
               ext1, ext3, ext2, ext4, color = 'green', fill = FALSE, dashArray = '5,5', weight = 3
             )
@@ -1700,7 +1702,7 @@ function(input, output, session) {
         map
       }
     })
-    
+
     output$maparesultadoglm <- renderLeaflet({
       input$btnModelar
       if (file.exists(paste0('www/',projeto,'/final/glm_ensemble.tif')))
@@ -1709,25 +1711,25 @@ function(input, output, session) {
         pal <- colorNumeric(c("#FFFFFF","#FDBB84","#31A354"),values(r),na.color = "transparent")
         if (file.exists(paste0('www/',projeto,'/final/proj_ensemble.tif')))
         {
-          map = leaflet() %>% addTiles %>%  
-          addRasterImage(r,colors = pal,opacity = 0.8) %>% 
-          addRasterImage(rproj,colors = pal,opacity = 0.8) %>% 
+          map = leaflet() %>% addTiles %>%
+          addRasterImage(r,colors = pal,opacity = 0.8) %>%
+          addRasterImage(rproj,colors = pal,opacity = 0.8) %>%
           addLegend(pal = pal, values = values(r),
-                    title = "GLM") %>% 
-          addCircles(color = "red", lat = especie[,2], lng = especie[,1])  %>%  
-          #addMarkers(especie[,1], especie[,2]) %>% 
+                    title = "GLM") %>%
+          addCircles(color = "red", lat = especie[,2], lng = especie[,1])  %>%
+          #addMarkers(especie[,1], especie[,2]) %>%
           addRectangles(
             ext1, ext3, ext2, ext4, color = 'green', fill = FALSE, dashArray = '5,5', weight = 3
           )
         }
         else
         {
-          map = leaflet() %>% addTiles %>%  
-            addRasterImage(r,colors = pal,opacity = 0.8) %>% 
+          map = leaflet() %>% addTiles %>%
+            addRasterImage(r,colors = pal,opacity = 0.8) %>%
             addLegend(pal = pal, values = values(r),
-                      title = "GLM") %>% 
-            addCircles(color = "red", lat = especie[,2], lng = especie[,1])  %>%  
-            #addMarkers(especie[,1], especie[,2]) %>% 
+                      title = "GLM") %>%
+            addCircles(color = "red", lat = especie[,2], lng = especie[,1])  %>%
+            #addMarkers(especie[,1], especie[,2]) %>%
             addRectangles(
               ext1, ext3, ext2, ext4, color = 'green', fill = FALSE, dashArray = '5,5', weight = 3
             )
@@ -1735,7 +1737,7 @@ function(input, output, session) {
         map
       }
     })
-    
+
     output$maparesultadobc <- renderLeaflet({
       input$btnModelar
       if (file.exists(paste0('www/',projeto,'/final/bc_ensemble.tif')))
@@ -1745,34 +1747,34 @@ function(input, output, session) {
         pal <- colorNumeric(c("#FFFFFF","#FDBB84","#31A354"),values(r),na.color = "transparent")
         if (file.exists(paste0('www/',projeto,'/final/proj_ensemble.tif')))
         {
-          map = leaflet() %>% addTiles %>%  
-          addRasterImage(r,colors = pal,opacity = 0.9) %>% 
+          map = leaflet() %>% addTiles %>%
+          addRasterImage(r,colors = pal,opacity = 0.9) %>%
           addRasterImage(rproj,colors = pal,opacity = 0.9) %>%
           addLegend(pal = pal, values = values(r),
-                    title = "BioClim") %>% 
-          addCircles(color = "red", lat = especie[,2], lng = especie[,1])  %>%  
-            #addCircles(color = "red", lat = ~ especie[,1], lng = ~ especie[,2]) %>%  
-          #addMarkers(especie[,1], especie[,2]) %>% 
+                    title = "BioClim") %>%
+          addCircles(color = "red", lat = especie[,2], lng = especie[,1])  %>%
+            #addCircles(color = "red", lat = ~ especie[,1], lng = ~ especie[,2]) %>%
+          #addMarkers(especie[,1], especie[,2]) %>%
           addRectangles(
             ext1, ext3, ext2, ext4, color = 'green', fill = FALSE, dashArray = '5,5', weight = 3
           )
         }else
         {
-          map = leaflet() %>% addTiles %>%  
-            addRasterImage(r,colors = pal,opacity = 0.8) %>% 
+          map = leaflet() %>% addTiles %>%
+            addRasterImage(r,colors = pal,opacity = 0.8) %>%
             addLegend(pal = pal, values = values(r),
-                      title = "BioClim") %>% 
-            addCircles(color = "red", lat = especie[,2], lng = especie[,1])  %>%  
-            #addCircles(color = "red", lat = ~ especie[,1], lng = ~ especie[,2]) %>%  
-            #addMarkers(especie[,1], especie[,2]) %>% 
+                      title = "BioClim") %>%
+            addCircles(color = "red", lat = especie[,2], lng = especie[,1])  %>%
+            #addCircles(color = "red", lat = ~ especie[,1], lng = ~ especie[,2]) %>%
+            #addMarkers(especie[,1], especie[,2]) %>%
             addRectangles(
               ext1, ext3, ext2, ext4, color = 'green', fill = FALSE, dashArray = '5,5', weight = 3
             )
         }
         map
       }
-    })    
-    
+    })
+
     output$maparesultadodo <- renderLeaflet({
       input$btnModelar
       if (file.exists(paste0('www/',projeto,'/final/do_ensemble.tif')))
@@ -1781,33 +1783,33 @@ function(input, output, session) {
         pal <- colorNumeric(c("#FFFFFF","#FDBB84","#31A354"),values(r),na.color = "transparent")
         if (file.exists(paste0('www/',projeto,'/final/proj_ensemble.tif')))
         {
-          map = leaflet() %>% addTiles %>%  
-            addRasterImage(r,colors = pal,opacity = 0.8) %>% 
+          map = leaflet() %>% addTiles %>%
+            addRasterImage(r,colors = pal,opacity = 0.8) %>%
             addRasterImage(rproj,colors = pal,opacity = 0.8) %>%
             addLegend(pal = pal, values = values(r),
-                      title = "BioClim") %>% 
-            addCircles(color = "red", lat = especie[,2], lng = especie[,1])  %>%  
-            #addMarkers(especie[,1], especie[,2]) %>% 
+                      title = "BioClim") %>%
+            addCircles(color = "red", lat = especie[,2], lng = especie[,1])  %>%
+            #addMarkers(especie[,1], especie[,2]) %>%
             addRectangles(
               ext1, ext3, ext2, ext4, color = 'green', fill = FALSE, dashArray = '5,5', weight = 3
             )
         }else
         {
-          map = leaflet() %>% addTiles %>%  
-            addRasterImage(r,colors = pal,opacity = 0.8) %>% 
+          map = leaflet() %>% addTiles %>%
+            addRasterImage(r,colors = pal,opacity = 0.8) %>%
             addLegend(pal = pal, values = values(r),
-                      title = "BioClim") %>% 
-            addCircles(color = "red", lat = especie[,2], lng = especie[,1])  %>%  
-            #addMarkers(especie[,1], especie[,2]) %>% 
+                      title = "BioClim") %>%
+            addCircles(color = "red", lat = especie[,2], lng = especie[,1])  %>%
+            #addMarkers(especie[,1], especie[,2]) %>%
             addRectangles(
               ext1, ext3, ext2, ext4, color = 'green', fill = FALSE, dashArray = '5,5', weight = 3
             )
         }
         map
       }
-    })        
-    
-    
+    })
+
+
     #######################################################
     ## APRESENTO OS ARQUIVOS GERADOS NA PGINA DE DOWNLOAD
     ########################################################
@@ -1820,15 +1822,15 @@ function(input, output, session) {
         )
       })
     })
-    
+
     output$ui <- renderUI({
       lista_jpg <- list.files(paste0("www/",projeto,"/jpg"),full.names=F,pattern=paste0(".jpg"))
       lapply(1:length(order(lista_jpg)), function(i) {
         tags$a(href=paste0(home,projeto,'/jpg/',lista_jpg[i]), tags$img(src = paste0(projeto,'/jpg/',lista_jpg[i]), height = "200px"), target="_blank")
       })
     })
-    
-    
+
+
     output$uiscript <- renderUI({
       lista_txt <- list.files(paste0("www/",projeto,"/"),full.names=F,pattern=paste0("script.R"))
       lapply(1:length(lista_txt), function(i) {
@@ -1837,8 +1839,8 @@ function(input, output, session) {
         )
       })
     })
-    
-    
+
+
     output$uiestatistica <- renderUI({
       lista_txt <- list.files(paste0("www/",projeto,"/models"),full.names=F,pattern=paste0("statsALL.txt"))
       lapply(1:length(lista_txt), function(i) {
@@ -1847,7 +1849,7 @@ function(input, output, session) {
         )
       })
     })
-    
+
     output$uiarquivosdados <- renderUI({
       lista_csv <- list.files(paste0("www/",projeto,"/csv"),full.names=F,pattern=paste0(".csv"))
       lapply(1:length(lista_csv), function(i) {
@@ -1856,43 +1858,43 @@ function(input, output, session) {
         )
       })
     })
-    
-    
+
+
     output$uiarquivosensemble <- renderUI({
       lista_final <- list.files(paste0("www/",projeto,"/final"),full.names=F,pattern=paste0(".tif"))
       lapply(1:length(sort(lista_final)), function(i) {
         tags$div(
           tags$a(href=paste0(home,projeto,'/final/',lista_final[i]), paste0(lista_final[i]), target="_blank")
         )
-      })    
+      })
     })
-    
-    
+
+
     output$uiarquivosprojecao <- renderUI({
       lista_proj <- list.files(paste0("www/",projeto,"/proj"),full.names=F,pattern=paste0(".tif"))
       lapply(1:length(sort(lista_proj)), function(i) {
         tags$div(
           tags$a(href=paste0(home,projeto,'/proj/',lista_proj[i]), paste0(lista_proj[i]), target="_blank")
         )
-      })    
+      })
     })
-    
+
     output$uiarquivosprojecaofuturo <- renderUI({
       lista_futuro <- list.files(paste0("www/",projeto,"futuro"),full.names=F,pattern=paste0(".tif"))
-      
+
       lapply(1:length(sort(lista_futuro)), function(i) {
         tags$div(
           tags$a(href=paste0(home,projeto,'/futuro/',lista_futuro[i]), paste0(lista_futuro[i]), target="_blank")
         )
-      })    
+      })
     })
-    
-  })  
+
+  })
 
   ##############################
   # FIM FUNCAO MODELAGEM
   ##############################
-  
+
   # FUNCAO TENTANDO AGRUPAR TODOS OS PROCESSOS DE MODELAGEM APOS CLICAR NO BOTao EXECUTAR
   output$plotmodelagem <- renderPlot({
     input$btnModelar
@@ -1911,10 +1913,10 @@ function(input, output, session) {
       }
     }
     })
-  })  
-  
+  })
+
   output$mapapontosextend <- renderLeaflet({
-    
+
     if (!is.null(especie))
     {
       ext1 <<- input$edtextend1
@@ -1937,15 +1939,15 @@ function(input, output, session) {
       ext32 <<- input$edtextend32
       ext22 <<- input$edtextend22
       ext42 <<- input$edtextend42
-      map = leaflet() %>% addTiles %>%  
+      map = leaflet() %>% addTiles %>%
         addRectangles(
           input$edtextend12, input$edtextend32, input$edtextend22, input$edtextend42, color = 'green', fill = TRUE, dashArray = '5,5', weight = 3
         )
       map
     }
   })
-  
-  
+
+
   output$mapaabiotico <- renderPlot({
     input$btnAtualizaSelecaoVariaveis
     withProgress(message = '', value = 0, {
@@ -1976,7 +1978,7 @@ function(input, output, session) {
         arquivo <- c(arquivo,paste(path,'/bio4.bil',sep=''))
         selecionado = TRUE
       }
-      
+
       if (input$Bio5==TRUE) {
         arquivo <- c(arquivo,paste(path,'/bio5.bil',sep=''))
         selecionado = TRUE
@@ -2005,7 +2007,7 @@ function(input, output, session) {
         arquivo <- c(arquivo,paste(path,'/bio11.bil',sep=''))
         selecionado = TRUE
       }
-      
+
       if (input$Bio12==TRUE) {
         arquivo <- c(arquivo,paste(path,'/bio12.bil',sep=''))
         selecionado = TRUE
@@ -2038,7 +2040,7 @@ function(input, output, session) {
         arquivo <- c(arquivo,paste(path,'/bio19.bil',sep=''))
         selecionado = TRUE
       }
-      
+
 
       #############################################################################
       # SE FOI ESCOLHIDO ALGUM PERÃODO DIFERENTE DO CURRENT ENTAO PROJETO O FUTURO
@@ -2057,7 +2059,7 @@ function(input, output, session) {
       if (input$Bio4==TRUE) {
         arquivofuturo <- c(arquivofuturo,paste(pathfuturo,'/bio4.bil',sep=''))
       }
-      
+
       if (input$Bio5==TRUE) {
         arquivofuturo <- c(arquivofuturo,paste(pathfuturo,'/bio5.bil',sep=''))
       }
@@ -2079,7 +2081,7 @@ function(input, output, session) {
       if (input$Bio11==TRUE) {
         arquivofuturo <- c(arquivofuturo,paste(pathfuturo,'/bio11.bil',sep=''))
       }
-      
+
       if (input$Bio12==TRUE) {
         arquivofuturo <- c(arquivofuturo,paste(pathfuturo,'/bio12.bil',sep=''))
       }
@@ -2104,9 +2106,9 @@ function(input, output, session) {
       if (input$Bio19==TRUE) {
         arquivofuturo <- c(arquivofuturo,paste(pathfuturo,'/bio19.bil',sep=''))
       }
-      }  # IF CURRENT 
+      }  # IF CURRENT
       }
-      
+
       # BIOORACLE
       if (input$tipodadoabiotico=='BIOORACLE')
       {
@@ -2118,7 +2120,7 @@ function(input, output, session) {
       arquivo = list()
       arquivofuturo = list()
       selecionado = FALSE
-      
+
       if (input$calcite==TRUE) {
         arquivo <- c(arquivo,paste(path,'/calcite.asc',sep=''))
         selecionado = TRUE
@@ -2211,7 +2213,7 @@ function(input, output, session) {
         arquivo <- c(arquivo,paste(path,'/sstmean.asc',sep=''))
         selecionado = TRUE
       }
-      
+
       #############################################################################
       # SE FOI ESCOLHIDO ALGUM PERÃODO DIFERENTE DO CURRENT ENTAO PROJETO O FUTURO
       #############################################################################
@@ -2286,11 +2288,11 @@ function(input, output, session) {
         if (input$sstmean==TRUE) {
           arquivofuturo <- c(arquivofuturo,paste(pathfuturo,'/sstmean.asc',sep=''))
         }
-      }  # IF CURRENT 
-      
+      }  # IF CURRENT
+
       } # VAR BIOORACLE
-      
-      
+
+
       if (input$tipodadoabiotico=='Others')
       {
         path <- paste(getwd(),'/ex/outros/',sep='')
@@ -2312,16 +2314,16 @@ function(input, output, session) {
           selecionado = TRUE
           # //}
         }
-        
-        
+
+
       }
-      
-      
+
+
 
       incProgress(2/n, detail = paste0("Verificando correlacao"))
-      
+
       arquivo2 <<- arquivo
-      arquivo3 = arquivo    
+      arquivo3 = arquivo
       cat(paste("Checando... ",'\n'))
       if (length(arquivo)>0)
       {
@@ -2329,12 +2331,12 @@ function(input, output, session) {
         {
           predictors <- stack(arquivo)
           predictors3 = stack(arquivo3)
-          
-          
+
+
           if (input$tipodadoabiotico!='Others')
           {
             cat(paste("Estou aqui 1 ",'\n'))
-          
+
           if (input$periodo != 'current')
           {
             predictorsfuturo = stack(arquivofuturo)
@@ -2346,14 +2348,14 @@ function(input, output, session) {
           }
           ext <<- extent(ext1, ext2, ext3, ext4)
           ext2 = extent(ext12, ext22, ext32, ext42)
-          pred_nf <<- crop(predictors, ext)  
-          pred_nf2 <<-  crop(predictors3, ext2) 
-          
-          
+          pred_nf <<- crop(predictors, ext)
+          pred_nf2 <<-  crop(predictors3, ext2)
+
+
           if (input$tipodadoabiotico!='Others')
           {
             #cat(paste("Estou aqui 2 ",'\n'))
-            
+
           if (input$periodo != 'current')
           {
             pred_nffuturo <<- crop(predictorsfuturo,ext)
@@ -2363,20 +2365,20 @@ function(input, output, session) {
             pred_nffuturo <<- crop(predictorsfuturo,ext)
           }
           }
-          
+
           presvals <<- extract(pred_nf, especie)
           plot(pred_nf)
           cat(paste("Estou aqui 3 ",'\n'))
-          
+
           ############################################
           ## APRESENTO A CORRELAO ENTRE AS VARIaVEIS
           ############################################
-          
+
           backgr <- randomPoints(pred_nf, 300)
-          
+
           ## Determina os nomes da colunas de coordenadas para os pontos de background
           colnames(backgr) = c('Longitude', 'Latitude')
-          
+
           ## Extraindo os valores das vari?veis onde h? pseudoaus?ncias
           absvals <- extract(pred_nf, backgr)
 
@@ -2394,29 +2396,29 @@ function(input, output, session) {
           else
           {
             output$grafico_correlacao <- renderPlot({
-              plot(0, 0)  
+              plot(0, 0)
             })
           }
         }
 
       }
-      
+
     }) #FIM ISOLATE
       incProgress(3/n, detail = paste0("Plotando..."))
-    
+
     }
     )
   })
-  
 
-  
+
+
   datasetInput <- reactive({
     if (exists("especie"))
     {
       switch('especie',
              "especie" = especie)
     }
-    
+
   })
 
   output$dgbriddadosdatacleaning = renderDataTable({
@@ -2425,20 +2427,20 @@ function(input, output, session) {
     input$btnbuscarespecieCSV
     input$btnbuscarespeciejabot
     input$btnbuscarespecie
-    
+
   if (is.null(especie))
   {
-   n <- 0  
+   n <- 0
   }
   n <- nrow(especie)
   if (n>0)
   {
-    
+
     if (exists("especie"))
     {
       if (input$btneliminarduplicatas > 0)
       {
-        progress <- shiny::Progress$new()  
+        progress <- shiny::Progress$new()
         progress$set(message = "Excluindo duplicatas...", value = 0)
         # Close the progress when this reactive exits (even if there's an error)
         on.exit(progress$close())
@@ -2459,20 +2461,20 @@ function(input, output, session) {
       especie
     }
   } #IF
-  
+
   }
   , options = list(searching = FALSE,lengthMenu = c(5, 30, 50), pageLength = 5)
-  )  
+  )
 
-    
+
   output$mapadistribuicaodatacleaning <- renderLeaflet({
-    
+
     #input$btnAtualizaMapaDataCleaning
     input$btnapagar
     input$btneliminarduplicatas
     input$btnbuscarespecieCSV
     input$btnbuscarespeciejabot
-    input$btnbuscarespecie    
+    input$btnbuscarespecie
     if (!is.null(especie))
     {
       if (exists("especie"))
@@ -2480,8 +2482,8 @@ function(input, output, session) {
       rownames(especie) <- NULL
       especie$id = 1:nrow(especie)
       #%>% setView(lng = -31.5, lat = -13.4, zoom = 3)
-#      map = leaflet(especie) %>% addTiles  %>% addCircles(color = "red", lat = ~ Latitude, lng = ~ Longitude)  %>% addMarkers(especie[,1], especie[,2]) %>% addMarkers(especie[,1], especie[,2],popup =~paste('<b><a onclick="document.getElementById(\'edtelemento\').value=',especie[,3],'">ID: ',especie[,3],'</a>') ) 
-      map = leaflet(especie) %>% addTiles %>% addCircles(color = "red", lat = ~ Latitude, lng = ~ Longitude) %>% addMarkers(clusterOptions = markerClusterOptions())  %>% addMarkers(~Longitude,~Latitude,popup = ~as.character(id) ) 
+#      map = leaflet(especie) %>% addTiles  %>% addCircles(color = "red", lat = ~ Latitude, lng = ~ Longitude)  %>% addMarkers(especie[,1], especie[,2]) %>% addMarkers(especie[,1], especie[,2],popup =~paste('<b><a onclick="document.getElementById(\'edtelemento\').value=',especie[,3],'">ID: ',especie[,3],'</a>') )
+      map = leaflet(especie) %>% addTiles %>% addCircles(color = "red", lat = ~ Latitude, lng = ~ Longitude) %>% addMarkers(clusterOptions = markerClusterOptions())  %>% addMarkers(~Longitude,~Latitude,popup = ~as.character(id) )
       map
     }
     }
@@ -2492,9 +2494,9 @@ function(input, output, session) {
         "Inform occurrence data",
         easyClose = TRUE
       ))
-      
+
     }
-  })  
+  })
 
   pegaDadosCSV <- eventReactive(input$btnbuscarespecieCSV, {
     ETAPA <<- 1
@@ -2502,12 +2504,12 @@ function(input, output, session) {
     if (is.null(inFile))
     {
       return(NULL)
-    } 
+    }
     else
     {
-      especie<<- read.csv(inFile$datapath, header=input$header, sep=input$sep, 
+      especie<<- read.csv(inFile$datapath, header=input$header, sep=input$sep,
                           quote=input$quote)
-      
+
       arquivo_path <<- inFile$datapath
       arquivo_header <<- input$header
       arquivo_sep <<- input$sep
@@ -2515,34 +2517,34 @@ function(input, output, session) {
       especie <<- especie[,2:3]
     }
   })
-  
-  
+
+
   pegaDadosGBif <- eventReactive(input$btnbuscarespecie, {
     ETAPA <<- 1
     spname <<-input$edtespecie
     key <- name_backbone(name=input$edtespecie)$speciesKey
     especie <<- occ_search(taxonKey=key, return='data', limit=1000)
     especie <<- subset(especie, !is.na(decimalLongitude) & !is.na(decimalLatitude))
-    especie <<- especie[, c(4,3)]    
+    especie <<- especie[, c(4,3)]
     names(especie)<<-c("Longitude", "Latitude")
     dados <- especie
     especie
   })
-  
+
   pegaDadosJabot <- eventReactive(input$btnbuscarespeciejabot, {
     ETAPA <<- 1
     especie <<- getOcorrencia(input$edtespeciejabot)
     especie
   })
-  
-  
+
+
   output$dgbriddados <- renderDataTable({
     ETAPA <<- 1
     progress <- shiny::Progress$new()
     progress$set(message = "Localizando dados...", value = 0)
     # Close the progress when this reactive exits (even if there's an error)
     on.exit(progress$close())
-    
+
     if(input$tipodado=="csv")
     {
       pegaDadosCSV()
@@ -2559,26 +2561,26 @@ function(input, output, session) {
       }
     }
   }, options = list(lengthMenu = c(5, 30, 50), pageLength = 5)
-  )  
-  
+  )
+
 #########################################
 ## DOWNLOADS
 #########################################
 
 output$downloadData <- downloadHandler(
-  
+
   # This function returns a string which tells the client
   # browser what name to use when saving the file.
   filename = function() {
     paste('especie2', 'csv', sep = ".")
 #    paste('Script', 'R', sep = ".")
   },
-  
+
   # This function should write data to a file given to it by
   # the argument 'file'.
   content = function(file) {
 #    file.copy('Script.R', file, overwrite = TRUE)
-    
+
     # Write to a file specified by the 'file' argument
     write.table(especie, file, sep = ';', row.names = FALSE)
   }
@@ -2594,38 +2596,38 @@ output$downloadscript <- downloadHandler(
 )
 
   output$mapadistribuicao <- renderLeaflet({
-    
+
     progress <- shiny::Progress$new()
     progress$set(message = "Atualizando o mapa...", value = 0)
     # Close the progress when this reactive exits (even if there's an error)
     on.exit(progress$close())
-    
+
     input$btnbuscarespecieCSV
     input$btnbuscarespecie
     input$btnbuscarespeciejabot
-    
+
     if (!is.null(especie))
     {
       if(input$tipodado=="gbif")
       {
         map = leaflet(especie) %>% addTiles  %>% addCircles(color = "red", lat = ~ Latitude, lng = ~ Longitude) %>% addMarkers(clusterOptions = markerClusterOptions()) %>% setView(lng = -31.5, lat = -13.4, zoom = 3)
-        #%>% addMarkers(especie[,1], especie[,2])  
+        #%>% addMarkers(especie[,1], especie[,2])
       }
       else
       {
         if(input$tipodado=="csv")
         {
           map = leaflet(especie) %>% addTiles  %>% addCircles(color = "red", lat = ~ Latitude, lng = ~ Longitude) %>%
-            setView(lng = -31.5, lat = -13.4, zoom = 1) 
-          #%>% addMarkers(especie[,1], especie[,2])  
+            setView(lng = -31.5, lat = -13.4, zoom = 1)
+          #%>% addMarkers(especie[,1], especie[,2])
         }
         else
         {
           if(input$tipodado=="jabot")
           {
             map = leaflet(especie) %>% addTiles  %>% addCircles(color = "red", lat = ~ Latitude, lng = ~ Longitude) %>%
-              setView(lng = -31.5, lat = -13.4, zoom = 1) 
-            #%>% addMarkers(especie[,1], especie[,2])  
+              setView(lng = -31.5, lat = -13.4, zoom = 1)
+            #%>% addMarkers(especie[,1], especie[,2])
           }
         }
       }
@@ -2638,32 +2640,32 @@ output$downloadscript <- downloadHandler(
       "Inform occurrence data",
       easyClose = TRUE
     ))
-    
+
   }
 #    map
-  })  
-  
-  
+  })
 
-  
-	obs <- observe({   
-	   
+
+
+
+	obs <- observe({
+
 	isolate({ projeto <<- paste0('projeto/',input$edtprojeto)
 	  ARQUIVO_SAIDA <<- paste0("www/",projeto,"/script.R")
-	
+
 	})
 	if (input$btnconsultarprojeto>0)
 	{
 	  ## COLOCO AQUI TODAS AS FUNÇÃO PARA LISTAR OS DADOS DO PROJETO CONSULTADO
 	  ## PRECISO FAZER UMA FUNÇÃO PARA NÃO FICAR DUPLICANDO ISSO
-	  
+
 	  projeto <<- paste0('projeto/',input$edtprojeto)
-	  
+
 	  output$dbgridresultado <- renderDataTable({
 	    read.table(paste0("./www/",projeto,"/models/statsALL.txt"))
 	  }, options = list(lengthMenu = c(5, 30, 50), pageLength = 10)
-	  )  
-	  
+	  )
+
 	    output$ui <- renderUI({
 	    lista_jpg <- list.files(paste0("www/",projeto,"/jpg"),full.names=F,pattern=paste0(".jpg"))
 	    lapply(1:length(order(lista_jpg)), function(i) {
@@ -2675,11 +2677,11 @@ output$downloadscript <- downloadHandler(
 	      lista_modelsfinal <- list.files(paste0("www/",projeto,"/final"),full.names=F,pattern=paste0(".png"))
 	      lapply(1:length(sort(lista_modelsfinal)), function(i) {
 	        tags$a(href=paste0(home,projeto,'/final/',lista_modelsfinal[i]), tags$img(src = paste0(projeto,'/final/',lista_modelsfinal[i]), height = "200px"), target="_blank")
-	        
+
 	      })
 	    })
-	    
-	    
+
+
 	    output$uiarquivosmodelos <- renderUI({
 	      lista_models <- list.files(paste0("www/",projeto,"/models"),full.names=F,pattern=paste0("pre_"))
 	      lapply(1:length(sort(lista_models)), function(i) {
@@ -2688,17 +2690,17 @@ output$downloadscript <- downloadHandler(
 	        )
 	      })
 	    })
-	    
-	    
-	    
+
+
+
 	    output$ui <- renderUI({
 	      lista_jpg <- list.files(paste0("www/",projeto,"/jpg"),full.names=F,pattern=paste0(".jpg"))
 	      lapply(1:length(order(lista_jpg)), function(i) {
 	        tags$a(href=paste0(home,projeto,'/jpg/',lista_jpg[i]), tags$img(src = paste0(projeto,'/jpg/',lista_jpg[i]), height = "200px"), target="_blank")
 	      })
 	    })
-	    
-	    
+
+
 	    output$uiscript <- renderUI({
 	      lista_txt <- list.files(paste0("www/",projeto,"/"),full.names=F,pattern=paste0("Script.R"))
 	      lapply(1:length(lista_txt), function(i) {
@@ -2707,8 +2709,8 @@ output$downloadscript <- downloadHandler(
 	        )
 	      })
 	    })
-	    
-	    
+
+
 	    output$uiestatistica <- renderUI({
 	      lista_txt <- list.files(paste0("www/",projeto,"/models"),full.names=F,pattern=paste0("statsALL.txt"))
 	      lapply(1:length(lista_txt), function(i) {
@@ -2717,7 +2719,7 @@ output$downloadscript <- downloadHandler(
 	        )
 	      })
 	    })
-	    
+
 	    output$uiarquivosdados <- renderUI({
 	      lista_csv <- list.files(paste0("www/",projeto,"/csv"),full.names=F,pattern=paste0(".csv"))
 	      lapply(1:length(lista_csv), function(i) {
@@ -2726,50 +2728,50 @@ output$downloadscript <- downloadHandler(
 	        )
 	      })
 	    })
-	    
-	    
+
+
 	    output$uiarquivosensemble <- renderUI({
 	      lista_final <- list.files(paste0("www/",projeto,"/final"),full.names=F,pattern=paste0(".tif"))
 	      lapply(1:length(sort(lista_final)), function(i) {
 	        tags$div(
 	          tags$a(href=paste0(home,projeto,'/final/',lista_final[i]), paste0(lista_final[i]), target="_blank")
 	        )
-	      })    
+	      })
 	    })
-	    
-	    
+
+
 	    output$uiarquivosprojecao <- renderUI({
 	      lista_proj <- list.files(paste0("www/",projeto,"/proj"),full.names=F,pattern=paste0(".tif"))
 	      lapply(1:length(sort(lista_proj)), function(i) {
 	        tags$div(
 	          tags$a(href=paste0(home,projeto,'/proj/',lista_proj[i]), paste0(lista_proj[i]), target="_blank")
 	        )
-	      })    
+	      })
 	    })
-	    
+
 	    output$uiarquivosprojecaofuturo <- renderUI({
 	      lista_futuro <- list.files(paste0("www/",projeto,"futuro"),full.names=F,pattern=paste0(".tif"))
-	      
+
 	      lapply(1:length(sort(lista_futuro)), function(i) {
 	        tags$div(
 	          tags$a(href=paste0(home,projeto,'/futuro/',lista_futuro[i]), paste0(lista_futuro[i]), target="_blank")
 	        )
-	      })    
+	      })
 	    })
 
 	}
 
 	if (input$btncriarprojeto>0)
 	{
-	  
+
 	  unlink(paste0("www/",projeto), recursive=TRUE)
 	  cat(projeto, '\n', file = 'teste.txt', append = TRUE)
-	  
+
 	  if (projeto!='projeto/')
 	  {
 	  withProgress(message = '', value = 0, {
 	   n <- 6
-	  
+
 		mkdirs(paste0("www/",projeto))
 		mkdirs(paste0("www/",projeto,'/csv'))
 		incProgress(1/n, detail = paste0("Criando pasta ",projeto))
@@ -2790,26 +2792,26 @@ output$downloadscript <- downloadHandler(
 		incProgress(6/n, detail = paste0("Criando pasta ",projeto,"/proj"))
 		Sys.sleep(0.6)
 	  }) # progress
-	    
+
 	    showModal(modalDialog(
 	      title = "Atenção!",
 	      paste0("Project succesfully created!"," Project directory: ", projeto) ,
 	      easyClose = TRUE
 	    ))
-	    
-	    
+
+
 
 	  }
-	  
-	   
-	  
-	  
-	  
+
+
+
+
+
 	}
-	  
-	 
-	  
-	  
+
+
+
+
   })
 
   mkdirs <- function(fp) {
@@ -2817,6 +2819,6 @@ output$downloadscript <- downloadHandler(
         mkdirs(dirname(fp))
 		    dir.create(fp, showWarnings = FALSE, recursive = FALSE, mode = "777")
     }
-  } 
+  }
 
 }
