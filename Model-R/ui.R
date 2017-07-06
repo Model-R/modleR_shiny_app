@@ -1,10 +1,11 @@
 library(shinydashboard)
 library(leaflet)
 
+
 vars <- c(
   "GBif - The Global Biodiversity Information Facility" = "gbif",
   "Jabot - Banco de dados JBRJ" = "jabot",
-  "CSV - Separados por Virgula" = "csv"
+  "CSV - Comma Separated Values" = "csv"
 )
 
 varabiotico <- c(
@@ -72,19 +73,19 @@ body <- dashboardBody(
            tabBox(
              title = "Steps",width = NULL,height= "1000px",
              # The id lets us use input$tabset1 on the server to find the current tab
-             id = "tabset1", 
+             id = "tabset1",
              tabPanel("Biotic data",  column(width = 12,
-                                     
+
                                      tabBox(side = "right",selected = "Project",
                                        title = "",width = NULL,height= "600px",
-                                       
+
                                        # The id lets us use input$tabset1 on the server to find the current tab
-                                       id = "tabset1", 
-									   
+                                       id = "tabset1",
+
                                        tabPanel("Occurrence", column(width = 12,
                                                                              box(width = NULL, solidHeader = TRUE,
                                                                                  leafletOutput('mapadistribuicao'), height = 500)
-                                                                             
+
                                          )
                                       ),
                                       tabPanel("Source", column(width = 9,
@@ -92,17 +93,17 @@ body <- dashboardBody(
                                                                          dataTableOutput('dgbriddados')
                                                                      )
                                       ),
-                                      
-                                      
+
+
                                       column(width = 3,
                                              box(width = NULL, status = "warning",
                                                  selectInput("tipodado", "Source", vars),
                                                  conditionalPanel("input.tipodado == 'csv' ",
                                                                   helpText('Formato: [Espécie,Longitude,Latitude]'),
-                                                                  
+
                                                                   fileInput('file1', '',
-                                                                            accept=c('text/csv', 
-                                                                                     'text/comma-separated-values,text/plain', 
+                                                                            accept=c('text/csv',
+                                                                                     'text/comma-separated-values,text/plain',
                                                                                      '.csv')),
                                                                   checkboxInput('header', 'Header', TRUE),
                                                                   radioButtons('sep', 'Separator',
@@ -116,28 +117,28 @@ body <- dashboardBody(
                                                                                  'Simple'="'"),
                                                                                '"', inline = TRUE),
                                                                   actionButton("btnbuscarespecieCSV", "Viewer",icon = icon("search"))
-                                                                  
+
                                                  ),
                                                  conditionalPanel("input.tipodado == 'jabot' ",
                                                                   helpText('Name of species.'),
                                                                   textInput("edtespeciejabot", label = "Species", value = ""),
                                                                   actionButton("btnbuscarespeciejabot", "Search", icon = icon("search"))
-                                                                  
+
                                                  ),
                                                  conditionalPanel("input.tipodado == 'gbif' ",
                                                                   helpText('Name of species.'),
                                                                   textInput("edtespecie", label = "Species", value = ""),
                                                                   actionButton("btnbuscarespecie", "Search", icon = icon("search"))
-                                                                  
+
                                                  )
                                              )
-                                             
+
                                       )
-                                      
-                                      
-                                      
-                                      
-                                      
+
+
+
+
+
                                       ),
 									  tabPanel("Project", column(width = 9,id="idprojeto",
                                                                      box(width = NULL,
@@ -146,12 +147,12 @@ body <- dashboardBody(
 																		 actionButton("btnconsultarprojeto", "Search project",icon = icon("search"))
                                                                      )
                                       ),
-																		 
-																		 
-																		 
+
+
+
 																		 column(width = 3,
 																		        box(width = NULL, helpText('Projects'),
-																		            
+
 																		            if (length(list.files("./www/projeto/",full.names=F,pattern=paste0("."))>0))
 																		            {
 																		              lista_outros <- list.files("./www/projeto/",full.names=F,pattern=paste0("."))
@@ -164,79 +165,79 @@ body <- dashboardBody(
 																		                #checkboxInput( paste0('chboxoutro',i), lista_outros[i] , value = FALSE)
 																		              })
 																		            }
-																		            
-																		            
-																		            
+
+
+
 																		        )
 																		 )
-																		 
-																		 
-																		 
-																		 
-																		 
-																		 
-																		 
+
+
+
+
+
+
+
 									  )
                                       )
                                       )
-                                     
-                                      
-                                      
-                                      
-                                      
-                                      
-                                      
+
+
+
+
+
+
+
                                       ),
-                                      
-                                    
-             
-             tabPanel("Data Cleaning", 
-                      
+
+
+
+             tabPanel("Data Cleaning",
+
                       column(width = 6,
                              box(width = NULL, solidHeader = TRUE,
                                  leafletOutput('mapadistribuicaodatacleaning', height = 500)
                              )
                       ),
-                      
+
                       column(width = 6,
                              box(width = NULL, status = "warning",
                                  numericInput("edtelemento", "ID:", min = 0, max = 100, value = 0),
-                                 
+
                                  actionButton("btnapagar", "Delete",icon = icon("trash")),
                                  actionButton('btneliminarduplicatas', 'Delete duplicates',icon = icon("cubes")),
                                  downloadButton('downloadData', 'Download')
                                  ),
-                             
+
                              box(width = NULL,
                                  dataTableOutput('dgbriddadosdatacleaning')
                              )
                       )
              ) ,
 
-             
-             
-             
-             tabPanel("Abiotic data", 
+
+
+
+             tabPanel("Abiotic data",
                       column(width = 12,
-                             
+
                              tabBox(side = "right",
                                     title = "",width = NULL,height= "600px",selected = "Creating extension",
                                     # The id lets us use input$tabset1 on the server to find the current tab
-                                    id = "tabset1", 
-                                    
-                                    
+                                    id = "tabset1",
+
+
                                     tabPanel("Abiotic data", column(width = 8,
-                                                                       
+
                                                                        tabBox(side = "left",
                                                                               title = "",width = NULL,height= "600px",
                                                                               # The id lets us use input$tabset1 on the server to find the current tab
-                                                                              id = "tabset1", 
-                                                                              
+                                                                              id = "tabset1",
+
                                                                               tabPanel("Selected variable", column(width = 12,
                                                                                                              box(width = NULL, solidHeader = TRUE,
                                                                                                                  plotOutput(outputId = "mapaabiotico", height = "400px")
                                                                                                                  )
-                                                                                                             
+
                                                                               )
                                                                               ),
                                                                               tabPanel("Correlation variables", column(width = 9,
@@ -247,18 +248,18 @@ body <- dashboardBody(
                                                                               )
                                                                               )
                                                                        )
-                                                                       
-                                                                       
-                                                                       
-                                                                       
-                                                                       
-                                                                      
-                                                                      
+
+
+
+
+
+
+
                                     ),
                                     column(width = 4,
                                            box(width = NULL, status = "warning",
-                                               actionButton("btnAtualizaSelecaoVariaveis", "Run with selected"),
-                                               
+                                               actionButton("btnAtualizaSelecaoVariaveis", "Update selected"),
+
                                                selectInput("tipodadoabiotico", "Abiotics data", varabiotico),
                                                conditionalPanel("input.tipodadoabiotico == 'BIOORACLE' ",
                                                                 selectInput("periodobiooracle", "Period", periodobiooracle),
@@ -281,16 +282,16 @@ body <- dashboardBody(
                                                                 checkboxInput('sstrange', 'sstrange', value = FALSE),
                                                                 checkboxInput('chlomean', 'chlomean', value = FALSE),
                                                                 checkboxInput('cloudmax', 'cloudmax', value = FALSE),
-                                                                checkboxInput('damax', 'damax', value = FALSE),                                                  
-                                                                checkboxInput('dissox', 'dissox', value = FALSE),                                                  
-                                                                checkboxInput('parmean', 'parmean', value = FALSE),                                                  
-                                                                checkboxInput('salinity', 'salinity', value = FALSE),                                                  
-                                                                checkboxInput('sstmean', 'sstmean', value = FALSE)                                                  
+                                                                checkboxInput('damax', 'damax', value = FALSE),
+                                                                checkboxInput('dissox', 'dissox', value = FALSE),
+                                                                checkboxInput('parmean', 'parmean', value = FALSE),
+                                                                checkboxInput('salinity', 'salinity', value = FALSE),
+                                                                checkboxInput('sstmean', 'sstmean', value = FALSE)
                                                ),
                                                conditionalPanel("input.tipodadoabiotico == 'CLIMA' ",
                                                                 selectInput("periodo", "Period", periodo),
-                                                                selectInput("resolucao", "Resolution", resolucao),
-                                                                
+                                                                selectInput("resolucao", "Resolution", resolucao, selected = "10min"),
+
                                                                 checkboxInput('Bio1', 'BIO1 Annual Mean Temperature', value = FALSE),
                                                                 checkboxInput('Bio2', 'BIO2 Mean Diurnal Range (Mean of monthly)', value = FALSE),
                                                                 checkboxInput('Bio3', 'BIO3 Isothermality', value = FALSE),
@@ -342,17 +343,17 @@ body <- dashboardBody(
                                               #                              'grd',
                                               #                              'asc'
                                               #                            )
-                                              #                  ) 
-                                                                
+                                              #                  )
+
                                               # )
-                                               
+
                                            )
                                     )),
-                                    
-                                    
-                                    
-                                    
-                                    tabPanel("Projecion extension", column(width = 8,
+
+
+
+
+                                    tabPanel("Projection extension", column(width = 8,
                                                                          box(width = NULL, solidHeader = TRUE,
                                                                              leafletOutput('mapapontosextend2', height = 500)
                                                                          )
@@ -360,25 +361,25 @@ body <- dashboardBody(
                                     column(width = 4,
                                            box(width = NULL, solidHeader = TRUE,
                                                box(width = NULL, status = "warning",
-                                                   sliderInput("edtextend12", "Longitude left:",
+                                                   numericInput("edtextend12", "Longitude left:",
                                                                min = -180, max = 180, value = -90, step = 1),
-                                                   sliderInput("edtextend22", "Longitude right:",
+                                                   numericInput("edtextend22", "Longitude right:",
                                                                min = -180, max = 180, value = -32, step = 1),
-                                                   sliderInput("edtextend42", "Latitude higher:",
+                                                   numericInput("edtextend42", "Latitude higher:",
                                                                min = -90, max = 90, value = 23, step = 1),
-                                                   sliderInput("edtextend32", "Latitude lower:",
+                                                   numericInput("edtextend32", "Latitude lower:",
                                                                min = -90, max = 90, value = -33, step = 1)
-                                                   
+
                                                )
-                                               
-                                               
+
+
                                            )
                                     )
-                                    
+
                                     ),
-                                    
-                                    
-                                    
+
+
+
                                     tabPanel("Creating extension", column(width = 8,
                                                                         box(width = NULL, solidHeader = TRUE,
                                                                             leafletOutput('mapapontosextend', height = 500)
@@ -387,55 +388,55 @@ body <- dashboardBody(
                                     column(width = 4,
                                            box(width = NULL, solidHeader = TRUE,
                                                box(width = NULL, status = "warning",
-                                                   sliderInput("edtextend1", "Longitude left:",
+                                                   numericInput("edtextend1", "Longitude left:",
                                                                min = -180, max = 180, value = -90, step = 1),
-                                                   sliderInput("edtextend2", "Longitude right:",
+                                                   numericInput("edtextend2", "Longitude right:",
                                                                min = -180, max = 180, value = -32, step = 1),
-                                                   sliderInput("edtextend4", "Latitude higher:",
+                                                   numericInput("edtextend4", "Latitude higher:",
                                                                min = -90, max = 90, value = 23, step = 1),
-                                                   sliderInput("edtextend3", "Latitude lower:",
+                                                   numericInput("edtextend3", "Latitude lower:",
                                                                min = -90, max = 90, value = -33, step = 1)
                                                )
-                                               
-                                               
+
+
                                            )
                                     )
-                                    
+
                                     )
-                                    
-                                    
-                                    
-                                    
-                                    
-                                    
+
+
+
+
+
+
                              )
                       )
-                      
-             ) ,             
-             
-             
-             
-             
-             
-             
-             
-             
-             
-             
-             
-             
-             
-             
-             tabPanel("Modeling", 
-                      
+
+             ) ,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+             tabPanel("Modeling",
+
                       column(width = 6,
                              tabBox(side = "left",
                                     title = "",width = NULL, height = 500,
                                     # The id lets us use input$tabset1 on the server to find the current tab
-                                    id = "tabset2", 
+                                    id = "tabset2",
                                     tabPanel("BC", column(width = 12,
                                                                   leafletOutput('maparesultadobc', height = 500)
-                                                                  
+
                                       )
                                     ),
                                     tabPanel("MH", column(width = 12,
@@ -472,7 +473,7 @@ body <- dashboardBody(
                                     #                       leafletOutput('maparesultadoessemble', height = 500),
                                     #                       #plotOutput(outputId = "pontosmodelagem", height = "1px",width = "500px"),
                                     #                       plotOutput(outputId = "plotesemble")
-                                    #                       
+                                    #
                                     #)
                                     #)
                              ),
@@ -480,25 +481,25 @@ body <- dashboardBody(
                       ),
                       column(width = 3,
                              box(width = NULL, status = "warning",
-                                 
-                                 selectInput("dataset", "Partitioning type", 
+
+                                 selectInput("dataset", "Partitioning type",
                                              choices = c("KFold", "Bootstrap")),
                                  sliderInput("edtnumgrupo", "No. of partitions:",
                                              min = 1, max = 50, value = 3, step = 1),
                                  sliderInput("edtnumpontos", "No. of points (Pseudo absence):",
                                              min = 100, max = 2000, value = 1000, step = 100),
-                                 
+
                                  sliderInput("edtextf", "Buffer:",
                                              min = 1, max = 2, value = 1.25, step = 0.05)
                                  #h4("Modelos"),
-                                 
-                                 
+
+
                              )
 
                       )
                       ,
                       column(width = 3,
-                             
+
                              box(width = NULL, status = "warning",
                                  h4("Algorithms"),
                                  checkboxInput('BIOCLIM', 'Bioclim', value = FALSE),
@@ -513,23 +514,23 @@ body <- dashboardBody(
                                  #h4("Gerar modelos"),
                                  #checkboxInput('BINARIO', 'Binario', value = TRUE),
                                  #checkboxInput('ENSEMBLE', 'Ensemble', value = TRUE),
-                                 #sliderInput("TSS", "TSS:", 
+                                 #sliderInput("TSS", "TSS:",
                                  #             min = 0, max = 1, value = 0.2, step= 0.1)
-                                 
+
                              ),
                              box(width = NULL, status = "warning",
                                  actionButton("btnModelar", "Run",icon = icon("cogs"))
-                                 
+
                              )
-                             
+
                       )
-                      
-                      
+
+
                       ),
 									  #,
              #tabPanel("Resultado",
             #          box(width = NULL,
-						  
+
                           #dataTableOutput('dbgridresultado')
             #          )
 #             ),
@@ -539,17 +540,17 @@ body <- dashboardBody(
                                  tabBox(side = "left",
                                         title = "",width = '100%',height = 500,
                                         # The id lets us use input$tabset1 on the server to find the current tab
-                                        id = "tabset2", 
+                                        id = "tabset2",
                                         tabPanel("Binary and continuous models", column(width = 12,
-                                                                                        
+
                                                                                             htmlOutput("ui")
-                                                                                       
+
 
                                         )
                                         ),
                                         tabPanel("Data", column(width = 12,
                                                                          dataTableOutput('dbgridresultado')
-                                                                                        
+
                                         )
                                         )
                                         ,
@@ -615,11 +616,13 @@ column(width = 2,
                              h5('Título: Desenvolvimento de programas para automatização de processos em análises espaciais e ecológicas no ambiente R.'),
                              h5('Aluno: Rafael Oliveira Lima'),
                              h5('Orientador: Marinez Ferreira de Siqueira'),
-                             h5('Coorientador: Luis Alexandre da Silva Estevão')
+                             h5('Coorientador: Luis Alexandre da Silva Estevão'),
+                             h5('Equipe backend: Andrea Sánchez Tapia, Felipe Sodré Barros, Guilherme Gall')
+
                       )
-               
+
              ),
-									  
+
 									  tabPanel("Help",
 									           column(width = 12,
 									                  h4('User manual'),
@@ -628,10 +631,10 @@ column(width = 2,
 									                  #img(src="fluxo.jpg")
 									           )
 
-									  )     									  
-									  
-									  
-									  
+									  )
+
+
+
            )
     )
   )

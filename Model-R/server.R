@@ -2488,8 +2488,8 @@ function(input, output, session) {
     else
     {
       showModal(modalDialog(
-        title = "Atenção",
-        "Informe os dados de ocorrência",
+        title = "Warning",
+        "Inform occurrence data",
         easyClose = TRUE
       ))
       
@@ -2634,8 +2634,8 @@ output$downloadscript <- downloadHandler(
     else
   {
     showModal(modalDialog(
-      title = "Atenção",
-      "Informe os dados de ocorrência",
+      title = "Warning",
+      "Inform occurrence data",
       easyClose = TRUE
     ))
     
@@ -2793,7 +2793,7 @@ output$downloadscript <- downloadHandler(
 	    
 	    showModal(modalDialog(
 	      title = "Atenção!",
-	      paste0("Projeto criado com sucesso!"," Pasta do projecto: ", projeto) ,
+	      paste0("Project succesfully created!"," Project directory: ", projeto) ,
 	      easyClose = TRUE
 	    ))
 	    
