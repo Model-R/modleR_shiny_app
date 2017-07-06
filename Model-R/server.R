@@ -6,9 +6,33 @@
 ## 05 DE JULHO DE 2017    ##
 ############################
 
+# Thanks to Steven Worthington for function ipak https://gist.github.com/stevenworthington/3178163 (HT Karlo Guidoni Martins)
 
-library(shinydashboard)
-library(leaflet)
+ipak <- function(pkg) {
+    new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+    if (length(new.pkg))
+        install.packages(new.pkg, dependencies = TRUE)
+    sapply(pkg, require, character.only = TRUE)
+}
+
+
+ipak(c("shinydashboard",
+       "leaflet",
+       "R.utils",
+       "raster",
+       "rjson",
+       "maps",
+       "rgdal",
+       "raster",
+       "dismo",
+       "rgbif",
+       "XML",
+       "randomForest",
+       "kernlab",
+       "rJava",
+       "data.table",
+       "devtools"))
+#install_github("rafaeloliveiralima/RJabot")
 
 ARQUIVO_SAIDA <- ''
 # server.R
@@ -192,9 +216,9 @@ function(input, output, session) {
 
     ## Extraindo os valores das vari?veis onde h? pontos de registros
 
-    presvals<- extract(var,coord)
+    presvals<- raster::extract(var,coord)
 
-    cat(paste0("presvals<-extract(var,coord)"),file=ARQUIVO_SAIDA,append=TRUE)
+    cat(paste0("presvals<-raster::extract(var,coord)"),file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
 
     ## Seeting seed para sempre criar os mesmos pontos aleat?rios
@@ -214,9 +238,9 @@ function(input, output, session) {
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
 
     ## Extraindo os valores das vari?veis onde h? pseudoaus?ncias
-    absvals <- extract(var, backgr)
+    absvals <- raster::extract(var, backgr)
 
-    cat(paste0("absvals <- extract(var,backgr)"),file=ARQUIVO_SAIDA,append=TRUE)
+    cat(paste0("absvals <- raster::extract(var,backgr)"),file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
     ## Cria um vetor contendo algarismo "1" e "0" correspondendo ao n?mero de registros presen?as e aus?ncias respectivamente.
     pre_abs <- c(rep(1, nrow(presvals)), rep(0, nrow(absvals)))
@@ -345,7 +369,7 @@ function(input, output, session) {
 
         cat(paste0(" bc <- bioclim (var, coord_pres_train)"),file=ARQUIVO_SAIDA,append=TRUE)
         cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-        cat(paste0("ebc <<- evaluate (coord_pres_teste,coord_abs_teste,bc,var)"),file=ARQUIVO_SAIDA,append=TRUE)
+        cat(paste0("ebc <<- dismo::evaluate(coord_pres_teste,coord_abs_teste,bc,var)"),file=ARQUIVO_SAIDA,append=TRUE)
         cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
         cat(paste0("bcTSS <- max(ebc@TPR + ebc@TNR)-1"),file=ARQUIVO_SAIDA,append=TRUE)
         cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
@@ -364,7 +388,7 @@ function(input, output, session) {
         }
 
         # Validacao da performance
-        ebc <<- evaluate (coord_pres_teste,coord_abs_teste,bc,var)
+        ebc <<- dismo::evaluate(coord_pres_teste,coord_abs_teste,bc,var)
         # C?lculo do TSS
         bcTSS <- max(ebc@TPR + ebc@TNR)-1
         # Extrai o valor do limiar que maximiza a soma da especificidade e sensibilidade
@@ -404,7 +428,7 @@ function(input, output, session) {
 
           cat(paste0("  do <- domain (var, coord_pres_train)"),file=ARQUIVO_SAIDA,append=TRUE)
           cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-          cat(paste0("edo <<- evaluate (coord_pres_teste,coord_abs_teste,do,var)"),file=ARQUIVO_SAIDA,append=TRUE)
+          cat(paste0("edo <<- dismo::evaluate(coord_pres_teste,coord_abs_teste,do,var)"),file=ARQUIVO_SAIDA,append=TRUE)
           cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("doTSS <- max(edo@TPR + edo@TNR)-1"),file=ARQUIVO_SAIDA,append=TRUE)
           cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
@@ -424,7 +448,7 @@ function(input, output, session) {
         # Constr?i o modelo no espa?o ambiental
         do <- domain (var, coord_pres_train)
         # Valida??o da performance
-        edo <<- evaluate (coord_pres_teste,coord_abs_teste,do,var)
+        edo <<- dismo::evaluate(coord_pres_teste,coord_abs_teste,do,var)
         # C?lculo do TSS
         doTSS <- max(edo@TPR + edo@TNR)-1
         # Extrai o valor do limiar que maximiza a soma da especificidade e sensibilidade
@@ -463,7 +487,7 @@ function(input, output, session) {
 
           cat(paste0("mx <- maxent (var, coord_pres_train)"),file=ARQUIVO_SAIDA,append=TRUE)
           cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-          cat(paste0("emx <- evaluate (coord_pres_teste,coord_abs_teste,mx,var)"),file=ARQUIVO_SAIDA,append=TRUE)
+          cat(paste0("emx <- dismo::evaluate(coord_pres_teste,coord_abs_teste,mx,var)"),file=ARQUIVO_SAIDA,append=TRUE)
           cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("mxTSS <- max(emx@TPR + emx@TNR)-1"),file=ARQUIVO_SAIDA,append=TRUE)
           cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
@@ -485,7 +509,7 @@ function(input, output, session) {
         # Constr?i o modelo no espa?o ambiental
         mx <- maxent (var, coord_pres_train)
         # Valida??o da performance
-        emx <- evaluate (coord_pres_teste,coord_abs_teste,mx,var)
+        emx <- dismo::evaluate(coord_pres_teste,coord_abs_teste,mx,var)
         # C?lculo do TSS
         mxTSS <- max(emx@TPR + emx@TNR)-1
         # Extrai o valor do limiar que maximiza a soma da especificidade e sensibilidade
@@ -523,7 +547,7 @@ function(input, output, session) {
 
           cat(paste0("mglm <- glm(pre_abs~.,data=envtrain)"),file=ARQUIVO_SAIDA,append=TRUE)
           cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-          cat(paste0("eglm <- evaluate(envtest_pre,envtest_abs,mglm)"),file=ARQUIVO_SAIDA,append=TRUE)
+          cat(paste0("eglm <- dismo::evaluate(envtest_pre,envtest_abs,mglm)"),file=ARQUIVO_SAIDA,append=TRUE)
           cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("glmTSS <- max(eglm@TPR + eglm@TNR)-1"),file=ARQUIVO_SAIDA,append=TRUE)
           cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
@@ -544,7 +568,7 @@ function(input, output, session) {
         # Constr?i o modelo no espa?o ambiental
         mglm <- glm(pre_abs~.,data=envtrain)
         # Valida??o da performance
-        eglm <- evaluate(envtest_pre,envtest_abs,mglm)
+        eglm <- dismo::evaluate(envtest_pre,envtest_abs,mglm)
         # C?lculo do TSS
         glmTSS <- max(eglm@TPR + eglm@TNR)-1
         # Extrai o valor do limiar que maximiza a soma da especificidade e sensibilidade
@@ -583,7 +607,7 @@ function(input, output, session) {
 
           cat(paste0("rf1 <- randomForest (pre_abs~.,data=envtrain)"),file=ARQUIVO_SAIDA,append=TRUE)
           cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-          cat(paste0("erf1 <- evaluate(envtest_pre,envtest_abs, rf1)"),file=ARQUIVO_SAIDA,append=TRUE)
+          cat(paste0("erf1 <- dismo::evaluate(envtest_pre,envtest_abs, rf1)"),file=ARQUIVO_SAIDA,append=TRUE)
           cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("rfTSS1 <- max(erf1@TPR + erf1@TNR)-1"),file=ARQUIVO_SAIDA,append=TRUE)
           cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
@@ -609,8 +633,8 @@ function(input, output, session) {
         #rf2 <- randomForest (factor(pre_abs) ~ ., data=envtrain) # faz classification e n?o d? mensagem de erro.
         # rf2 tem como output somente modelos bin?rios
         # Valida??o de performance
-        erf1 <- evaluate(envtest_pre,envtest_abs, rf1)
-        #erf2 <- evaluate(envtest_pre,envtest_abs, rf2)
+        erf1 <- dismo::evaluate(envtest_pre,envtest_abs, rf1)
+        #erf2 <- dismo::evaluate(envtest_pre,envtest_abs, rf2)
         # C?lculo do TSS
         rfTSS1 <- max(erf1@TPR + erf1@TNR)-1
         #rfTSS2 <- max(erf2@TPR + erf2@TNR)-1
@@ -652,7 +676,7 @@ function(input, output, session) {
 
           cat(paste0("msvm <- ksvm(pre_abs~.,data=envtrain)"),file=ARQUIVO_SAIDA,append=TRUE)
           cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-          cat(paste0("esvm <- evaluate(envtest_pre,envtest_abs,msvm)"),file=ARQUIVO_SAIDA,append=TRUE)
+          cat(paste0("esvm <- dismo::evaluate(envtest_pre,envtest_abs,msvm)"),file=ARQUIVO_SAIDA,append=TRUE)
           cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
           cat(paste0("svmTSS <- max(esvm@TPR + esvm@TNR)-1"),file=ARQUIVO_SAIDA,append=TRUE)
           cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
@@ -673,7 +697,7 @@ function(input, output, session) {
         # Constr?i o modelo no espa?o ambiental
         msvm <- ksvm(pre_abs~.,data=envtrain)
         # Valida??o da performance
-        esvm <- evaluate(envtest_pre,envtest_abs,msvm)
+        esvm <- dismo::evaluate(envtest_pre,envtest_abs,msvm)
         # C?lculo do TSS
         svmTSS <- max(esvm@TPR + esvm@TNR)-1
         # Extrai o valor do limiar que maximiza a soma da especificidade e sensibilidade
@@ -716,7 +740,7 @@ function(input, output, session) {
 
             cat(paste0("ma <- mahal (var, coord_pres_train)"),file=ARQUIVO_SAIDA,append=TRUE)
             cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("ema <- evaluate (coord_pres_teste,coord_abs_teste,ma,var)"),file=ARQUIVO_SAIDA,append=TRUE)
+            cat(paste0("ema <- dismo::evaluate(coord_pres_teste,coord_abs_teste,ma,var)"),file=ARQUIVO_SAIDA,append=TRUE)
             cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
             cat(paste0("maTSS <- max(ema@TPR + ema@TNR)-1"),file=ARQUIVO_SAIDA,append=TRUE)
             cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
@@ -737,7 +761,7 @@ function(input, output, session) {
           }
           ma <- mahal (var, coord_pres_train)
           # validacao da performance
-          ema <- evaluate (coord_pres_teste,coord_abs_teste,ma,var)
+          ema <- dismo::evaluate(coord_pres_teste,coord_abs_teste,ma,var)
           # Calculo do TSS
           maTSS <- max(ema@TPR + ema@TNR)-1
           # Extrai o valor do limiar que maximiza a soma da especificidade e sensibilidade
@@ -1531,7 +1555,7 @@ function(input, output, session) {
     cat("points(especie, bg='red', cex=1,pch=21)",file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
 
-    cat("presvals <- extract(pred_nf, especie)",file=ARQUIVO_SAIDA,append=TRUE)
+    cat("presvals <- raster::extract(pred_nf, especie)",file=ARQUIVO_SAIDA,append=TRUE)
     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
 
     cat("var <- pred_nf",file=ARQUIVO_SAIDA,append=TRUE)
@@ -2366,7 +2390,7 @@ function(input, output, session) {
           }
           }
 
-          presvals <<- extract(pred_nf, especie)
+          presvals <<- raster::extract(pred_nf, especie)
           plot(pred_nf)
           cat(paste("Estou aqui 3 ",'\n'))
 
@@ -2380,7 +2404,7 @@ function(input, output, session) {
           colnames(backgr) = c('Longitude', 'Latitude')
 
           ## Extraindo os valores das vari?veis onde h? pseudoaus?ncias
-          absvals <- extract(pred_nf, backgr)
+          absvals <- raster::extract(pred_nf, backgr)
 
           if (length(arquivo)>1)
           {

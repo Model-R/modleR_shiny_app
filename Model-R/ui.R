@@ -1,5 +1,21 @@
-library(shinydashboard)
-library(leaflet)
+############################
+## MODEL-R                ##
+## RAFAEL OLIVEIRA LIMA   ##
+## ANDREA SANCHEZ TAPIA   ##
+## FELIPE SODRÉ BARROS    ##
+## 5 DE JULHO DE 2017     ##
+############################
+
+# Thanks to Steven Worthington for function ipak https://gist.github.com/stevenworthington/3178163 (HT Karlo Guidoni Martins)
+
+ipak <- function(pkg) {
+    new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+    if (length(new.pkg))
+        install.packages(new.pkg, dependencies = TRUE)
+    sapply(pkg, require, character.only = TRUE)
+}
+ipak(c("shinydashboard", "leaflet"))
+
 
 
 vars <- c(
@@ -97,7 +113,7 @@ body <- dashboardBody(
 
                                       column(width = 3,
                                              box(width = NULL, status = "warning",
-                                                 selectInput("tipodado", "Source", vars),
+                                                 selectInput("tipodado", "Source", vars, selected = "jabot"),
                                                  conditionalPanel("input.tipodado == 'csv' ",
                                                                   helpText('Formato: [Espécie,Longitude,Latitude]'),
 
@@ -121,7 +137,7 @@ body <- dashboardBody(
                                                  ),
                                                  conditionalPanel("input.tipodado == 'jabot' ",
                                                                   helpText('Name of species.'),
-                                                                  textInput("edtespeciejabot", label = "Species", value = ""),
+                                                                  textInput("edtespeciejabot", label = "Species", value = "Caesalpinia echinata"),
                                                                   actionButton("btnbuscarespeciejabot", "Search", icon = icon("search"))
 
                                                  ),
@@ -611,13 +627,18 @@ column(width = 2,
                       column(width = 10,
                              h4('Instituto de Pesquisas Jardim Botânico do Rio de Janeiro'),
                              h4('Escola Nacional de Botânica Tropical'),
+                             h4('Model-R: A Framework for Scalable and Reproducible Ecological Niche Modeling'),
+                             h4('https://github.com/Model-R/Model-R'),
+                             h5('The shiny app was written as Rafael Oliveira Lima dissertation: '),
                              h5('Programa de Mestrado Profissional: Biodiversidade em Unidades de Conservação'),
                              h5('Projeto de Trabalho de Conclusão de Curso de Mestrado Profissional - 2015'),
                              h5('Título: Desenvolvimento de programas para automatização de processos em análises espaciais e ecológicas no ambiente R.'),
                              h5('Aluno: Rafael Oliveira Lima'),
                              h5('Orientador: Marinez Ferreira de Siqueira'),
                              h5('Coorientador: Luis Alexandre da Silva Estevão'),
-                             h5('Equipe backend: Andrea Sánchez Tapia, Felipe Sodré Barros, Guilherme Gall')
+                             h5('The backend code was written by: Andrea Sánchez Tapia, Felipe Sodré Barros, Guilherme Gall'),
+                             h5('Please cite `dismo()` package: Robert J. Hijmans, Steven Phillips, John Leathwick and Jane Elith (2017). dismo: Species Distribution Modeling. R package version 1.1-4. http://CRAN.R-project.org/package=dismo'),
+                             h5('Cite also randomForest() if you fit random forests, and `kernlab() if you fit SVM')
 
                       )
 
