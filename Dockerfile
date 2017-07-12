@@ -7,6 +7,7 @@ MAINTAINER Luiz Gadelha "lgadelha@lncc.br"
 # =============
 RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm && \
     yum -y update && \
+    mkdir /usr/share/doc/R-3.3.1 && \
     yum -y install libpng-devel proj-devel gdal-devel  proj-epsg proj-nad v8-devel libcurl-devel geos-devel libxml2-devel openssl-devel R wget && \
     yum -y clean all
 
