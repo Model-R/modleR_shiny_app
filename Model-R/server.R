@@ -32,7 +32,7 @@ ipak(c("shinydashboard",
        "rJava",
        "data.table",
        "devtools"))
-
+#install_github("rafaeloliveiralima/RJabot")
 
 # MaxEnt .jar#### baixa e descompacta o maxent java
 jar <- paste0(system.file(package = "dismo"), "/java/maxent.jar")
@@ -42,8 +42,24 @@ if (file.exists(jar) != T) {
   unzip("maxent.zip", files = "maxent.jar", exdir = system.file("java", package = "dismo"))
   unlink("maxent.zip")} 
 
-#install_github("rafaeloliveiralima/RJabot")
+panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...) {
+  usr <- par("usr")
+  on.exit(par(usr))
+  par(usr = c(0, 1, 0, 1))
+  r <- abs(cor(x, y))
+  txt <- format(c(r, 0.123456789), digits = digits)[1]
+  txt <- paste0(prefix, txt)
+  if (missing(cex.cor)) 
+    cex.cor <- 0.8/strwidth(txt)
+  text(0.5, 0.5, txt, cex = cex.cor * r)}
 
+panel.hist <- function(x, ...){
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(usr[1:2], 0, 1.5) )
+  h <- hist(x, plot = FALSE)
+  breaks <- h$breaks; nB <- length(breaks)
+  y <- h$counts; y <- y/max(y)
+  rect(breaks[-nB], 0, breaks[-1], y, col = "gray", ...)}
 
 ARQUIVO_SAIDA <- ''
 # server.R
@@ -1846,7 +1862,7 @@ function(input, output, session) {
 
 
     #######################################################
-    ## APRESENTO OS ARQUIVOS GERADOS NA PÁGINA DE DOWNLOAD
+    ## APRESENTO OS ARQUIVOS GERADOS NA PGINA DE DOWNLOAD
     ########################################################
 
     output$uiarquivosmodelos <- renderUI({
@@ -2430,21 +2446,17 @@ function(input, output, session) {
               txt <- paste0(prefix, txt)
               if (missing(cex.cor)) 
                 cex.cor <- 0.8/strwidth(txt)
-              text(0.5, 0.5, txt, cex = cex.cor * r)
-            }
+              text(0.5, 0.5, txt, cex = cex.cor * r)}
+            
             panel.hist <- function(x, ...){
               usr <- par("usr"); on.exit(par(usr))
               par(usr = c(usr[1:2], 0, 1.5) )
               h <- hist(x, plot = FALSE)
               breaks <- h$breaks; nB <- length(breaks)
               y <- h$counts; y <- y/max(y)
-              rect(breaks[-nB], 0, breaks[-1], y, col = "gray", ...)
-            }
-            
+              rect(breaks[-nB], 0, breaks[-1], y, col = "gray", ...)}
             output$grafico_correlacao <- renderPlot({
-
               pairs(sdmdata, cex=0.1, fig=TRUE, lower.panel = panel.smooth, diag.panel= panel.hist, upper.panel = panel.cor)
-              #pairs(sdmdata, cex=0.1, fig=TRUE)
             })
             output$dgbriddadoscorrelacao <- renderDataTable({
               round(cor(sdmdata),2)
