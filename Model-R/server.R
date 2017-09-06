@@ -1,9 +1,10 @@
 ############################
 ## MODEL-R                ##
 ## RAFAEL OLIVEIRA LIMA   ##
-## ANDREA SÁNCHEZ TAPIA   ##
-## FELIPE SODRÉ BARROS    ##
-## 05 DE JULHO DE 2017    ##
+## ANDREA SANCHEZ TAPIA   ##
+## FELIPE SODR� BARROS    ##
+## DIOGO S. B. ROCHA      ##
+## 06 DE SETEMBRO DE 2017 ##
 ############################
 
 # Thanks to Steven Worthington for function ipak https://gist.github.com/stevenworthington/3178163 (HT Karlo Guidoni Martins)
@@ -33,6 +34,33 @@ ipak(c("shinydashboard",
        "data.table",
        "devtools"))
 #install_github("rafaeloliveiralima/RJabot")
+
+# MaxEnt .jar#### baixa e descompacta o maxent java
+jar <- paste0(system.file(package = "dismo"), "/java/maxent.jar")
+if (file.exists(jar) != T) {
+  url = "http://biodiversityinformatics.amnh.org/open_source/maxent/maxent.php?op=download"
+  download.file(url, dest = "maxent.zip", mode = "wb")
+  unzip("maxent.zip", files = "maxent.jar", exdir = system.file("java", package = "dismo"))
+  unlink("maxent.zip")} 
+
+panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...) {
+  usr <- par("usr")
+  on.exit(par(usr))
+  par(usr = c(0, 1, 0, 1))
+  r <- abs(cor(x, y))
+  txt <- format(c(r, 0.123456789), digits = digits)[1]
+  txt <- paste0(prefix, txt)
+  if (missing(cex.cor)) 
+    cex.cor <- 0.8/strwidth(txt)
+  text(0.5, 0.5, txt, cex = cex.cor * r)}
+
+panel.hist <- function(x, ...){
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(usr[1:2], 0, 1.5) )
+  h <- hist(x, plot = FALSE)
+  breaks <- h$breaks; nB <- length(breaks)
+  y <- h$counts; y <- y/max(y)
+  rect(breaks[-nB], 0, breaks[-1], y, col = "gray", ...)}
 
 ARQUIVO_SAIDA <- ''
 # server.R
@@ -2410,8 +2438,24 @@ function(input, output, session) {
           {
             sdmdata <- data.frame(cbind(absvals))
             #sdmdata <- data.frame(cbind(presvals))
+            panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...) {
+              usr <- par("usr")
+              on.exit(par(usr))
+              par(usr = c(0, 1, 0, 1))
+              r <- cor(x, y)
+              txt <- format(c(r, 0.123456789), digits = digits)[1]
+              txt <- paste0(prefix, txt)
+              text(0.5, 0.5, txt, cex = 1.2)}
+            
+            panel.hist <- function(x, ...){
+              usr <- par("usr"); on.exit(par(usr))
+              par(usr = c(usr[1:2], 0, 1.5) )
+              h <- hist(x, plot = FALSE)
+              breaks <- h$breaks; nB <- length(breaks)
+              y <- h$counts; y <- y/max(y)
+              rect(breaks[-nB], 0, breaks[-1], y, col = "gray", ...)}
             output$grafico_correlacao <- renderPlot({
-              pairs(sdmdata, cex=0.1, fig=TRUE)
+              pairs(sdmdata, cex=0.1, fig=TRUE, lower.panel = panel.smooth, diag.panel= panel.hist, upper.panel = panel.cor)
             })
             output$dgbriddadoscorrelacao <- renderDataTable({
               round(cor(sdmdata),2)
