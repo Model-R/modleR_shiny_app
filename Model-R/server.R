@@ -1,9 +1,10 @@
 ############################
 ## MODEL-R                ##
 ## RAFAEL OLIVEIRA LIMA   ##
-## ANDREA SÁNCHEZ TAPIA   ##
-## FELIPE SODRÉ BARROS    ##
-## 05 DE JULHO DE 2017    ##
+## ANDREA SANCHEZ TAPIA   ##
+## FELIPE SODR� BARROS    ##
+## DIOGO S. B. ROCHA      ##
+## 06 DE SETEMBRO DE 2017 ##
 ############################
 
 # Thanks to Steven Worthington for function ipak https://gist.github.com/stevenworthington/3178163 (HT Karlo Guidoni Martins)
@@ -2441,12 +2442,10 @@ function(input, output, session) {
               usr <- par("usr")
               on.exit(par(usr))
               par(usr = c(0, 1, 0, 1))
-              r <- abs(cor(x, y))
+              r <- cor(x, y)
               txt <- format(c(r, 0.123456789), digits = digits)[1]
               txt <- paste0(prefix, txt)
-              if (missing(cex.cor)) 
-                cex.cor <- 0.8/strwidth(txt)
-              text(0.5, 0.5, txt, cex = cex.cor * r)}
+              text(0.5, 0.5, txt, cex = 1.2)}
             
             panel.hist <- function(x, ...){
               usr <- par("usr"); on.exit(par(usr))
