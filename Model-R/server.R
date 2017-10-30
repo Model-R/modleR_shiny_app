@@ -39,6 +39,7 @@ rm(list = setdiff(ls(), lsf.str()))
 home <-'/'
 ## PARA A HOSPEDAGEM NO JARDIM ALTERAR PARA '/modelagem/'
 
+
 t <- 7
 ext1 <- -90
 ext2 <- -33
