@@ -283,19 +283,19 @@ body <- dashboardBody(
 					column(width = 12,
 						
 						tabBox(side = "right",
-							title = "",width = NULL,height= "600px",selected = "Spatial extent",
+							title = "",width = NULL,height= "600px",selected = "Model extent",
 							# The id lets us use input$tabset1 on the server to find the current tab
 							id = "tabset1",
 							
 							
 							tabPanel("Environmental data", column(width = 8,
 								
-								tabBox(side = "left",
+								tabBox(side = "left", 
 									title = "",width = NULL,height= "600px",
 									# The id lets us use input$tabset1 on the server to find the current tab
 									id = "tabset1",
 									
-									tabPanel("Predictor Variable Data", column(width = 12,
+									tabPanel("Predictor Variables", column(width = 12,
 										box(width = NULL, solidHeader = TRUE,
 											plotOutput(outputId = "mapaabiotico", height = "400px")
 										)
@@ -454,7 +454,7 @@ body <- dashboardBody(
 							
 							
 							
-							tabPanel("Creating extent", column(width = 8,
+							tabPanel("Model extent", column(width = 8,
 								box(width = NULL, solidHeader = TRUE,
 									leafletOutput('mapapontosextend', height = 500)
 								)
