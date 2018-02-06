@@ -119,13 +119,13 @@ body <- dashboardBody(
 				id = "tabset1",
 				tabPanel("Project Id",  column(width = 12,
 					
-					tabBox(side = "right",selected = "Project folders",
+					tabBox(side = "right",selected = "Project",
 						title = "",width = NULL,height= "600px",
 						
 						# The id lets us use input$tabset1 on the server to find the current tab
 						id = "tabset1",
 						
-						tabPanel("Project folders", column(width = 9,id="idproject",
+						tabPanel("Project", column(width = 9,id="idproject",
 							box(width = NULL,
 								textInput("edtproject", label = "Project Id", value = ""),
 								actionButton("btncreateproject", "Create new project",icon = icon("gear")),
@@ -136,11 +136,11 @@ body <- dashboardBody(
 							
 							
 							column(width = 3,
-								box(width = NULL,
+								box(width = NULL, helpText('Projects'),
 									
-									if (length(list.files("./www/projeto/",full.names=F,pattern=paste0("."))>0))
+									if (length(list.files("./www/project/",full.names=F,pattern=paste0("."))>0))
 									{
-										lista_outros <- list.files("./www/projeto/",full.names=F,pattern=paste0("."))
+										lista_outros <- list.files("./www/project/",full.names=F,pattern=paste0("."))
 										#       checkboxInput('Bio1', 'BIO1 Annual Mean Temperature', value = FALSE)
 										#   tags$div(
 										#     tags$a(href=paste0('csv/',lista_csv[i]), paste0(lista_csv[i]))
