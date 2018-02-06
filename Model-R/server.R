@@ -2036,7 +2036,7 @@ function(input, output, session) {
       n <- 3
       incProgress(1/n, detail = paste0("Loading selected variables"))
       ETAPA <<- 3
-
+      
       isolate({
 				if (input$tipodadoabiotico=='CLIMA'){
 
@@ -2379,7 +2379,8 @@ function(input, output, session) {
 
         } # VAR BIOORACLE
 
-        if (input$tipodadoabiotico=='Others'){
+        if (input$tipodadoabiotico == 'Others'){
+        	
           path <- paste(getwd(),'/ex/outros/',sep='')
           cat(paste("presente: ",path,'\n'))
           arquivo = list()
@@ -2399,56 +2400,53 @@ function(input, output, session) {
 
         } # VAR OTHERS
 
+      	
         incProgress(2/n, detail = paste0("Checking variables correlation"))
 
-        arquivo2 <- arquivo
-        arquivo3 <- arquivo
-
-         cat(paste("Checking... ",'\n'))
-
-         # If the current conditions predictor variables list contains at least 1 RasterLayer:
-         if (length(arquivo)>0){
-         	 if ((selecionado == TRUE) && (exists("especie"))){
-
-         	 	# Transform the list containing the predictors RasterLayers into a RasterStack object
-         	 		## If current, apply ONLY for current variables
-         	 		## If future, apply for current AND future variables
-            arquivo <- stack(arquivo)
-            arquivo3 <- stack(arquivo3)
-            if (input$tipodadoabiotico!='Others'){
-              cat(paste("Estou aqui 1 ",'\n'))
-
-              if (input$periodo != 'current'){
-                predictorsfuturo <- stack(arquivofuturo)
-              }
-
-              if (input$periodobiooracle != 'current'){
-                predictorsfuturo <- stack(arquivofuturo)
-              }
-            }
-
-            # Establish extent area (ext) from user defined maxlat, minlat, maxlong, minlong
-            ext <- extent(ext1, ext2, ext3, ext4)
-            ext2 <- extent(ext12, ext22, ext32, ext42)
-
-            # Narrow the geographic subset of the predictor rasters as specified by the ext object
-            	## If current, apply ONLY for current variables
-            	## If future, apply for current AND future variables
-            pred_nf <- crop(arquivo, ext)
-            pred_nf2 <-  crop(arquivo3, ext2)
-            if (input$tipodadoabiotico!='Others'){
-              if (input$periodo != 'current'){
-                pred_nffuturo <<- crop(predictorsfuturo,ext)
-              }
-            	if (input$periodobiooracle != 'current'){
-                pred_nffuturo <<- crop(predictorsfuturo,ext)
-              }
-            }
-
-            # Extract predictor values from the predictor rasters at the occurence locations
-            presvals <- raster::extract(pred_nf, especie)
-            plot(pred_nf)
-            cat(paste("Estou aqui 3 ",'\n'))
+        arquivo2 <<- arquivo
+        arquivo3 = arquivo
+        cat(paste("Checando... ",'\n'))
+        
+        if (length(arquivo)>0){
+        	if ((selecionado == TRUE) && (exists("especie"))){
+        		predictors <- stack(arquivo)
+        		predictors3 = stack(arquivo3)
+        		
+        		
+        		if (input$tipodadoabiotico!='Others') {
+        			cat(paste("Estou aqui 1 ",'\n'))
+        			
+        			if (input$periodo != 'current') {
+        				predictorsfuturo = stack(arquivofuturo)
+        			}
+        			if (input$periodobiooracle != 'current') {
+        				predictorsfuturo = stack(arquivofuturo)
+        			}
+        		}
+        		
+        		ext <<- extent(ext1, ext2, ext3, ext4)
+        		ext2 = extent(ext12, ext22, ext32, ext42)
+        		pred_nf <<- crop(predictors, ext)
+        		pred_nf2 <<-  crop(predictors3, ext2)
+        		
+        		
+        		if (input$tipodadoabiotico!='Others')
+        		{
+        			#cat(paste("Estou aqui 2 ",'\n'))
+        			
+        			if (input$periodo != 'current')
+        			{
+        				pred_nffuturo <<- crop(predictorsfuturo,ext)
+        			}
+        			if (input$periodobiooracle != 'current')
+        			{
+        				pred_nffuturo <<- crop(predictorsfuturo,ext)
+        			}
+        		}
+        		
+        		presvals <<- raster::extract(pred_nf, especie)
+        		plot(pred_nf)
+        		cat(paste("Estou aqui 3 ",'\n'))
 
             ############################################
             ## CHECK PREDICTOR VARIABLES CORRELATION
@@ -2464,10 +2462,10 @@ function(input, output, session) {
             absvals <- raster::extract(pred_nf, backgr)
 
             # Define regression function of the correlation plots
-            panel.regression <-function (x, y, col = par("col"),bg = NA,pch = par("pch"),cex = 1,col.regres = "red",...){
+            panel.regression <- function(x, y, col = par("col"),bg = NA,pch = par("pch"),cex = 1,col.regres = "red", ...)
+            	{
               points(x,y,pch = pch,col = col,bg = bg,cex = cex)
               ok <- is.finite(x) & is.finite(y)
-
               if (any(ok))
                 abline(stats::lm(y[ok] ~ x[ok]), col = col.regres, ...)
             }
@@ -2477,23 +2475,27 @@ function(input, output, session) {
             	# Output correlation, histogram and regression plots
             	# Output correlation table
            # Else: Do not plot anything
-             if (length(arquivo)>1){
-              sdmdata <- data.frame(cbind(absvals))
-              output$grafico_correlacao <- renderPlot({
-                pairs(sdmdata, cex=0.1, fig=TRUE, lower.panel = panel.regression, diag.panel= panel.hist, upper.panel = panel.cor)
-              })
-              output$dgbriddadoscorrelacao <- renderDataTable({
-                round(cor(sdmdata),2)
-              })
+            if (length(arquivo)>1)
+            {
+            	sdmdata <- data.frame(cbind(absvals))
+            	#sdmdata <- data.frame(cbind(presvals))
+            	output$grafico_correlacao <- renderPlot({
+            		pairs(sdmdata, cex=0.1, fig=TRUE, lower.panel = panel.regression, diag.panel= panel.hist, upper.panel = panel.cor)
+            	})
+            	output$dgbriddadoscorrelacao <- renderDataTable({
+            		round(cor(sdmdata),2)
+            	})
             }
             else
             {
-              output$grafico_correlacao <- renderPlot({
-                plot(0, 0)
-              })
+            	output$grafico_correlacao <- renderPlot({
+            		plot(0, 0)
+            	})
             }
-          }
+        	}
+        	
         }
+        
       }) #FIM ISOLATE
       incProgress(3/n, detail = paste0("Ploting..."))
     }

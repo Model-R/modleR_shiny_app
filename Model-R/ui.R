@@ -119,13 +119,13 @@ body <- dashboardBody(
 				id = "tabset1",
 				tabPanel("Project Id",  column(width = 12,
 					
-					tabBox(side = "right",selected = "Project",
-						title = "",width = NULL,height= "600px",
+					#tabBox(side = "right",selected = "Projects",
+					#	title = "",width = NULL,height= "600px",
 						
 						# The id lets us use input$tabset1 on the server to find the current tab
 						id = "tabset1",
 						
-						tabPanel("Project", column(width = 9,id="idproject",
+						tabPanel("Projects", column(width = 9,id="idproject",
 							box(width = NULL,
 								textInput("edtproject", label = "Project Id", value = ""),
 								actionButton("btncreateproject", "Create new project",icon = icon("gear")),
@@ -138,9 +138,9 @@ body <- dashboardBody(
 							column(width = 3,
 								box(width = NULL, helpText('Projects'),
 									
-									if (length(list.files("./www/project/",full.names=F,pattern=paste0("."))>0))
+									if (length(list.files("./www/projeto/",full.names=F,pattern=paste0("."))>0))
 									{
-										lista_outros <- list.files("./www/project/",full.names=F,pattern=paste0("."))
+										lista_outros <- list.files("./www/projeto/",full.names=F,pattern=paste0("."))
 										#       checkboxInput('Bio1', 'BIO1 Annual Mean Temperature', value = FALSE)
 										#   tags$div(
 										#     tags$a(href=paste0('csv/',lista_csv[i]), paste0(lista_csv[i]))
@@ -163,7 +163,7 @@ body <- dashboardBody(
 							
 							
 						)
-					)
+					#)
 				)
 					
 					
@@ -179,19 +179,19 @@ body <- dashboardBody(
 					
 					tabPanel("Biotic Data",  column(width = 12,
 					
-					tabBox(side = "right",selected = "Occurrence Data",
+					tabBox(side = "right",selected = "Load occurrence data",
 						title = "",width = NULL,height= "600px",
 						
 						# The id lets us use input$tabset1 on the server to find the current tab
 						id = "tabset1",
 						
-						tabPanel("Occurrence Map", column(width = 12,
+						tabPanel("View occurrence map", column(width = 12,
 							box(width = NULL, solidHeader = TRUE,
 								leafletOutput('mapadistribuicao'), height = 500)
 							
 						)
 						),
-						tabPanel("Occurrence Data", column(width = 9,
+						tabPanel("Load occurrence data", column(width = 9,
 							box(width = NULL,
 								dataTableOutput('dgbriddados')
 							)
