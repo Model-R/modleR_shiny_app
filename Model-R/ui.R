@@ -179,19 +179,19 @@ body <- dashboardBody(
 					
 					tabPanel("Biotic Data",  column(width = 12,
 					
-					tabBox(side = "right",selected = "Load occurrence data",
-						title = "",width = NULL,height = "600px",
+					tabBox(side = "right",selected = "Occurrence Data",
+						title = "",width = NULL,height= "600px",
 						
 						# The id lets us use input$tabset1 on the server to find the current tab
 						id = "tabset1",
 						
-						tabPanel("View occurrence map", column(width = 12,
+						tabPanel("Occurrence Map", column(width = 12,
 							box(width = NULL, solidHeader = TRUE,
 								leafletOutput('mapadistribuicao'), height = 500)
 							
 						)
 						),
-						tabPanel("Load occurrence data", column(width = 9,
+						tabPanel("Occurrence Data", column(width = 9,
 							box(width = NULL,
 								dataTableOutput('dgbriddados')
 							)
