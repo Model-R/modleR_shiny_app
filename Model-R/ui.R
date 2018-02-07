@@ -112,27 +112,21 @@ header <- dashboardHeader(
 )
 body <- dashboardBody(
 	fluidRow(
-		column(width = 12,
+		column (width = 12,
 			tabBox(
 				title = "Steps",width = NULL,height= "1000px",
 				# The id lets us use input$tabset1 on the server to find the current tab
 				id = "tabset1",
 				tabPanel("Project Id",  column(width = 12,
-					
-					#tabBox(side = "right",selected = "Projects",
-					#	title = "",width = NULL,height= "600px",
-						
-						# The id lets us use input$tabset1 on the server to find the current tab
-						id = "tabset1",
+									id = "tabset1",
 						
 						tabPanel("Projects", column(width = 9,id="idproject",
 							box(width = NULL,
-								textInput("edtproject", label = "Project Id", value = ""),
-								actionButton("btncreateproject", "Create new project",icon = icon("gear")),
-								actionButton("btnconsultarproject", "Search project",icon = icon("search"))
+								textInput("edtprojeto", label = "Project Id", value = ""),
+								actionButton("btncriarprojeto", "Create new project",icon = icon("gear")),
+								actionButton("btnconsultarprojeto", "Search project",icon = icon("search"))
 							)
 						),
-							
 							
 							
 							column(width = 3,
