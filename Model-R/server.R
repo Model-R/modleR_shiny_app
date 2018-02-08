@@ -11,7 +11,7 @@
 
 # IPAK --------------------------------------------------------------------
 
-#dyn.load('/Library/Java/JavaVirtualMachines/jdk1.8.0_151.jdk/Contents/Home/jre/lib/server/libjvm.dylib')
+dyn.load('/Library/Java/JavaVirtualMachines/jdk1.8.0_151.jdk/Contents/Home/jre/lib/server/libjvm.dylib')
 
 ipak <- function(pkg) {
   new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
@@ -38,10 +38,7 @@ ipak(c("shinydashboard",
 	"data.table",
 	"sdmpredictors"))
 
-
-
-
-ARQUIVO_SAIDA <- ''
+#ARQUIVO_SAIDA <- ''
 
 rm(list = ls())
 rm(list = setdiff(ls(), lsf.str()))
@@ -227,20 +224,7 @@ function(input, output, session) {
     #library(rJava)
     library(maps)
 
-    cat(paste0("library(dismo)"),file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    cat(paste0("library(randomForest)"),file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    cat(paste0("library(kernlab)"),file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    cat(paste0("library(XML)"),file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    cat(paste0("library(raster)"),file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    cat(paste0("library(rgdal)"),file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    cat(paste0("library(maps)"),file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+  
 
 
     ## DELETE OS ARQUIVOS ANTIGOS ANTES DE GERAR UM NOVO
@@ -255,20 +239,20 @@ function(input, output, session) {
       cat(paste("Modeling",sp,"...",'\n'))
       coord <- especie
 
-      cat(paste0("coord<-especie"),file=ARQUIVO_SAIDA,append=TRUE)
-      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+      # cat(paste0("coord<-especie"),file=ARQUIVO_SAIDA,append=TRUE)
+      # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
 
       n <- nrow(coord)
 
-      cat(paste0("n<-nrow(coord)"),file=ARQUIVO_SAIDA,append=TRUE)
-      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+      # cat(paste0("n<-nrow(coord)"),file=ARQUIVO_SAIDA,append=TRUE)
+      # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
 
       ## Extraindo os valores das vari?veis onde h? pontos de registros
 
       presvals<- raster::extract(var,coord)
 
-      cat(paste0("presvals<-raster::extract(var,coord)"),file=ARQUIVO_SAIDA,append=TRUE)
-      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+      # cat(paste0("presvals<-raster::extract(var,coord)"),file=ARQUIVO_SAIDA,append=TRUE)
+      # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
 
       ## Seeting seed para sempre criar os mesmos pontos aleat?rios
       set.seed(seed)
@@ -277,31 +261,32 @@ function(input, output, session) {
 
       backgr <- randomPoints(var, numpontos)
 
-      cat(paste0("backgr<-randomPoints(var,",numpontos,")"),file=ARQUIVO_SAIDA,append=TRUE)
-      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+      # cat(paste0("backgr<-randomPoints(var,",numpontos,")"),file=ARQUIVO_SAIDA,append=TRUE)
+      # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
 
       ## Determina os nomes da colunas de coordenadas para os pontos de background
       colnames(backgr) = c('Longitude', 'Latitude')
 
-      cat(paste0("colnames(backgr)=c('Longitude','Latitude')"),file=ARQUIVO_SAIDA,append=TRUE)
-      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+      # cat(paste0("colnames(backgr)=c('Longitude','Latitude')"),file=ARQUIVO_SAIDA,append=TRUE)
+      # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
 
       ## Extraindo os valores das vari?veis onde h? pseudoaus?ncias
       absvals <- raster::extract(var, backgr)
 
-      cat(paste0("absvals <- raster::extract(var,backgr)"),file=ARQUIVO_SAIDA,append=TRUE)
-      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+      # cat(paste0("absvals <- raster::extract(var,backgr)"),file=ARQUIVO_SAIDA,append=TRUE)
+      # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+      
       ## Cria um vetor contendo algarismo "1" e "0" correspondendo ao n?mero de registros presen?as e aus?ncias respectivamente.
       pre_abs <- c(rep(1, nrow(presvals)), rep(0, nrow(absvals)))
 
-      cat(paste0("pre_abs<-c(rep(1,nrow(presvals)),rep(0,nrow(absvals)))"),file=ARQUIVO_SAIDA,append=TRUE)
-      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+      # cat(paste0("pre_abs<-c(rep(1,nrow(presvals)),rep(0,nrow(absvals)))"),file=ARQUIVO_SAIDA,append=TRUE)
+      # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
 
       ## N?mero de parti??es
       if (n<10) part<-n else part <- part
 
-      cat(paste0("if (n<10) part<-n else part <- part"),file=ARQUIVO_SAIDA,append=TRUE)
-      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+      # cat(paste0("if (n<10) part<-n else part <- part"),file=ARQUIVO_SAIDA,append=TRUE)
+      # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
 
       ## Setting seed para distribuir as presen?as sempre para as mesmas parti??es
       set.seed(seed)
@@ -311,10 +296,10 @@ function(input, output, session) {
       set.seed(seed)
       group_abs <- kfold(backgr,part)
 
-      cat(paste0("group_pre <- kfold(coord,part)"),file=ARQUIVO_SAIDA,append=TRUE)
-      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-      cat(paste0("group_abs <- kfold(backgr,part)"),file=ARQUIVO_SAIDA,append=TRUE)
-      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+      # cat(paste0("group_pre <- kfold(coord,part)"),file=ARQUIVO_SAIDA,append=TRUE)
+      # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+      # cat(paste0("group_abs <- kfold(backgr,part)"),file=ARQUIVO_SAIDA,append=TRUE)
+      # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
 
       # Cosntruindo o data.frame com todos os dados
       append_1 <- append(group_pre,group_abs)
@@ -327,63 +312,63 @@ function(input, output, session) {
       sdmdata2 <- sdmdata2[-1]
       sdmdata2 <- sdmdata2[-1]
 
-      cat(paste0("append_1 <- append(group_pre,group_abs)"),file=ARQUIVO_SAIDA,append=TRUE)
-      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-
-      cat(paste0("cbind_1 <- cbind(coord,presvals)"),file=ARQUIVO_SAIDA,append=TRUE)
-      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-
-      cat(paste0("cbind_2 <- cbind(backgr,absvals)"),file=ARQUIVO_SAIDA,append=TRUE)
-      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-
-      cat(paste0("rbind_1 <- rbind(cbind_1,cbind_2)"),file=ARQUIVO_SAIDA,append=TRUE)
-      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-
-      cat(paste0("sdmdata <- data.frame(cbind(append_1,pre_abs,rbind_1))"),file=ARQUIVO_SAIDA,append=TRUE)
-      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-
-      cat(paste0("sdmdata2 <- sdmdata[-1]"),file=ARQUIVO_SAIDA,append=TRUE)
-      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-
-      cat(paste0("sdmdata2 <- sdmdata2[-1]"),file=ARQUIVO_SAIDA,append=TRUE)
-      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-
-      cat(paste0("sdmdata2 <- sdmdata2[-1]"),file=ARQUIVO_SAIDA,append=TRUE)
-      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-
-      cat(paste0("sdmdata2 <- sdmdata2[-1]"),file=ARQUIVO_SAIDA,append=TRUE)
-      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+      # cat(paste0("append_1 <- append(group_pre,group_abs)"),file=ARQUIVO_SAIDA,append=TRUE)
+      # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+      # 
+      # cat(paste0("cbind_1 <- cbind(coord,presvals)"),file=ARQUIVO_SAIDA,append=TRUE)
+      # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+      # 
+      # cat(paste0("cbind_2 <- cbind(backgr,absvals)"),file=ARQUIVO_SAIDA,append=TRUE)
+      # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+      # 
+      # cat(paste0("rbind_1 <- rbind(cbind_1,cbind_2)"),file=ARQUIVO_SAIDA,append=TRUE)
+      # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+      # 
+      # cat(paste0("sdmdata <- data.frame(cbind(append_1,pre_abs,rbind_1))"),file=ARQUIVO_SAIDA,append=TRUE)
+      # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+      # 
+      # cat(paste0("sdmdata2 <- sdmdata[-1]"),file=ARQUIVO_SAIDA,append=TRUE)
+      # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+      # 
+      # cat(paste0("sdmdata2 <- sdmdata2[-1]"),file=ARQUIVO_SAIDA,append=TRUE)
+      # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+      # 
+      # cat(paste0("sdmdata2 <- sdmdata2[-1]"),file=ARQUIVO_SAIDA,append=TRUE)
+      # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+      # 
+      # cat(paste0("sdmdata2 <- sdmdata2[-1]"),file=ARQUIVO_SAIDA,append=TRUE)
+      # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
 
       colnames(sdmdata)[1] <- "group"
 
-      cat(paste0("colnames(sdmdata)[1] <- \"group\""),file=ARQUIVO_SAIDA,append=TRUE)
-      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+      # cat(paste0("colnames(sdmdata)[1] <- \"group\""),file=ARQUIVO_SAIDA,append=TRUE)
+      # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
 
       for (i in unique(group_pre)){
 
-        if (i==1)
-        {
-          cat(paste0("for (i in unique(group_pre)){"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-          cat(paste0("sdmdata_train <- subset(sdmdata,group!=i)"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-          cat(paste0("sdmdata_teste <- subset(sdmdata,group ==i)"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-          cat(paste0("envtrain <- subset(sdmdata_train,select= c(-group,-Longitude,-Latitude))"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-          cat(paste0("envtest_pre <- subset(sdmdata_teste,pre_abs==1,select= c(-group,-Latitude,-Latitude,-pre_abs))"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-          cat(paste0("envtest_abs <- subset(sdmdata_teste,pre_abs==0,select= c(-group,-Latitude,-Latitude,-pre_abs))"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-          cat(paste0("coord_pres_train <- subset(sdmdata_train,pre_abs==1,select= c(Longitude,Latitude))"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-          cat(paste0("coord_pres_teste <- subset(sdmdata_teste,pre_abs==1,select= c(Longitude,Latitude))"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-          cat(paste0("coord_abs_train <- subset(sdmdata_train,pre_abs==0,select= c(Longitude,Latitude))"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-          cat(paste0("coord_abs_teste <- subset(sdmdata_teste,pre_abs==0,select= c(Longitude,Latitude))"),file=ARQUIVO_SAIDA,append=TRUE)
-          cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-        }
+        # if (i==1)
+        # {
+        #   cat(paste0("for (i in unique(group_pre)){"),file=ARQUIVO_SAIDA,append=TRUE)
+        #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+        #   cat(paste0("sdmdata_train <- subset(sdmdata,group!=i)"),file=ARQUIVO_SAIDA,append=TRUE)
+        #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+        #   cat(paste0("sdmdata_teste <- subset(sdmdata,group ==i)"),file=ARQUIVO_SAIDA,append=TRUE)
+        #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+        #   cat(paste0("envtrain <- subset(sdmdata_train,select= c(-group,-Longitude,-Latitude))"),file=ARQUIVO_SAIDA,append=TRUE)
+        #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+        #   cat(paste0("envtest_pre <- subset(sdmdata_teste,pre_abs==1,select= c(-group,-Latitude,-Latitude,-pre_abs))"),file=ARQUIVO_SAIDA,append=TRUE)
+        #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+        #   cat(paste0("envtest_abs <- subset(sdmdata_teste,pre_abs==0,select= c(-group,-Latitude,-Latitude,-pre_abs))"),file=ARQUIVO_SAIDA,append=TRUE)
+        #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+        #   cat(paste0("coord_pres_train <- subset(sdmdata_train,pre_abs==1,select= c(Longitude,Latitude))"),file=ARQUIVO_SAIDA,append=TRUE)
+        #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+        #   cat(paste0("coord_pres_teste <- subset(sdmdata_teste,pre_abs==1,select= c(Longitude,Latitude))"),file=ARQUIVO_SAIDA,append=TRUE)
+        #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+        #   cat(paste0("coord_abs_train <- subset(sdmdata_train,pre_abs==0,select= c(Longitude,Latitude))"),file=ARQUIVO_SAIDA,append=TRUE)
+        #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+        #   cat(paste0("coord_abs_teste <- subset(sdmdata_teste,pre_abs==0,select= c(Longitude,Latitude))"),file=ARQUIVO_SAIDA,append=TRUE)
+        #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+        # }
 
         progress$set(message = paste("Processando a modelagem",i), value = 0)
         # Separar o sdmdata entre teste e treino
@@ -411,30 +396,30 @@ function(input, output, session) {
           # Constr?i o modelo no espa?o ambiental
           bc <- bioclim (var, coord_pres_train)
 
-          if (i==1)
-          {
-            cat(paste0("#BIOCLIM"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-
-            cat(paste0(" bc <- bioclim (var, coord_pres_train)"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("ebc <<- dismo::evaluate(coord_pres_teste,coord_abs_teste,bc,var)"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("bcTSS <- max(ebc@TPR + ebc@TNR)-1"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("tbc <- threshold (ebc,'spec_sens')"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("bc_cont <- predict (var,bc,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("bc_cont_proj <- predict (var2,bc,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("bc_bin <- bc_cont>tbc"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0(" bc_mult <- bc_bin*bc_cont"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("bc_mult <- bc_mult/maxValue(bc_mult)"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-          }
+          # if (i==1)
+          # {
+          #   cat(paste0("#BIOCLIM"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          # 
+          #   cat(paste0(" bc <- bioclim (var, coord_pres_train)"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("ebc <<- dismo::evaluate(coord_pres_teste,coord_abs_teste,bc,var)"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("bcTSS <- max(ebc@TPR + ebc@TNR)-1"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("tbc <- threshold (ebc,'spec_sens')"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("bc_cont <- predict (var,bc,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("bc_cont_proj <- predict (var2,bc,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("bc_bin <- bc_cont>tbc"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0(" bc_mult <- bc_bin*bc_cont"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("bc_mult <- bc_mult/maxValue(bc_mult)"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          # }
 
           # Validacao da performance
           ebc <<- dismo::evaluate(coord_pres_teste,coord_abs_teste,bc,var)
@@ -468,31 +453,31 @@ function(input, output, session) {
         if (Domain==T){
           cat(paste("Domain",'\n'))
 
-          if (i==1)
-          {
-
-            cat(paste0("DOMAIN"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-
-            cat(paste0("  do <- domain (var, coord_pres_train)"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("edo <<- dismo::evaluate(coord_pres_teste,coord_abs_teste,do,var)"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("doTSS <- max(edo@TPR + edo@TNR)-1"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("tdo <- threshold (edo,'spec_sens')"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0(" do_cont <- predict (var,do,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("do_cont_proj <- predict (var2,do,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("do_bin <- do_cont>tdo"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("do_mult <- do_bin*do_cont"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("do_mult <- do_mult/maxValue(do_mult)"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-          }
+          # if (i==1)
+          # {
+          # 
+          #   cat(paste0("DOMAIN"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          # 
+          #   cat(paste0("  do <- domain (var, coord_pres_train)"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("edo <<- dismo::evaluate(coord_pres_teste,coord_abs_teste,do,var)"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("doTSS <- max(edo@TPR + edo@TNR)-1"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("tdo <- threshold (edo,'spec_sens')"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0(" do_cont <- predict (var,do,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("do_cont_proj <- predict (var2,do,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("do_bin <- do_cont>tdo"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("do_mult <- do_bin*do_cont"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("do_mult <- do_mult/maxValue(do_mult)"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          # }
           # Constr?i o modelo no espa?o ambiental
           do <- domain (var, coord_pres_train)
           # Valida??o da performance
@@ -527,31 +512,31 @@ function(input, output, session) {
 
         if (maxent==T){
 
-          if (i==1)
-          {
-            cat(paste0("MAXENT"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-
-
-            cat(paste0("mx <- maxent (var, coord_pres_train)"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("emx <- dismo::evaluate(coord_pres_teste,coord_abs_teste,mx,var)"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("mxTSS <- max(emx@TPR + emx@TNR)-1"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("tmx <- threshold (emx,'spec_sens')"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("mx_cont <- predict (var,mx,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("mx_cont_proj <- predict (var2,mx,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("mx_bin <- mx_cont>tmx"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("mx_mult <- mx_bin*mx_cont"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("mx_mult <- mx_mult/maxValue(mx_mult)"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-          }
+          # if (i==1)
+          # {
+          #   cat(paste0("MAXENT"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          # 
+          # 
+          #   cat(paste0("mx <- maxent (var, coord_pres_train)"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("emx <- dismo::evaluate(coord_pres_teste,coord_abs_teste,mx,var)"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("mxTSS <- max(emx@TPR + emx@TNR)-1"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("tmx <- threshold (emx,'spec_sens')"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("mx_cont <- predict (var,mx,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("mx_cont_proj <- predict (var2,mx,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("mx_bin <- mx_cont>tmx"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("mx_mult <- mx_bin*mx_cont"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("mx_mult <- mx_mult/maxValue(mx_mult)"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          # }
 
           cat(paste("Maxent",'\n'))
           # Constr?i o modelo no espa?o ambiental
@@ -588,30 +573,30 @@ function(input, output, session) {
         if (GLM==T){
           cat(paste("GLM",'\n'))
 
-          if (i==1)
-          {
-            cat(paste0("GLM"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-
-            cat(paste0("mglm <- glm(pre_abs~.,data=envtrain)"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("eglm <- dismo::evaluate(envtest_pre,envtest_abs,mglm)"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("glmTSS <- max(eglm@TPR + eglm@TNR)-1"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("tglm <- threshold (eglm,'spec_sens')"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("glm_cont <- predict (var,mglm,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("glm_cont_proj <- predict (var2,mglm,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("glm_bin <- glm_cont>tglm"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("glm_mult <- glm_bin*glm_cont "),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("glm_mult <- glm_mult/maxValue(glm_mult)"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-          }
+          # if (i==1)
+          # {
+          #   cat(paste0("GLM"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          # 
+          #   cat(paste0("mglm <- glm(pre_abs~.,data=envtrain)"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("eglm <- dismo::evaluate(envtest_pre,envtest_abs,mglm)"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("glmTSS <- max(eglm@TPR + eglm@TNR)-1"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("tglm <- threshold (eglm,'spec_sens')"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("glm_cont <- predict (var,mglm,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("glm_cont_proj <- predict (var2,mglm,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("glm_bin <- glm_cont>tglm"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("glm_mult <- glm_bin*glm_cont "),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("glm_mult <- glm_mult/maxValue(glm_mult)"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          # }
 
           # Constr?i o modelo no espa?o ambiental
           mglm <- glm(pre_abs~.,data=envtrain)
@@ -648,30 +633,30 @@ function(input, output, session) {
         if (RF==T){
           cat(paste("RF",'\n'))
 
-          if (i==1)
-          {
-            cat(paste0("RF"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-
-            cat(paste0("rf1 <- randomForest (pre_abs~.,data=envtrain)"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("erf1 <- dismo::evaluate(envtest_pre,envtest_abs, rf1)"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("rfTSS1 <- max(erf1@TPR + erf1@TNR)-1"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("trf1 <- threshold (erf1,'spec_sens')"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("rf1_cont <- predict (var,rf1,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("rf1_cont_proj <- predict (var2,rf1,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("rf1_bin <- rf1_cont>trf1"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("rf1_mult <- rf1_bin*rf1_cont "),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("rf1_mult <- rf1_mult/maxValue(rf1_mult)"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-          }
+          # if (i==1)
+          # {
+          #   cat(paste0("RF"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          # 
+          #   cat(paste0("rf1 <- randomForest (pre_abs~.,data=envtrain)"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("erf1 <- dismo::evaluate(envtest_pre,envtest_abs, rf1)"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("rfTSS1 <- max(erf1@TPR + erf1@TNR)-1"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("trf1 <- threshold (erf1,'spec_sens')"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("rf1_cont <- predict (var,rf1,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("rf1_cont_proj <- predict (var2,rf1,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("rf1_bin <- rf1_cont>trf1"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("rf1_mult <- rf1_bin*rf1_cont "),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("rf1_mult <- rf1_mult/maxValue(rf1_mult)"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          # }
 
           # Constr?i o modelo no espa?o ambiental
           ##rf1 <- randomForest (pre_abs~.,data=envtrain) # porque da mensagem de aviso ao usar rf1(regression)?
@@ -717,30 +702,30 @@ function(input, output, session) {
 
         if (SVM==T){
 
-          if (i==1)
-          {
-            cat(paste0("SVM"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-
-            cat(paste0("msvm <- ksvm(pre_abs~.,data=envtrain)"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("esvm <- dismo::evaluate(envtest_pre,envtest_abs,msvm)"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("svmTSS <- max(esvm@TPR + esvm@TNR)-1"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("tsvm <- threshold (esvm,'spec_sens')"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("svm_cont <- predict (var,msvm,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("svm_cont_proj <- predict (var2,msvm,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("svm_bin <- svm_cont>tsvm"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("svm_mult <- svm_bin*svm_cont"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            cat(paste0("svm_mult <- svm_mult/maxValue(svm_mult)"),file=ARQUIVO_SAIDA,append=TRUE)
-            cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-          }
+          # if (i==1)
+          # {
+          #   cat(paste0("SVM"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          # 
+          #   cat(paste0("msvm <- ksvm(pre_abs~.,data=envtrain)"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("esvm <- dismo::evaluate(envtest_pre,envtest_abs,msvm)"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("svmTSS <- max(esvm@TPR + esvm@TNR)-1"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("tsvm <- threshold (esvm,'spec_sens')"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("svm_cont <- predict (var,msvm,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("svm_cont_proj <- predict (var2,msvm,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("svm_bin <- svm_cont>tsvm"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("svm_mult <- svm_bin*svm_cont"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat(paste0("svm_mult <- svm_mult/maxValue(svm_mult)"),file=ARQUIVO_SAIDA,append=TRUE)
+          #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+          # }
           cat(paste("SVM",'\n'))
           # Constr?i o modelo no espa?o ambiental
           msvm <- ksvm(pre_abs~.,data=envtrain)
@@ -780,33 +765,33 @@ function(input, output, session) {
           if (condicao_Mahal==TRUE){
             # Construi o modelo no espaco ambiental
 
-            if (i==1)
-            {
-
-              cat(paste0("MAHALANOBIS"),file=ARQUIVO_SAIDA,append=TRUE)
-              cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-
-              cat(paste0("ma <- mahal (var, coord_pres_train)"),file=ARQUIVO_SAIDA,append=TRUE)
-              cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-              cat(paste0("ema <- dismo::evaluate(coord_pres_teste,coord_abs_teste,ma,var)"),file=ARQUIVO_SAIDA,append=TRUE)
-              cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-              cat(paste0("maTSS <- max(ema@TPR + ema@TNR)-1"),file=ARQUIVO_SAIDA,append=TRUE)
-              cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-              cat(paste0("tma <- threshold (ema,'spec_sens')"),file=ARQUIVO_SAIDA,append=TRUE)
-              cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-              cat(paste0("ma_cont <- predict (var,ma,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
-              cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-              cat(paste0("ma_cont_proj <- predict (var2,ma,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
-              cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-              cat(paste0("ma_cont_invert <- ma_cont+(-1*minValue(ma_cont))"),file=ARQUIVO_SAIDA,append=TRUE)
-              cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-              cat(paste0("ma_bin <- ma_cont>tma"),file=ARQUIVO_SAIDA,append=TRUE)
-              cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-              cat(paste0("ma_mult <- ma_bin * ma_cont_invert"),file=ARQUIVO_SAIDA,append=TRUE)
-              cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-              cat(paste0("ma_mult <- ma_mult/maxValue(ma_mult)"),file=ARQUIVO_SAIDA,append=TRUE)
-              cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            }
+            # if (i==1)
+            # {
+            # 
+            #   cat(paste0("MAHALANOBIS"),file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+            # 
+            #   cat(paste0("ma <- mahal (var, coord_pres_train)"),file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat(paste0("ema <- dismo::evaluate(coord_pres_teste,coord_abs_teste,ma,var)"),file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat(paste0("maTSS <- max(ema@TPR + ema@TNR)-1"),file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat(paste0("tma <- threshold (ema,'spec_sens')"),file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat(paste0("ma_cont <- predict (var,ma,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat(paste0("ma_cont_proj <- predict (var2,ma,progress='text')"),file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat(paste0("ma_cont_invert <- ma_cont+(-1*minValue(ma_cont))"),file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat(paste0("ma_bin <- ma_cont>tma"),file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat(paste0("ma_mult <- ma_bin * ma_cont_invert"),file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat(paste0("ma_mult <- ma_mult/maxValue(ma_mult)"),file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+            # }
             ma <- mahal (var, coord_pres_train)
             # validacao da performance
             ema <- dismo::evaluate(coord_pres_teste,coord_abs_teste,ma,var)
@@ -855,11 +840,11 @@ function(input, output, session) {
             writeRaster(x=bc_cont,filename=paste0("./www/",projeto,"/models/pre_",i,"_bc_con",".tif"),overwrite=T)
             png(filename=paste0("./www/",projeto,"/jpg/pre_",i,"_bc_con",".jpg"))
             plot(bc_cont,main=paste("BioClim - ",i))
-            if (i==1)
-            {
-              cat(paste0("plot(bc_cont,main=paste(\"BioClim - \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
-              cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            }
+            # if (i==1)
+            # {
+            #   cat(paste0("plot(bc_cont,main=paste(\"BioClim - \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+            # }
             dev.off()
 
             if (write.projecao==T)
@@ -871,11 +856,11 @@ function(input, output, session) {
               png(filename=paste0("./www/",projeto,"/jpg/fut_",i,"_bc_con",".jpg"))
               plot(bc_future,main=paste("BioClim - Fut ",i))
 
-              if (i==1)
-              {
-                cat(paste0("plot(bc_future,main=paste(\"BioClim - Fut \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
-                cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-              }
+              # if (i==1)
+              # {
+              #   cat(paste0("plot(bc_future,main=paste(\"BioClim - Fut \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
+              #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+              # }
 
               dev.off()
             }
@@ -887,11 +872,11 @@ function(input, output, session) {
             png(filename=paste0("./www/",projeto,"/jpg/pre_",i,"_do_con",".jpg"))
             plot(do_cont,main=paste("Domain - ",i))
 
-            if (i==1)
-            {
-              cat(paste0("plot(do_cont,main=paste(\"Domain - \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
-              cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            }
+            # if (i==1)
+            # {
+            #   cat(paste0("plot(do_cont,main=paste(\"Domain - \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+            # }
 
             dev.off()
 
@@ -912,11 +897,11 @@ function(input, output, session) {
             png(filename=paste0("./www/",projeto,"/jpg/pre_",i,"_mx_con",".jpg"))
             plot(mx_cont,main=paste("Maxent - ",i))
 
-            if (i==1)
-            {
-              cat(paste0("plot(mx_cont,main=paste(\"Maxent - \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
-              cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            }
+            # if (i==1)
+            # {
+            #   cat(paste0("plot(mx_cont,main=paste(\"Maxent - \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+            # }
             dev.off()
 
             if (write.projecao==T)
@@ -936,11 +921,11 @@ function(input, output, session) {
             png(filename=paste0("./www/",projeto,"/jpg/pre_",i,"_glm_con",".jpg"))
             plot(glm_cont,main=paste("GLM - ",i))
 
-            if (i==1)
-            {
-              cat(paste0("plot(glm_cont,main=paste(\"GLM - \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
-              cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            }
+            # if (i==1)
+            # {
+            #   cat(paste0("plot(glm_cont,main=paste(\"GLM - \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+            # }
             dev.off()
             if (write.projecao==T)
             {
@@ -960,11 +945,11 @@ function(input, output, session) {
             png(filename=paste0("./www/",projeto,"/jpg/pre_",i,"_rf_con",".jpg"))
             plot(rf1_cont,main=paste("RF - ",i))
 
-            if (i==1)
-            {
-              cat(paste0("plot(rf1_cont,main=paste(\"RF - \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
-              cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            }
+            # if (i==1)
+            # {
+            #   cat(paste0("plot(rf1_cont,main=paste(\"RF - \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+            # }
 
             dev.off()
 
@@ -985,11 +970,11 @@ function(input, output, session) {
             png(filename=paste0("./www/",projeto,"/jpg/pre_",i,"_svm_con",".jpg"))
             plot(svm_cont,main=paste("SVM - ",i))
 
-            if (i==1)
-            {
-              cat(paste0("plot(svm_cont,main=paste(\"SVM - \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
-              cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            }
+            # if (i==1)
+            # {
+            #   cat(paste0("plot(svm_cont,main=paste(\"SVM - \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+            # }
 
             dev.off()
             if (write.projecao==T)
@@ -1009,11 +994,11 @@ function(input, output, session) {
             png(filename=paste0("./www/",projeto,"/jpg/pre_",i,"_ma_con",".jpg"))
             plot(ma_cont,main=paste("Mahalanobis - ",i))
 
-            if (i==1)
-            {
-              cat(paste0("plot(ma_cont,main=paste(\"Mahalanobis - \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
-              cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            }
+            # if (i==1)
+            # {
+            #   cat(paste0("plot(ma_cont,main=paste(\"Mahalanobis - \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+            # }
 
             dev.off()
             if (write.projecao==T)
@@ -1039,11 +1024,11 @@ function(input, output, session) {
             png(filename=paste0("./www/",projeto,"/jpg/pre_",i,"_bc_bin",".jpg"))
             plot(bc_bin,main=paste("Bioclim - Bin ",i))
 
-            if (i==1)
-            {
-              cat(paste0("plot(bc_bin,main=paste(\"Bioclim - Bin \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
-              cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            }
+            # if (i==1)
+            # {
+            #   cat(paste0("plot(bc_bin,main=paste(\"Bioclim - Bin \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+            # }
             dev.off()
 
             if(write.future==T) { writeRaster(x=bc_future_bin,filename=paste0("./www/",projeto,"/futuro/fut_",i,"_bc_bin",".tif"),overwrite=T)}}
@@ -1053,11 +1038,11 @@ function(input, output, session) {
             png(filename=paste0("./www/",projeto,"/jpg/pre_",i,"_do_bin",".jpg"))
             plot(do_bin,main=paste("Domain - Bin ",i))
 
-            if (i==1)
-            {
-              cat(paste0("plot(do_bin,main=paste(\"Domain - Bin \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
-              cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            }
+            # if (i==1)
+            # {
+            #   cat(paste0("plot(do_bin,main=paste(\"Domain - Bin \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+            # }
             dev.off()
 
             if(write.future==T) { writeRaster(x=do_future_bin,filename=paste0("./www/",projeto,"/futuro/fut_",i,"_do_bin",".tif"),overwrite=T)}}
@@ -1067,11 +1052,11 @@ function(input, output, session) {
             png(filename=paste0("./www/",projeto,"/jpg/pre_",i,"_mx_bin",".jpg"))
             plot(mx_bin,main=paste("Maxent - Bin ",i))
 
-            if (i==1)
-            {
-              cat(paste0("plot(mx_bin,main=paste(\"Maxent - Bin \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
-              cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            }
+            # if (i==1)
+            # {
+            #   cat(paste0("plot(mx_bin,main=paste(\"Maxent - Bin \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+            # }
 
             dev.off()
 
@@ -1082,11 +1067,11 @@ function(input, output, session) {
             png(filename=paste0("./www/",projeto,"/jpg/pre_",i,"_glm_bin",".jpg"))
             plot(glm_bin,main=paste("GLM - Bin ",i))
 
-            if (i==1)
-            {
-              cat(paste0("plot(glm_bin,main=paste(\"GLM - Bin \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
-              cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            }
+            # if (i==1)
+            # {
+            #   cat(paste0("plot(glm_bin,main=paste(\"GLM - Bin \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+            # }
             dev.off()
 
             if(write.future==T) { writeRaster(x=glm_future_bin,filename=paste0("./www/",projeto,"/futuro/fut_",i,"_glm_bin",".tif"),overwrite=T)}}
@@ -1096,11 +1081,11 @@ function(input, output, session) {
             png(filename=paste0("./www/",projeto,"/jpg/pre_",i,"_rf_bin",".jpg"))
             plot(rf1_bin,main=paste("RF - Bin ",i))
 
-            if (i==1)
-            {
-              cat(paste0("plot(rf1_bin,main=paste(\"RF - Bin \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
-              cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            }
+            # if (i==1)
+            # {
+            #   cat(paste0("plot(rf1_bin,main=paste(\"RF - Bin \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+            # }
 
             dev.off()
             if(write.future==T) { writeRaster(x=rf1_future_bin,filename=paste0("./www/",projeto,"/futuro/fut_",i,"_rf_bin",".tif"),overwrite=T)}}
@@ -1110,11 +1095,11 @@ function(input, output, session) {
             png(filename=paste0("./www/",projeto,"/jpg/pre_",i,"_svm_bin",".jpg"))
             plot(svm_bin,main=paste("SVM - Bin ",i))
 
-            if (i==1)
-            {
-              cat(paste0("plot(svm_bin,main=paste(\"SVM - Bin \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
-              cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            }
+            # if (i==1)
+            # {
+            #   cat(paste0("plot(svm_bin,main=paste(\"SVM - Bin \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+            # }
 
             dev.off()
             if(write.future==T) { writeRaster(x=svm_future_bin,filename=paste0("./www/",projeto,"/futuro/fut_",i,"_svm_bin",".tif"),overwrite=T)}}
@@ -1124,11 +1109,11 @@ function(input, output, session) {
             png(filename=paste0("./www/",projeto,"/jpg/pre_",i,"_ma_bin",".jpg"))
             plot(ma_bin,main=paste("Mahalanobis - Bin ",i))
 
-            if (i==1)
-            {
-              cat(paste0("plot(ma_bin,main=paste(\"Mahalanobis - Bin \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
-              cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-            }
+            # if (i==1)
+            # {
+            #   cat(paste0("plot(ma_bin,main=paste(\"Mahalanobis - Bin \",i))"),file=ARQUIVO_SAIDA,append=TRUE)
+            #   cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+            # }
 
             dev.off()
             if(write.future==T) { writeRaster(x=ma_future_bin,filename=paste0("./www/",projeto,"/futuro/fut_",i,"_ma_bin",".tif"),overwrite=T)}}
@@ -1220,8 +1205,8 @@ function(input, output, session) {
         )
 
       } # Fecha o for loop
-      cat(paste0("} # Fecha o for loop"),file=ARQUIVO_SAIDA,append=TRUE)
-      cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+      # cat(paste0("} # Fecha o for loop"),file=ARQUIVO_SAIDA,append=TRUE)
+      # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
 
       output$dbgridresultado <- renderDataTable({
         cat(c(date(),"Mostrando o resultado de stats20",'\n','\n'))
@@ -1535,84 +1520,84 @@ function(input, output, session) {
       write.projecao = T
     }
 
-    cat("library(maps)",file=ARQUIVO_SAIDA,sep="\n")
-    cat("library(dismo)",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("library(rgdal)",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("library(raster)",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("library(rgbif)",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("library(XML)",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("# INFORME O CAMINHO DA APLICACAO",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("path <- \"\"",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("file <- paste(path,\"csv/dados.csv\", sep=\"\")",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("especie <- read.csv(file)",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("head(especie)",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("library(maps)",file=ARQUIVO_SAIDA,sep="\n")
+    # cat("library(dismo)",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("library(rgdal)",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("library(raster)",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("library(rgbif)",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("library(XML)",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("# INFORME O CAMINHO DA APLICACAO",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("path <- \"\"",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("file <- paste(path,\"csv/dados.csv\", sep=\"\")",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("especie <- read.csv(file)",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("head(especie)",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+    # 
+    # cat("head(especie)",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+    # 
+    # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+    # 
+    # cat("arquivo <- list()",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+    # 
+    # cat("# ADICIONE OS RASTERS",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
 
-    cat("head(especie)",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
 
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+    # if (length(arquivo2>0))
+    # {
+    #   for (i in 1:length(arquivo2)){
+    #     cat(paste0("arquivo <- c(arquivo,paste('",arquivo2[[i]],"',sep=''))"),file=ARQUIVO_SAIDA,append=TRUE)
+    #     cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+    #   }
+    # }
 
-    cat("arquivo <- list()",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-
-    cat("# ADICIONE OS RASTERS",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-
-
-    if (length(arquivo2>0))
-    {
-      for (i in 1:length(arquivo2)){
-        cat(paste0("arquivo <- c(arquivo,paste('",arquivo2[[i]],"',sep=''))"),file=ARQUIVO_SAIDA,append=TRUE)
-        cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-      }
-    }
-
-    cat("arquivo",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-
-    cat("arquivo <- stack(arquivo)",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-
-    cat("pred_nf <- arquivo",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-
-    #cat(paste0("ext <- extent(",input$edtextend1,",",input$edtextend2,",",input$edtextend3,",",input$edtextend4,")"),file=ARQUIVO_SAIDA,append=TRUE)
-    cat(paste0("ext <- extent(",ext1,",",ext3,",",ext2,",",ext4,")"),file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-
-    cat("pred_nf <- crop(pred_nf, ext)",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-
-    cat("plot(pred_nf, 1)",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-
-    cat("especie <<- especie[,2:3]",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-
-    cat("points(especie, bg='red', cex=1,pch=21)",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-
-    cat("presvals <- raster::extract(pred_nf, especie)",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-
-    cat("var <- pred_nf",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-
-    cat("var2 <- pred_nf2",file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
-
-    cat(paste0("part <- ",numparticoes),file=ARQUIVO_SAIDA,append=TRUE)
-    cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("arquivo",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+    # 
+    # cat("arquivo <- stack(arquivo)",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+    # 
+    # cat("pred_nf <- arquivo",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+    # 
+    # #cat(paste0("ext <- extent(",input$edtextend1,",",input$edtextend2,",",input$edtextend3,",",input$edtextend4,")"),file=ARQUIVO_SAIDA,append=TRUE)
+    # cat(paste0("ext <- extent(",ext1,",",ext3,",",ext2,",",ext4,")"),file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+    # 
+    # cat("pred_nf <- crop(pred_nf, ext)",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+    # 
+    # cat("plot(pred_nf, 1)",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+    # 
+    # cat("especie <<- especie[,2:3]",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+    # 
+    # cat("points(especie, bg='red', cex=1,pch=21)",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+    # 
+    # cat("presvals <- raster::extract(pred_nf, especie)",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+    # 
+    # cat("var <- pred_nf",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+    # 
+    # cat("var2 <- pred_nf2",file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
+    # 
+    # cat(paste0("part <- ",numparticoes),file=ARQUIVO_SAIDA,append=TRUE)
+    # cat("\n",file=ARQUIVO_SAIDA,append=TRUE)
 
     dismo.mod("",especie,pred_nf,pred_nf2,input$MAXENT,input$BIOCLIM,input$GLM,input$RF,input$SVM,input$MAHALANOBIS,input$DOMAIN,input$SVM2,numparticoes,numpontos,123,T,T,T,F,F,input$TSS,futuro,pred_nffuturo,futuro,write.projecao)
 
@@ -2766,7 +2751,7 @@ function(input, output, session) {
 # CRIAR/CONSULTAR PROJETO -------------------------------------------------
   isolate({
   	projeto <<- paste0('projeto/', input$edtprojeto)
-  	ARQUIVO_SAIDA <<- paste0("www/", projeto, "/script.R")
+  #	ARQUIVO_SAIDA <<- paste0("www/", projeto, "/script.R")
   })
 
   observeEvent(input$btncriarprojeto, {
