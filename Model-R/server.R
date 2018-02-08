@@ -11,7 +11,7 @@
 
 # IPAK --------------------------------------------------------------------
 
-dyn.load('/Library/Java/JavaVirtualMachines/jdk1.8.0_151.jdk/Contents/Home/jre/lib/server/libjvm.dylib')
+#dyn.load('/Library/Java/JavaVirtualMachines/jdk1.8.0_151.jdk/Contents/Home/jre/lib/server/libjvm.dylib')
 
 ipak <- function(pkg) {
   new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
@@ -38,18 +38,15 @@ ipak(c("shinydashboard",
 	"data.table",
 	"sdmpredictors"))
 
+
+
+
 ARQUIVO_SAIDA <- ''
-# server.R
-
-# LIMPANDO ENVIRONMENT ----------------------------------------------------
-
 
 rm(list = ls())
 rm(list = setdiff(ls(), lsf.str()))
 
-home <- '/'
-## Para a hospedagem no jardim alterar para '/modelagem/'
-
+home <- '/' # Para a hospedagem no jardim alterar para '/modelagem/'
 
 t <- 7
 ext1 <- -90
@@ -70,113 +67,116 @@ ETAPA <- 0
 spname <<- ''
 
 
-# Baixar e descompactar o maxent java -------------------------------------
-
-
 # MaxEnt.jar
 jar <- paste0(system.file(package = "dismo"), "/java/maxent.jar")
 if (file.exists(jar) != T) {
-  url = "http://biodiversityinformatics.amnh.org/open_source/maxent/maxent.php?op=download"
-  download.file(url, dest = "maxent.zip", mode = "wb")
-  unzip("maxent.zip", files = "maxent.jar", exdir = system.file("java", package = "dismo"))
-  unlink("maxent.zip")}
-
+	url = "http://biodiversityinformatics.amnh.org/open_source/maxent/maxent.php?op=download"
+	download.file (url, dest = "maxent.zip", mode = "wb")
+	unzip("maxent.zip",
+				files = "maxent.jar",
+				exdir = system.file("java", package = "dismo"))
+	unlink("maxent.zip")
+}
 
 
 # CRIAR FUNÇÕES -----------------------------------------------------------
 
 
 # Função panel.cor: gerar os valores de correlação no gráfico da função pairs
-
-panel.cor <- function(x, y, digits = 2, prefix = "", ...){
-  usr <- par("usr")
-  on.exit(par(usr))
-  par(usr = c(0, 1, 0, 1))
-  r <- cor(x, y)
-  txt <- format(c(r, 0.123456789), digits = digits)[1]
-  txt <- paste0(prefix, txt)
-  text(0.5, 0.5, txt, cex = 1.5)
-  }
+panel.cor <- function(x,
+											y,
+											digits = 2,
+											prefix = "",
+											...) {
+	usr <- par("usr")
+	on.exit(par(usr))
+	par(usr = c(0, 1, 0, 1))
+	r <- cor(x, y)
+	txt <- format(c(r, 0.123456789), digits = digits)[1]
+	txt <- paste0(prefix, txt)
+	text(0.5, 0.5, txt, cex = 1.5)
+}
 
 
 # Função panel.hist: Função para gerar os histogramas no gráfico da função pairs
 
-panel.hist <- function(x, ...){
-  usr <- par("usr"); on.exit(par(usr))
-  par(usr = c(usr[1:2], 0, 1.5) )
-  h <- hist(x, plot = FALSE)
-  breaks <- h$breaks; nB <- length(breaks)
-  y <- h$counts; y <- y/max(y)
-  rect(breaks[-nB], 0, breaks[-1], y, col = "gray", ...)
-  }
+panel.hist <- function(x, ...) {
+	usr <- par("usr")
+	on.exit(par(usr))
+	par(usr = c(usr[1:2], 0, 1.5))
+	h <- hist(x, plot = FALSE)
+	breaks <- h$breaks
+	nB <- length(breaks)
+	y <- h$counts
+	y <- y / max(y)
+	rect(breaks[-nB], 0, breaks[-1], y, col = "gray", ...)
+}
 
 
 # Função limpar resultados anteriores
-
 limparResultadosAnteriores<-function()({
 
-  lista <- list.files(paste0("~/www/",projeto,"/models/",full.names=T,pattern=paste0(".")))
-  if (length(lista>0))
-  {
-    file.remove(paste0("www/",projeto,"/models/",lista))
-  }
+	lista <- list.files(paste0("~/www/",projeto,"/models/",full.names=T,pattern=paste0(".")))
+	if (length(lista>0))
+	{
+		file.remove(paste0("www/",projeto,"/models/",lista))
+	}
 
-  lista <- list.files(paste0("www/",projeto,"/final/",full.names=T,pattern=paste0(".")))
-  if (length(lista>0))
-  {
-    file.remove(paste0("www/",projeto,"/final/",lista))
-  }
+	lista <- list.files(paste0("www/",projeto,"/final/",full.names=T,pattern=paste0(".")))
+	if (length(lista>0))
+	{
+		file.remove(paste0("www/",projeto,"/final/",lista))
+	}
 
-  lista <- list.files(paste0("www/",projeto,"/proj/",full.names=T,pattern=paste0(".")))
-  if (length(lista>0))
-  {
-    file.remove(paste0("www/",projeto,"/proj/",lista))
-  }
+	lista <- list.files(paste0("www/",projeto,"/proj/",full.names=T,pattern=paste0(".")))
+	if (length(lista>0))
+	{
+		file.remove(paste0("www/",projeto,"/proj/",lista))
+	}
 
-  lista <- list.files(paste0("www/",projeto,"/futuro/",full.names=T,pattern=paste0(".")))
-  if (length(lista>0))
-  {
-    file.remove(paste0("www/",projeto,"/futuro/",lista))
-  }
+	lista <- list.files(paste0("www/",projeto,"/futuro/",full.names=T,pattern=paste0(".")))
+	if (length(lista>0))
+	{
+		file.remove(paste0("www/",projeto,"/futuro/",lista))
+	}
 
-  lista <- list.files(paste0("www/",projeto,"/jpg/",full.names=T,pattern=paste0(".jpg")))
-  if (length(lista>0))
-  {
-    file.remove(paste0("www/",projeto,"/jpg/",lista))
-  }
+	lista <- list.files(paste0("www/",projeto,"/jpg/",full.names=T,pattern=paste0(".jpg")))
+	if (length(lista>0))
+	{
+		file.remove(paste0("www/",projeto,"/jpg/",lista))
+	}
 
 })
 
 
 
 # Função Get Ocorrencia: Extair dados de ocorrencia do banco do jabot
-
 getOcorrencia <-function(pTaxon){
-    library("rjson")
-    pTaxon = gsub(' ', '_', pTaxon)
-    json_file <- paste("http://aplicacoes.jbrj.gov.br/jabot/v2/ws/server.php?coordenada=S&taxon=",pTaxon,sep="")
-    json_data <- fromJSON(file=json_file,method = "C")
+	library("rjson")
+	pTaxon = gsub(' ', '_', pTaxon)
+	json_file <-
+		paste0(
+			"http://aplicacoes.jbrj.gov.br/jabot/v2/ws/server.php?coordenada=S&taxon=", pTaxon)
+	json_data <- fromJSON(file = json_file, method = "C")
+	final_data <- do.call(rbind, json_data)
+	write.csv(final_data, "final_data.csv")
+	y2 <- final_data[, c("taxoncompleto", "longitude", "latitude")]
 
-    final_data <- do.call(rbind, json_data)
-    write.csv(final_data, "final_data.csv")
-    y2 <- final_data[,c("taxoncompleto", "longitude", "latitude")]
+	y2 <- cbind(as.numeric(y2[, 2]),
+							as.numeric(y2[, 3]))
 
-    y2 <- cbind(
-      as.numeric(y2[ ,2]),
-      as.numeric(y2[ ,3])
-    )
-
-    colnames(y2) <- c("Longitude", "Latitude")
-    y2 <- data.frame(y2)
-    return (y2)
-  }
+	colnames(y2) <- c("Longitude", "Latitude")
+	y2 <- data.frame(y2)
+	return (y2)
+}
 
 options(shiny.maxRequestSize = 100*1024^2)
 
 dirColors <-c("1"="#595490", "2"="#527525", "3"="#A93F35", "4"="#BA48AA")
 
-
-# START SERVER FUNCTION ---------------------------------------------------
+#############################################
+# START SERVER FUNCTION ---------------------
+#############################################
 
 function(input, output, session) {
   especie <<- NULL
@@ -190,7 +190,6 @@ function(input, output, session) {
   library(leaflet)
 
 # INÍCIO FUNÇÃO dismo.mod -------------------------------------------------
-
   dismo.mod <- function(sp,
                         occs= spp.filt,
                         var= expl,
@@ -217,14 +216,15 @@ function(input, output, session) {
                         write.future= F, # escreve modelos futuros
                         write.projecao= F)
   {
-    ## Carregando bibliotecas
+
+  	# Carregando bibliotecas
     library(dismo)
     library(randomForest)
     library(kernlab)
     library(XML)
     library(raster)
     library(rgdal)
-    ##library(rJava)
+    #library(rJava)
     library(maps)
 
     cat(paste0("library(dismo)"),file=ARQUIVO_SAIDA,append=TRUE)
@@ -244,7 +244,6 @@ function(input, output, session) {
 
 
     ## DELETE OS ARQUIVOS ANTIGOS ANTES DE GERAR UM NOVO
-
     unlink(paste0("www/",projeto,'/models/evaluate_.txt'), recursive=TRUE)
     unlink(paste0("www/",projeto,'/models/statsALL.txt'), recursive=TRUE)
     unlink(paste0("www/",projeto,'/models/evaluate_ALL_models.txt'), recursive=TRUE)
@@ -1617,11 +1616,11 @@ function(input, output, session) {
 
     dismo.mod("",especie,pred_nf,pred_nf2,input$MAXENT,input$BIOCLIM,input$GLM,input$RF,input$SVM,input$MAHALANOBIS,input$DOMAIN,input$SVM2,numparticoes,numpontos,123,T,T,T,F,F,input$TSS,futuro,pred_nffuturo,futuro,write.projecao)
 
-    progress$set(message = paste("Gerando script"), value = 0)
+    progress$set(message = paste("Generating script..."), value = 0)
 
     # script gerado pelo sistema
 
-    progress$set(message = "Salvando dados...", value = 0)
+    progress$set(message = "Saving data...", value = 0)
 
     write.csv(especie, file = paste0("www/",projeto,"/csv/dados.csv"))
 
@@ -2765,224 +2764,302 @@ function(input, output, session) {
   })
 
 # CRIAR/CONSULTAR PROJETO -------------------------------------------------
+  isolate({
+  	projeto <<- paste0('projeto/', input$edtprojeto)
+  	ARQUIVO_SAIDA <<- paste0("www/", projeto, "/script.R")
+  })
 
-  		
   observeEvent(input$btncriarprojeto, {
   	projeto <<- paste0('projeto/',input$edtprojeto)
-  	
+
   	if (projeto != 'projeto/'){
-  		
+
   		if (file.exists(paste0(getwd(), "/www/", projeto)) == TRUE) {
   			showModal(modalDialog(
-  				title = "Error!",
+  				title = "ERROR!",
   				paste0(
-  					"This project is already registered. 
-  					Please enter a new Id." ) ,
+  					"This Project ID is already in use.
+  					Please enter a different ID." ) ,
   				easyClose = TRUE
   			))
   		}
-  		
+
   		if (file.exists(paste0(getwd(), "/www/", projeto)) == FALSE) {
-  			
   			unlink(paste0("www/",projeto), recursive=TRUE)
   			cat(projeto, '\n', file = 'teste.txt', append = TRUE)
-  			
-  			
-  			
+
   			withProgress(message = '', value = 0, {
   				n <- 6
-  				
   				mkdirs(paste0("www/",projeto))
   				mkdirs(paste0("www/",projeto,'/csv'))
-  				incProgress(1/n, detail = paste0("Criando pasta ",projeto))
+  				incProgress(1/n, detail = paste0("Creating directory ",projeto))
   				Sys.sleep(0.6)
   				mkdirs(paste0("www/",projeto,'/final'))
-  				incProgress(2/n, detail = paste0("Criando pasta ",projeto,"/final"))
+  				incProgress(2/n, detail = paste0("Creating directory ",projeto,"/final"))
   				Sys.sleep(0.6)
   				mkdirs(paste0("www/",projeto,'/futuro'))
-  				incProgress(3/n, detail = paste0("Criando pasta ",projeto,"/futuro"))
+  				incProgress(3/n, detail = paste0("Creating directory ",projeto,"/futuro"))
   				Sys.sleep(0.6)
   				mkdirs(paste0("www/",projeto,'/jpg'))
-  				incProgress(4/n, detail = paste0("Criando pasta ",projeto,"/jpg"))
+  				incProgress(4/n, detail = paste0("Creating directory ",projeto,"/jpg"))
   				Sys.sleep(0.6)
   				mkdirs(paste0("www/",projeto,'/models'))
-  				incProgress(5/n, detail = paste0("Criando pasta ",projeto,"/models"))
+  				incProgress(5/n, detail = paste0("Creating directory ",projeto,"/models"))
   				Sys.sleep(0.6)
   				mkdirs(paste0("www/",projeto,'/proj'))
-  				incProgress(6/n, detail = paste0("Criando pasta ",projeto,"/proj"))
+  				incProgress(6/n, detail = paste0("Creating directory ",projeto,"/proj"))
   				Sys.sleep(0.6)
-  				# progress
-  			})
+  			})# withprogress
+
   			showModal(modalDialog(
-  				title = "Warning!",
-  				paste0("Project succesfully created! Project directory: ", projeto ) ,
+  				title = "Project succesfully created!",
+  				paste0("Project directory: ", projeto ) ,
   				easyClose = TRUE
   			))
   		}
-  		
+
   	}
-  	
+
   	if (projeto == 'projeto/'){
   		showModal(modalDialog(
-  			title = "Error!",
+  			title = "ERROR!",
   			paste0( "Project Id cannot be blank." ),
-  		#	paste0( "Please inform a valid Id!" ),
-  			
    			easyClose = TRUE
-  		))
+  			))
   	}
-  	
-  })	
-  				
-  	
+  })
+
   observeEvent(input$btnconsultarprojeto, {
   	projeto <<- paste0('projeto/',input$edtprojeto)
-  	
-  	if (projeto != 'projeto/'){		
+
+  	if (projeto != 'projeto/'){
+
   		if (file.exists(paste0(getwd(), "/www/", projeto)) == TRUE) {
+
   			output$dbgridresultado <- renderDataTable({
-  				read.table(paste0("./www/",projeto,"/models/statsALL.txt"))
-  			}, options = list(lengthMenu = c(5, 30, 50), pageLength = 10)
-  			)
-  			
+  				read.table(paste0("./www/", projeto, "/models/statsALL.txt"))
+  			}, options = list(lengthMenu = c(5, 30, 50), pageLength = 10))
+
+
   			output$ui <- renderUI({
-  				lista_jpg <- list.files(paste0("www/",projeto,"/jpg"),full.names=F,pattern=paste0(".jpg"))
+  				lista_jpg <-
+  					list.files(
+  						paste0("www/", projeto, "/jpg"),
+  						full.names = F,
+  						pattern = paste0(".jpg")
+  					)
   				lapply(1:length(order(lista_jpg)), function(i) {
-  					tags$a(href=paste0(home,projeto,'/jpg/',lista_jpg[i]), tags$img(src = paste0(projeto,'/jpg/',lista_jpg[i]), height = "200px"), target="_blank")
+  					tags$a(
+  						href = paste0(home, projeto, '/jpg/', lista_jpg[i]),
+  						tags$img(
+  							src = paste0(projeto, '/jpg/', lista_jpg[i]),
+  							height = "200px"
+  						),
+  						target = "_blank"
+  					)
   				})
   			})
-  			
+
+
   			output$uifinal <- renderUI({
-  				lista_modelsfinal <- list.files(paste0("www/",projeto,"/final"),full.names=F,pattern=paste0(".png"))
+  				lista_modelsfinal <-
+  					list.files(
+  						paste0("www/", projeto, "/final"),
+  						full.names = F,
+  						pattern = paste0(".png")
+  					)
   				lapply(1:length(sort(lista_modelsfinal)), function(i) {
-  					tags$a(href=paste0(home,projeto,'/final/',lista_modelsfinal[i]), tags$img(src = paste0(projeto,'/final/',lista_modelsfinal[i]), height = "200px"), target="_blank")
-  					
+  					tags$a(
+  						href = paste0(home, projeto, '/final/', lista_modelsfinal[i]),
+  						tags$img(
+  							src = paste0(projeto, '/final/', lista_modelsfinal[i]),
+  							height = "200px"
+  						),
+  						target = "_blank"
+  					)
+
   				})
   			})
-  			
-  			
+
+
   			output$uiarquivosmodelos <- renderUI({
-  				lista_models <- list.files(paste0("www/",projeto,"/models"),full.names=F,pattern=paste0("pre_"))
+  				lista_models <-
+  					list.files(
+  						paste0("www/", projeto, "/models"),
+  						full.names = F,
+  						pattern = paste0("pre_")
+  					)
   				lapply(1:length(sort(lista_models)), function(i) {
-  					tags$div(
-  						tags$a(href=paste0(home,projeto,'/models/',lista_models[i]), paste0(lista_models[i]))
-  					)
+  					tags$div(tags$a(
+  						href = paste0(home, projeto, '/models/', lista_models[i]),
+  						paste0(lista_models[i])
+  					))
   				})
   			})
-  			
-  			
-  			
+
+
   			output$ui <- renderUI({
-  				lista_jpg <- list.files(paste0("www/",projeto,"/jpg"),full.names=F,pattern=paste0(".jpg"))
+  				lista_jpg <-
+  					list.files(
+  						paste0("www/", projeto, "/jpg"),
+  						full.names = F,
+  						pattern = paste0(".jpg")
+  					)
   				lapply(1:length(order(lista_jpg)), function(i) {
-  					tags$a(href=paste0(home,projeto,'/jpg/',lista_jpg[i]), tags$img(src = paste0(projeto,'/jpg/',lista_jpg[i]), height = "200px"), target="_blank")
+  					tags$a(
+  						href = paste0(home, projeto, '/jpg/', lista_jpg[i]),
+  						tags$img(
+  							src = paste0(projeto, '/jpg/', lista_jpg[i]),
+  							height = "200px"
+  						),
+  						target = "_blank"
+  					)
   				})
   			})
-  			
-  			
+
+
   			output$uiscript <- renderUI({
-  				lista_txt <- list.files(paste0("www/",projeto,"/"),full.names=F,pattern=paste0("Script.R"))
-  				lapply(1:length(lista_txt), function(i) {
-  					tags$div(
-  						tags$a(href=paste0(home,projeto,'/',lista_txt[i]), paste0(lista_txt[i]), target="_blank")
+  				lista_txt <-
+  					list.files(
+  						paste0("www/", projeto, "/"),
+  						full.names = F,
+  						pattern = paste0("Script.R")
   					)
+  				lapply(1:length(lista_txt), function(i) {
+  					tags$div(tags$a(
+  						href = paste0(home, projeto, '/', lista_txt[i]),
+  						paste0(lista_txt[i]),
+  						target = "_blank"
+  					))
   				})
   			})
-  			
-  			
+
+
   			output$uiestatistica <- renderUI({
-  				lista_txt <- list.files(paste0("www/",projeto,"/models"),full.names=F,pattern=paste0("statsALL.txt"))
+  				lista_txt <-
+  					list.files(
+  						paste0("www/", projeto, "/models"),
+  						full.names = F,
+  						pattern = paste0("statsALL.txt")
+  					)
   				lapply(1:length(lista_txt), function(i) {
-  					tags$div(
-  						tags$a(href=paste0(home,projeto,'/models/',lista_txt[i]), paste0(lista_txt[i]), target="_blank")
-  					)
+  					tags$div(tags$a(
+  						href = paste0(home, projeto, '/models/', lista_txt[i]),
+  						paste0(lista_txt[i]),
+  						target = "_blank"
+  					))
   				})
   			})
-  			
+
+
   			output$uiarquivosdados <- renderUI({
-  				lista_csv <- list.files(paste0("www/",projeto,"/csv"),full.names=F,pattern=paste0(".csv"))
+  				lista_csv <-
+  					list.files(
+  						paste0("www/", projeto, "/csv"),
+  						full.names = F,
+  						pattern = paste0(".csv")
+  					)
   				lapply(1:length(lista_csv), function(i) {
-  					tags$div(
-  						tags$a(href=paste0(home,projeto,'/csv/',lista_csv[i]), paste0(lista_csv[i]), target="_blank")
-  					)
+  					tags$div(tags$a(
+  						href = paste0(home, projeto, '/csv/', lista_csv[i]),
+  						paste0(lista_csv[i]),
+  						target = "_blank"
+  					))
   				})
   			})
-  			
-  			
+
+
   			output$uiarquivosensemble <- renderUI({
-  				lista_final <- list.files(paste0("www/",projeto,"/final"),full.names=F,pattern=paste0(".tif"))
+  				lista_final <-
+  					list.files(
+  						paste0("www/", projeto, "/final"),
+  						full.names = F,
+  						pattern = paste0(".tif")
+  					)
   				lapply(1:length(sort(lista_final)), function(i) {
-  					tags$div(
-  						tags$a(href=paste0(home,projeto,'/final/',lista_final[i]), paste0(lista_final[i]), target="_blank")
-  					)
+  					tags$div(tags$a(
+  						href = paste0(home, projeto, '/final/', lista_final[i]),
+  						paste0(lista_final[i]),
+  						target = "_blank"
+  					))
   				})
   			})
-  			
-  			
+
+
   			output$uiarquivosprojecao <- renderUI({
-  				lista_proj <- list.files(paste0("www/",projeto,"/proj"),full.names=F,pattern=paste0(".tif"))
+  				lista_proj <-
+  					list.files(
+  						paste0("www/", projeto, "/proj"),
+  						full.names = F,
+  						pattern = paste0(".tif")
+  					)
   				lapply(1:length(sort(lista_proj)), function(i) {
-  					tags$div(
-  						tags$a(href=paste0(home,projeto,'/proj/',lista_proj[i]), paste0(lista_proj[i]), target="_blank")
-  					)
+  					tags$div(tags$a(
+  						href = paste0(home, projeto, '/proj/', lista_proj[i]),
+  						paste0(lista_proj[i]),
+  						target = "_blank"
+  					))
   				})
   			})
-  			
+
+
   			output$uiarquivosprojecaofuturo <- renderUI({
-  				lista_futuro <- list.files(paste0("www/",projeto,"futuro"),full.names=F,pattern=paste0(".tif"))
-  				
-  				lapply(1:length(sort(lista_futuro)), function(i) {
-  					tags$div(
-  						tags$a(href=paste0(home,projeto,'/futuro/',lista_futuro[i]), paste0(lista_futuro[i]), target="_blank")
+  				lista_futuro <-
+  					list.files(
+  						paste0("www/", projeto, "futuro"),
+  						full.names = F,
+  						pattern = paste0(".tif")
   					)
+
+  				lapply(1:length(sort(lista_futuro)), function(i) {
+  					tags$div(tags$a(
+  						href = paste0(home, projeto, '/futuro/', lista_futuro[i]),
+  						paste0(lista_futuro[i]),
+  						target = "_blank"
+  					))
   				})
   			})
-  			
+
+
   			showModal(modalDialog(
-  				title =  	paste0("Project '",input$edtprojeto , "' succefully loaded!" ) ,
-  				paste0("Output files are dispalyed at the 'Outputs' tab.'" ) ,
-  				
+  				title =  	paste0("Project '", input$edtprojeto , "' succefully loaded!") ,
+  				paste0("Output files are dispalyed at the 'Outputs' tab.'") ,
   				easyClose = TRUE
   			))
-  			
+
+
   		}
-  		
+
   		if (file.exists(paste0(getwd(), "/www/", projeto)) == FALSE) {
-  			showModal(modalDialog(
-  				title = "Invalid Id!",
-  				paste0("Project '" ,input$edtprojeto, "' was not found." ) ,
-  				br(),
-  				paste0("Please enter a registed Id." ) ,
-  				easyClose = TRUE
-  			))
-  			
+  			showModal(
+  				modalDialog(
+  					title = "Invalid Id!",
+  					paste0("Project '" , input$edtprojeto, "' was not found.") ,
+  					br(),
+  					paste0("Please enter a registed Id.") ,
+  					easyClose = TRUE
+  				))
   		}
-  		
-  		
+
   	}
-  	
-  	if (projeto == 'projeto/'){
+
+  	if (projeto == 'projeto/') {
   		showModal(modalDialog(
   			title = "Error!",
-  			paste0( "Project Id cannot be blank!" ),
-  		  easyClose = TRUE
+  			paste0("Project Id cannot be blank!"),
+  			easyClose = TRUE
   		))
-  		
-  		
-  		
   	}
-  	
-  })	
-					
-  				
-  		
-  			
-  			
- 
+
+  })
+
   mkdirs <- function(fp) {
-  	if(!file.exists(fp)) {
+  	if (!file.exists(fp)) {
   		mkdirs(dirname(fp))
-  		dir.create(fp, showWarnings = FALSE, recursive = FALSE, mode = "777")
+  		dir.create(fp,
+  							 showWarnings = FALSE,
+  							 recursive = FALSE,
+  							 mode = "777")
   	}
   }
 

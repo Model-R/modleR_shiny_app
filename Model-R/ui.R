@@ -16,100 +16,75 @@ ipak <- function(pkg) {
 }
 ipak(c("shinydashboard", "leaflet"))
 
-vars <- c(
-	"GBif - The Global Biodiversity Information Facility" = "gbif",
-	"Jabot - JBRJ Database" = "jabot",
-	"CSV - Comma Separated Values" = "csv"
-)
 
-varabiotico <- c(
-	"WorldClim bioclimatic variables" = "CLIMA",
-	"Bio-ORACLE variables" = "BIOORACLE",
-	"Upload Dataset" = "Others"
-)
+vars <- c(	"GBif - The Global Biodiversity Information Facility" = "gbif",	
+					 "Jabot - JBRJ Database" = "jabot",	
+					 "CSV - Comma Separated Values" = "csv")
 
-varabioticopassado <- c(
-	"WorldClim" = "CLIMA",
-	"Bio-ORACLE" = "BIOORACLE"
-)
+varabiotico <- c(	"WorldClim v.1.4" = "CLIMA",	
+									"Bio-ORACLE v.1" = "BIOORACLE",	
+									"Upload Dataset" = "Others")
 
-varabioticofuturo <- c(
-	"Bio-ORACLE A1B 2100" = "BIOORACLEA1B2100",
-	"Bio-ORACLE A1B 2200" = "BIOORACLEA1B2200",
-	"Bio-ORACLE A2 2100" = "BIOORACLEA22100",
-	"Bio-ORACLE B1 2100" = "BIOORACLEB12100",
-	"Bio-ORACLE B1 2200" = "BIOORACLEB12200",
-	"WorldClim" = "CLIMA"
-)
+varabioticopassado <- c("WorldClim" = "CLIMA",
+												"Bio-ORACLE" = "BIOORACLE")
 
-gcm<- c(
-	"BCC-CSM1-1" = "bc",
-	"CCSM4"= "cc",
-	"GISS-E2-R" = "gs",
-	"HadGEM2-AO" = "hd",
-	"HadGEM2-ES" = "he",
-	"IPSL-CM5A-LR" = "ip",
-	"MIROC-ESM-CHEM" = "mi",
-	"MIROC-ESM" = "mr",
-	"MIROC5" = "mc",
-	"MRI-CGCM3" = "mg",
-	"NorESM1-M" = "no"
-	
-)
+varabioticofuturo <- c(	"Bio-ORACLE A1B 2100" = "BIOORACLEA1B2100",	
+												"Bio-ORACLE A1B 2200" = "BIOORACLEA1B2200",	
+												"Bio-ORACLE A2 2100" = "BIOORACLEA22100",	
+												"Bio-ORACLE B1 2100" = "BIOORACLEB12100",
+												"Bio-ORACLE B1 2200" = "BIOORACLEB12200",
+												"WorldClim" = "CLIMA")
 
-rcp<- c(
-	"rcp26" = "26",
-	"rcp45" = "45",
-	"rcp60" = "60",
-	"rcp85" = "85"
-	)
+gcm <- c(	"BCC-CSM1-1" = "bc",	
+					"CCSM4" = "cc",	
+					"GISS-E2-R" = "gs",	
+					"HadGEM2-AO" = "hd",	
+					"HadGEM2-ES" = "he",	
+					"IPSL-CM5A-LR" = "ip",	
+					"MIROC-ESM-CHEM" = "mi",	
+					"MIROC-ESM" = "mr",	
+					"MIROC5" = "mc",	
+					"MRI-CGCM3" = "mg",	
+					"NorESM1-M" = "no")
 
-rcp_biooracle <- c(
-	"rcp26" = "26",
-	"rcp45" = "45",
-	"rcp60" = "60",
-	"rcp85" = "85"
-)
+rcp <- c("rcp26" = "26",
+				 "rcp45" = "45",
+				 "rcp60" = "60",
+				 "rcp85" = "85")
 
-periodobiooracle <- c(
-	"Current" = "current",
-	"2100" = "2100",
-	"2200" = "2200"
-)
+rcp_biooracle <- c(	"rcp26" = "26",
+										"rcp45" = "45",
+										"rcp60" = "60",
+										"rcp85" = "85")
 
-periodo <- c(
-	"Current" = "current",
-	"Future 2050" = "2050",
-	"Future 2070" = "2070"
-)
+periodobiooracle <- c("Current" = "current",
+											"2100" = "2100",
+											"2200" = "2200")
+
+periodo <- c("Current" = "current",
+						 "Future 2050" = "2050",
+						 "Future 2070" = "2070")
+
+tipomapa <- c("World" = "world",
+							"South America" = "South America")
+
+resolucao <- c("10 arc-minutes" = "10m",
+							"5 arc-minutes" = "5m",
+							"2.5 arc-minutes" = "2-5m",
+							"30 arc-seconds" = "30s")
+
+cenariobiooracle <- c("A1B" = "A1B",
+											"A2" = "A2",
+											"B1" = "B1")
+
+cenariobiooracle_2200 <- c("A1B" = "A1B",
+													 "B1" = "B1")
 
 
-tipomapa <- c(
-	"World" = "world",
-	"South America" = "South America"
-)
+header <- dashboardHeader(title = "Model-R v1.25")
 
-resolucao <- c(
-	"10 arc-minutes" = "10m",
-	"5 arc-minutes" = "5m",
-	"2.5 arc-minutes" = "2-5m",
-	"30 arc-seconds" = "30s"
-)
 
-cenariobiooracle <- c(
-	"A1B" = "A1B",
-	"A2" = "A2",
-	"B1" = "B1"
-)
 
-cenariobiooracle_2200 <- c(
-	"A1B" = "A1B",
-	"B1" = "B1"
-)
-
-header <- dashboardHeader(
-	title = "Model-R v1.25"
-)
 body <- dashboardBody(
 	fluidRow(
 		column (width = 12,
@@ -117,62 +92,44 @@ body <- dashboardBody(
 				title = "Steps",width = NULL,height= "1000px",
 				# The id lets us use input$tabset1 on the server to find the current tab
 				id = "tabset1",
-				tabPanel("Project Id",  column(width = 12,
-									id = "tabset1",
-						
-						tabPanel("Projects", column(width = 9,id="idproject",
-							box(width = NULL,
-								textInput("edtprojeto", label = "Project Id", value = ""),
-								actionButton("btncriarprojeto", "Create new project",icon = icon("gear")),
-								actionButton("btnconsultarprojeto", "Search project",icon = icon("search"))
-							)
-						),
-							
-							
-							column(width = 3,
-								box(width = NULL, helpText('Projects'),
-									
-									if (length(list.files("./www/projeto/",full.names=F,pattern=paste0("."))>0))
-									{
-										lista_outros <- list.files("./www/projeto/",full.names=F,pattern=paste0("."))
-										#       checkboxInput('Bio1', 'BIO1 Annual Mean Temperature', value = FALSE)
-										#   tags$div(
-										#     tags$a(href=paste0('csv/',lista_csv[i]), paste0(lista_csv[i]))
-										#   )
-										lapply(1:length(lista_outros), function(i) {
-											tagList(tags$h4(lista_outros[i]))
-											#checkboxInput( paste0('chboxoutro',i), lista_outros[i] , value = FALSE)
-										})
-									}
-									
-									
-									
-								)
-							)
-							
-							
-							
-							
-							
-							
-							
-						)
-					#)
-				)
-					
-					
-					
-					
-					
-					
-					
+				
+				# Tab 1: Consult/Create new Project
+				tabPanel("Project Id",  
+								 column(width = 12,
+								 			 id = "tabset1",
+								 			 
+								 			 tabPanel("Projects", column(
+								 			 	width = 9,
+								 			 	id = "idproject",
+								 			 	box(
+								 			 		width = NULL,
+								 			 		textInput("edtprojeto", label = "Project Id", value = ""),
+								 			 		actionButton("btncriarprojeto", "Create new project", icon = icon("gear")),
+								 			 		actionButton("btnconsultarprojeto", "Search project", icon = icon("search"))
+								 			 	)
+								 			 ),
+								 			 column(width = 3,
+								 			 			 box(width = NULL, helpText('Projects'),
+								 			 			 		if (length(
+								 			 			 			list.files("./www/projeto/",full.names = F, pattern = paste0("."))> 0))
+								 			 			 		{
+								 			 			 			lista_outros <-	list.files("./www/projeto/",
+								 			 			 																 full.names = F,
+								 			 			 																 pattern = paste0("."))
+								 			 			 			lapply(1:length(lista_outros), function(i) {
+								 			 			 				tagList(tags$h4(lista_outros[i]))
+								 			 			 			})
+								 			 			 		}))
+								 			 )
+								 )
+								 
+								 
 				),
 				
 						
 						
-					
+				# Tab 2: Biotic Data
 					tabPanel("Biotic Data",  column(width = 12,
-					
 					tabBox(side = "right",selected = "Load occurrence data",
 						title = "",width = NULL,height= "600px",
 						
@@ -182,8 +139,7 @@ body <- dashboardBody(
 						tabPanel("View occurrence map", column(width = 12,
 							box(width = NULL, solidHeader = TRUE,
 								leafletOutput('mapadistribuicao'), height = 500)
-							
-						)
+							)
 						),
 						tabPanel("Load occurrence data", column(width = 9,
 							box(width = NULL,
@@ -191,19 +147,17 @@ body <- dashboardBody(
 							)
 						),
 							
-							
 							column(width = 3,
 								box(width = NULL, status = "warning",
 									helpText('Select species occurence database or browse csv dataset'),
 									selectInput("tipodado", "Occurence data", vars, selected = "jabot"),
+									
 									conditionalPanel("input.tipodado == 'csv' ",
 										helpText('Format: [Species, Longitude, Latitude]'),
-										
 										fileInput('file1', '',
 											accept=c('text/csv',
 												'text/comma-separated-values,text/plain',
 												'.csv')),
-										
 										checkboxInput('header', 'Header', TRUE),
 										radioButtons('sep', 'Separator',
 											c("Comma"=',',
@@ -216,22 +170,21 @@ body <- dashboardBody(
 												'Simple'="'"),
 											'"', inline = TRUE),
 										actionButton("btnbuscarespecieCSV", "Viewer",icon = icon("search"))
-										
 									),
+									
 									conditionalPanel("input.tipodado == 'jabot' ",
 									helpText('Insert Species Scientific Name'),
 										textInput("edtespeciejabot", label = "Species name:", value = "Caesalpinia echinata"),
 										actionButton("btnbuscarespeciejabot", "Search", icon = icon("search"))
 										
 									),
+									
 									conditionalPanel("input.tipodado == 'gbif' ",
 										helpText('Insert Species Scientific Name'),
 										textInput("edtespecie", label = "Species name:", value = ""),
 										actionButton("btnbuscarespecie", "Search", icon = icon("search"))
-										
 									)
 								)
-								
 							)
 							
 							
@@ -244,10 +197,10 @@ body <- dashboardBody(
 					
 					
 					
-				),
+				),# End Biotic Data
 				
 				
-				
+				# Tab 3: Data Cleaning
 				tabPanel("Data Cleaning",
 					
 					column(width = 6,
@@ -259,7 +212,6 @@ body <- dashboardBody(
 					column(width = 6,
 						box(width = NULL, status = "warning",
 							numericInput("edtelemento", "Occurence record ID:", min = 0, max = 100, value = 0),
-							
 							actionButton("btnapagar", "Delete selected ID",icon = icon("trash")),
 							actionButton('btneliminarduplicatas', 'Delete duplicates',icon = icon("cubes")),
 							downloadButton('downloadData', 'Download data')
@@ -269,10 +221,10 @@ body <- dashboardBody(
 							dataTableOutput('dgbriddadosdatacleaning')
 						)
 					)
-				) ,
+				), # End Data Cleaning
 				
 				
-
+				# Tab 4: Abiotic data
 				tabPanel("Abiotic data",
 					column(width = 12,
 						
@@ -480,7 +432,7 @@ body <- dashboardBody(
 						)
 					)
 					
-				) ,
+				), # End Abiotic Data
 				
 				
 				
@@ -494,7 +446,7 @@ body <- dashboardBody(
 				
 				
 				
-				
+				# 5. Modeling
 				tabPanel("Modeling",
 					
 					column(width = 6,
@@ -594,7 +546,7 @@ body <- dashboardBody(
 					)
 					
 					
-				),
+				), ## End Modeling
 				#,
 				#tabPanel("Resultado",
 				#          box(width = NULL,
@@ -602,6 +554,8 @@ body <- dashboardBody(
 				#dataTableOutput('dbgridresultado')
 				#          )
 				#             ),
+				
+				#6.Outputs
 				tabPanel("Outputs",
 					column(width = 12,
 						#box(width = NULL,
@@ -670,7 +624,7 @@ body <- dashboardBody(
 							)
 						)
 					)
-				)
+				) # End Outputs
 				,
 				tabPanel("About",
 					column(width = 2,
