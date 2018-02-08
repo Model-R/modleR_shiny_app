@@ -8,13 +8,13 @@
 
 # Thanks to Steven Worthington for function ipak https://gist.github.com/stevenworthington/3178163 (HT Karlo Guidoni Martins)
 
-ipak <- function(pkg) {
-    new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
-    if (length(new.pkg))
-        install.packages(new.pkg, dependencies = TRUE)
-    sapply(pkg, require, character.only = TRUE)
-}
-ipak(c("shinydashboard", "leaflet"))
+# ipak <- function(pkg) {
+#     new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+#     if (length(new.pkg))
+#         install.packages(new.pkg, dependencies = TRUE)
+#     sapply(pkg, require, character.only = TRUE)
+# }
+# ipak(c("shinydashboard", "leaflet"))
 
 
 
@@ -81,7 +81,7 @@ resolucao <- c(
 )
 
 header <- dashboardHeader(
-  title = "Model-R v1.25"
+  title = "Model-R v1.35"
 )
 body <- dashboardBody(
   fluidRow(

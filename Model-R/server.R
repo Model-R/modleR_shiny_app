@@ -1,35 +1,36 @@
 ############################
 ## MODEL-R                ##
-## RAFAEL OLIVEIRA LIMA   ##
 ## ANDREA SÁNCHEZ TAPIA   ##
 ## FELIPE SODRÉ BARROS    ##
-## 19 DE SETEMBRO DE 2017 ##
+## DIOGO S. B. ROCHA      ##
+## RAFAEL OLIVEIRA LIMA   ##
+## 08 DE FEVEREIRO DE 2018 ##
 ############################
 
 # Thanks to Steven Worthington for function ipak https://gist.github.com/stevenworthington/3178163 (HT Karlo Guidoni Martins)
 
-ipak <- function(pkg) {
-    new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
-    if (length(new.pkg))
-        install.packages(new.pkg, dependencies = TRUE)
-    sapply(pkg, require, character.only = TRUE)
-}
-
-ipak(c("shinydashboard",
-       "leaflet",
-       "R.utils",
-       "raster",
-       "rjson",
-       "maps",
-       "rgdal",
-       "raster",
-       "dismo",
-       "rgbif",
-       "XML",
-       "randomForest",
-       "kernlab",
-       "rJava",
-       "data.table"))
+# ipak <- function(pkg) {
+#     new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+#     if (length(new.pkg))
+#         install.packages(new.pkg, dependencies = TRUE)
+#     sapply(pkg, require, character.only = TRUE)
+# }
+# 
+# ipak(c("shinydashboard",
+#        "leaflet",
+#        "R.utils",
+#        "raster",
+#        "rjson",
+#        "maps",
+#        "rgdal",
+#        "raster",
+#        "dismo",
+#        "rgbif",
+#        "XML",
+#        "randomForest",
+#        "kernlab",
+#        "rJava",
+#        "data.table"))
 
 ARQUIVO_SAIDA <- ''
 # server.R
@@ -58,13 +59,13 @@ ETAPA <- 0
 
 spname <<- ''
 
-# MaxEnt.jar#### baixa e descompacta o maxent java
-jar <- paste0(system.file(package = "dismo"), "/java/maxent.jar")
-if (file.exists(jar) != T) {
-  url = "http://biodiversityinformatics.amnh.org/open_source/maxent/maxent.php?op=download"
-  download.file(url, dest = "maxent.zip", mode = "wb")
-  unzip("maxent.zip", files = "maxent.jar", exdir = system.file("java", package = "dismo"))
-  unlink("maxent.zip")} 
+# # MaxEnt.jar#### baixa e descompacta o maxent java
+# jar <- paste0(system.file(package = "dismo"), "/java/maxent.jar")
+# if (file.exists(jar) != T) {
+#   url = "http://biodiversityinformatics.amnh.org/open_source/maxent/maxent.php?op=download"
+#   download.file(url, dest = "maxent.zip", mode = "wb")
+#   unzip("maxent.zip", files = "maxent.jar", exdir = system.file("java", package = "dismo"))
+#   unlink("maxent.zip")} 
 
 #função para gerar os valores de correlação no gráfico da função pairs
 
