@@ -1,7 +1,7 @@
 #############################
 ## ----   MODEL-R    ----  ##
-## ANDREA S√ÅNCHEZ TAPIA    ##
-## FELIPE SODR√â BARROS     ##
+## ANDREA S¡NCHEZ TAPIA    ##
+## FELIPE SODR… BARROS     ##
 ## GUILHERME GALL          ##
 ## DIOGO SOUZA B. ROCHA    ##
 ## RAFAEL OLIVEIRA LIMA    ##
@@ -85,7 +85,7 @@ spname <<- ''
 #   unzip("maxent.zip", files = "maxent.jar", exdir = system.file("java", package = "dismo"))
 #   unlink("maxent.zip")} 
 
-#fun√ß√£o para gerar os valores de correla√ß√£o no gr√°fico da fun√ß√£o pairs
+#funÁ„o para gerar os valores de correlaÁ„o no gr·fico da funÁ„o pairs
 
 panel.cor <- function(x, y, digits = 2, prefix = "", ...) {
   usr <- par("usr")
@@ -96,7 +96,7 @@ panel.cor <- function(x, y, digits = 2, prefix = "", ...) {
   txt <- paste0(prefix, txt)
   text(0.5, 0.5, txt, cex = 1.5)}
 
-#fun√ß√£o para gerar os histogramas no gr√°fico da fun√ß√£o pairs
+#funÁ„o para gerar os histogramas no gr·fico da funÁ„o pairs
 
 panel.hist <- function(x, ...){
   usr <- par("usr"); on.exit(par(usr))
@@ -1029,7 +1029,7 @@ function(input, output, session) {
 
       ## Modelos bin?rios
       if (write.bin==T){
-        cat(paste("Salvando modelos bin√°rios...",sp,i,'\n'))
+        cat(paste("Salvando modelos bin·rios...",sp,i,'\n'))
 
         if(Bioclim==T){
           writeRaster(x=bc_bin,filename=paste0("./www/",projeto,"/models/pre_",i,"_bc_bin",".tif"),overwrite=T)
@@ -1187,7 +1187,7 @@ function(input, output, session) {
         print(paste(sp,sp,i,"Mahal",round(ema@auc,3),round(maTSS,3),round(tma,3),round(threshold(ema)$kappa,3),round(threshold(ema)$equal_sens_spec,3),round(threshold(ema)$no_omission,3),round(threshold(ema)$prevalence,3),round(threshold(ema)$sensitivity,3),ema@np,ema@na,round(ema@cor,3),sep=","))}
       sink()
 
- #     cat(paste("Salvando arquivos de valida√ß√£o para todas as esp√©cies...",sp,i,'\n'))
+ #     cat(paste("Salvando arquivos de validaÁ„o para todas as espÈcies...",sp,i,'\n'))
       sink(file=paste0("./www/",projeto,"/models/evaluate_ALL_models.txt"),split=T,append=T)
       if(Bioclim==T){
         print(paste(sp,spname,i,"BioClim",round(ebc@auc,3),round(bcTSS,3),round(tbc,3),round(threshold(ebc)$kappa,3),round(threshold(ebc)$equal_sens_spec,3),round(threshold(ebc)$no_omission,3),round(threshold(ebc)$prevalence,3),round(threshold(ebc)$sensitivity,3),ebc@np,ebc@na,round(ebc@cor,3),sep=","))}
@@ -1366,10 +1366,10 @@ function(input, output, session) {
       ensemble_raster_projecao<-stack(ensemble_arquivos_projecao)
       ensemble.projecao<-mean(ensemble_raster_projecao,ensemble_raster_projecao)
       writeRaster(ensemble.projecao,filename=paste0("www/",projeto,"/final/","proj_ensemble.tif"), format='GTiff', overwrite=T)
-      plot(ensemble.projecao, main=paste("Ensemble Proje√ß√£o"))
+      plot(ensemble.projecao, main=paste("Ensemble ProjeÁ„o"))
 
       png(filename=paste0("./www/",projeto,"/jpg/ensemble_projecao",".jpg"))
-      plot(ensemble.projecao,main=paste("Ensemble Proje√ß√£o"))
+      plot(ensemble.projecao,main=paste("Ensemble ProjeÁ„o"))
       dev.off()
     }
 
@@ -1501,7 +1501,7 @@ function(input, output, session) {
 } # Fecha a fun??o dismo.mod
 
 ##############################
-# INICIO FUN√É¬á√É¬ÉO MODELAGEM
+# INICIO FUN√á√ÉO MODELAGEM
 ##############################
 
     modelagem <- function() ({
@@ -2021,7 +2021,7 @@ function(input, output, session) {
     input$btnAtualizaSelecaoVariaveis
     withProgress(message = '', value = 0, {
     n <- 3
-    incProgress(1/n, detail = paste0("Carregando vari√°veis"))
+    incProgress(1/n, detail = paste0("Carregando vari·veis"))
     ETAPA <<- 3
     isolate({
       if (input$tipodadoabiotico=='CLIMA')
@@ -2112,7 +2112,7 @@ function(input, output, session) {
 
 
       #############################################################################
-      # SE FOI ESCOLHIDO ALGUM PER√É¬çODO DIFERENTE DO CURRENT ENTAO PROJETO O FUTURO
+      # SE FOI ESCOLHIDO ALGUM PER√çODO DIFERENTE DO CURRENT ENTAO PROJETO O FUTURO
       #############################################################################
       if (input$periodo != 'current')
       {
@@ -2284,7 +2284,7 @@ function(input, output, session) {
       }
 
       #############################################################################
-      # SE FOI ESCOLHIDO ALGUM PER√É¬çODO DIFERENTE DO CURRENT ENTAO PROJETO O FUTURO
+      # SE FOI ESCOLHIDO ALGUM PER√çODO DIFERENTE DO CURRENT ENTAO PROJETO O FUTURO
       #############################################################################
       if (input$periodobiooracle != 'current')
       {
@@ -2725,8 +2725,8 @@ output$downloadscript <- downloadHandler(
 	})
 	if (input$btnconsultarprojeto>0)
 	{
-	  ## COLOCO AQUI TODAS AS FUN√á√ÉO PARA LISTAR OS DADOS DO PROJETO CONSULTADO
-	  ## PRECISO FAZER UMA FUN√á√ÉO PARA N√ÉO FICAR DUPLICANDO ISSO
+	  ## COLOCO AQUI TODAS AS FUN«√O PARA LISTAR OS DADOS DO PROJETO CONSULTADO
+	  ## PRECISO FAZER UMA FUN«√O PARA N√O FICAR DUPLICANDO ISSO
 
 	  projeto <<- paste0('projeto/',input$edtprojeto)
 
@@ -2863,7 +2863,7 @@ output$downloadscript <- downloadHandler(
 	  }) # progress
 
 	    showModal(modalDialog(
-	      title = "Aten√ß√£o!",
+	      title = "AtenÁ„o!",
 	      paste0("Project succesfully created!"," Project directory: ", projeto) ,
 	      easyClose = TRUE
 	    ))
