@@ -1,11 +1,12 @@
-############################
-## MODEL-R                ##
-## ANDREA SÁNCHEZ TAPIA   ##
-## FELIPE SODRÉ BARROS    ##
-## DIOGO S. B. ROCHA      ##
-## RAFAEL OLIVEIRA LIMA   ##
+#############################
+## ----   MODEL-R    ----  ##
+## ANDREA SÁNCHEZ TAPIA    ##
+## FELIPE SODRÉ BARROS     ##
+## GUILHERME GALL          ##
+## DIOGO SOUZA B. ROCHA    ##
+## RAFAEL OLIVEIRA LIMA    ##
 ## 08 DE FEVEREIRO DE 2018 ##
-############################
+#############################
 
 # Thanks to Steven Worthington for function ipak https://gist.github.com/stevenworthington/3178163 (HT Karlo Guidoni Martins)
 
@@ -31,6 +32,23 @@
 #        "kernlab",
 #        "rJava",
 #        "data.table"))
+
+library("shinydashboard")
+library("leaflet")
+library("R.utils")
+library("raster")
+library("rjson")
+library("maps")
+library("rgdal")
+library("raster")
+library("dismo")
+library("rgbif")
+library("XML")
+library("randomForest")
+library("kernlab")
+library("rJava")
+library("data.table")
+
 
 ARQUIVO_SAIDA <- ''
 # server.R

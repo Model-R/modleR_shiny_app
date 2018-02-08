@@ -1,0 +1,11 @@
+bc - BCC-CSM1-1
+cc - CCSM4
+gs - GISS-E2-R
+hd - HadGEM2-AO
+he - HadGEM2-ES 
+ip - IPSL-CM5A-LR
+mc - MIOROC-ESM-CHEM
+mg - MIOROC-ESM 
+mi - MIOROC5
+mr - MIOROC-CGCM3
+no - NorESM1-M

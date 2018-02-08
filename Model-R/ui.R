@@ -16,6 +16,9 @@
 # }
 # ipak(c("shinydashboard", "leaflet"))
 
+library("shinydashboard")
+library("leaflet")
+
 
 
 vars <- c(
