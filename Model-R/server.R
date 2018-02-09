@@ -16,7 +16,7 @@
 #         install.packages(new.pkg, dependencies = TRUE)
 #     sapply(pkg, require, character.only = TRUE)
 # }
-# 
+#
 # ipak(c("shinydashboard",
 #        "leaflet",
 #        "R.utils",
@@ -40,12 +40,12 @@ library("raster")
 library("rjson")
 library("maps")
 library("rgdal")
-library("raster")
 library("dismo")
 library("rgbif")
 library("XML")
 library("randomForest")
 library("kernlab")
+#dyn.load('/Library/Java/JavaVirtualMachines/jdk1.8.0_144.jdk/Contents/Home/jre/lib/server/libjvm.dylib')
 library("rJava")
 library("data.table")
 
@@ -55,7 +55,7 @@ ARQUIVO_SAIDA <- ''
 rm(list = ls())
 rm(list = setdiff(ls(), lsf.str()))
 
-home <-'/'
+home <- '/'
 ## PARA A HOSPEDAGEM NO JARDIM ALTERAR PARA '/modelagem/'
 
 
@@ -83,7 +83,7 @@ spname <<- ''
 #   url = "http://biodiversityinformatics.amnh.org/open_source/maxent/maxent.php?op=download"
 #   download.file(url, dest = "maxent.zip", mode = "wb")
 #   unzip("maxent.zip", files = "maxent.jar", exdir = system.file("java", package = "dismo"))
-#   unlink("maxent.zip")} 
+#   unlink("maxent.zip")}
 
 #função para gerar os valores de correlação no gráfico da função pairs
 
