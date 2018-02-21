@@ -40,6 +40,55 @@ ipak(c("shinydashboard",
 
 #ARQUIVO_SAIDA <- ''
 
+
+# ipak <- function(pkg) {
+#     new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+#     if (length(new.pkg))
+#         install.packages(new.pkg, dependencies = TRUE)
+#     sapply(pkg, require, character.only = TRUE)
+# }
+#
+# ipak(c("shinydashboard",
+#        "leaflet",
+#        "R.utils",
+#        "raster",
+#        "rjson",
+#        "maps",
+#        "rgdal",
+#        "raster",
+#        "dismo",
+#        "rgbif",
+#        "XML",
+#        "randomForest",
+#        "kernlab",
+#        "rJava",
+#        "data.table"))
+
+#########################
+##### IMPORTANT! 
+# In Mac OS X, to correctly load the rJava package please include dyn.load command exibithed bellow before launching the App
+
+#########################
+
+jdk_version<- list.files('/Library/Java/JavaVirtualMachines/')
+library("shinydashboard")
+library("leaflet")
+library("R.utils")
+library("raster")
+library("rjson")
+library("maps")
+library("rgdal")
+library("dismo")
+#dyn.load (paste0('/Library/Java/JavaVirtualMachines/',jdk_version,'/Contents/Home/jre/lib/server/libjvm.dylib'))
+library("rgbif")
+library("XML")
+library("randomForest")
+library("kernlab")
+library("rJava")
+library("data.table")
+
+ARQUIVO_SAIDA <- ''
+# server.R
 rm(list = ls())
 rm(list = setdiff(ls(), lsf.str()))
 
