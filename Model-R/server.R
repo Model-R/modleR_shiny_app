@@ -40,7 +40,7 @@
 
 #########################
 
-java_version<- list.files('/Library/Java/JavaVirtualMachines/')
+jdk_version<- list.files('/Library/Java/JavaVirtualMachines/')
 library("shinydashboard")
 library("leaflet")
 library("R.utils")
@@ -49,7 +49,7 @@ library("rjson")
 library("maps")
 library("rgdal")
 library("dismo")
-#dyn.load (paste0('/Library/Java/JavaVirtualMachines/',java_version,'/Contents/Home/jre/lib/server/libjvm.dylib'))
+#dyn.load (paste0('/Library/Java/JavaVirtualMachines/',jdk_version,'/Contents/Home/jre/lib/server/libjvm.dylib'))
 library("rgbif")
 library("XML")
 library("randomForest")
