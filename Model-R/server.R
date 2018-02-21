@@ -8,34 +8,8 @@
 ## 08 DE FEVEREIRO DE 2018 ##
 #############################
 
-# Thanks to Steven Worthington for function ipak https://gist.github.com/stevenworthington/3178163 (HT Karlo Guidoni Martins)
-
-# ipak <- function(pkg) {
-#     new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
-#     if (length(new.pkg))
-#         install.packages(new.pkg, dependencies = TRUE)
-#     sapply(pkg, require, character.only = TRUE)
-# }
-#
-# ipak(c("shinydashboard",
-#        "leaflet",
-#        "R.utils",
-#        "raster",
-#        "rjson",
-#        "maps",
-#        "rgdal",
-#        "raster",
-#        "dismo",
-#        "rgbif",
-#        "XML",
-#        "randomForest",
-#        "kernlab",
-#        "rJava",
-#        "data.table"))
-
 library("shinydashboard")
 library("leaflet")
-library("R.utils")
 library("raster")
 library("rjson")
 library("maps")

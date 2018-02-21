@@ -39,7 +39,6 @@ RUN R -e "install.packages('randomForest', repos='https://cran.fiocruz.br/', cle
 RUN R -e "install.packages('kernlab', repos='https://cran.fiocruz.br/', clean=TRUE)"
 RUN R -e "install.packages('rJava', repos='https://cran.fiocruz.br/', clean=TRUE)"
 RUN R -e "install.packages('data.table', repos='https://cran.fiocruz.br/', clean=TRUE)"
-RUN R -e "install.packages(‘R.utils’, repos='https://cran.fiocruz.br/', clean=TRUE)"
 
 COPY shiny-server.sh /usr/bin/shiny-server.sh
 RUN chmod 755 /usr/bin/shiny-server.sh
