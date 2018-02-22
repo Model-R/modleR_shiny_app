@@ -1,10 +1,23 @@
 # Model-R shiny app
 
-## 2018/02/09
+## Docker container installation
 
-Currently the shiny app is working, just download the repository and open server.R or iu.R, then RunApp in RStudio.
-However, our docker container build is having some problems - we're working on them.
+### The first time:
+1. Download Docker https://www.docker.com/community-edition and install
+2. Open the Docker app
+3. Open a terminal window 
+4. Run `docker run modelr/shinyapp` - The first time it will prompt a download of all the data in the container
+5. When it's over, open http://localhost:3838/Model-R/ in a web browser
+6. **If the app crashes or to close the session**: close the browser window, go to Terminal, type `docker ps`. It will give the list of current containers with a name for the current session such as `modest_darwin`
+7. Run `docker stop modest_darwin` and then `docker rm modest_darwin`. It will close the connection and remove it. 
+8. Repeat from step 4. 
 
-We will soon include the latest version of the [modelR R package](https://github.com/Model-R/modelr_pkg) into the shiny app. 
+### The next times 
+1. Run `docker pull modelr/shinyapp` to make sure you have the latest version 
 
+
+## To run from Shiny and RStudio
+1. Clone the Model-R repository https://github.com/Model-R/Model-R or download it and decompress the zip file
+2. Open the server.R or the ui.R file in RStudio
+3. Click on Run App inside the RStudio interface
 
