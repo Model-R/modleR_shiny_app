@@ -570,13 +570,13 @@ body <- dashboardBody(
 											 			 			 																								
 											 			 			 )
 											 			 			 ),
-											 			 			 tabPanel("Data", column(width = 12,
+											 			 			 tabPanel("Stats", column(width = 12,
 											 			 			 												dataTableOutput('dbgridresultado')
 											 			 			 												
 											 			 			 )
 											 			 			 )
 											 			 			 ,
-											 			 			 tabPanel("Files", column(width = 12,
+											 			 			 tabPanel("Output files", column(width = 12,
 											 			 			 												 column(width = 2,
 											 			 			 												 			 box(width = NULL,status = "warning",
 											 			 			 												 			 		h4("Script"),
@@ -585,13 +585,13 @@ body <- dashboardBody(
 											 			 			 												 ),
 											 			 			 												 column(width = 2,
 											 			 			 												 			 box(width = NULL,status = "warning",
-											 			 			 												 			 		h4("Statistc"),
+											 			 			 												 			 		h4("Statistics"),
 											 			 			 												 			 		htmlOutput("uiestatistica")
 											 			 			 												 			 )
 											 			 			 												 ),
 											 			 			 												 column(width = 2,
 											 			 			 												 			 box(width = NULL,status = "warning",
-											 			 			 												 			 		h4("Data"),
+											 			 			 												 			 		h4("Occurence dataset"),
 											 			 			 												 			 		htmlOutput("uiarquivosdados")
 											 			 			 												 			 )
 											 			 			 												 ),
