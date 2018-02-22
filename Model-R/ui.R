@@ -508,8 +508,7 @@ body <- dashboardBody(
 											 			 								min = 1, max = 50, value = 3, step = 1),
 											 			 		sliderInput("edtnumpontos", "No. of points (Pseudo absences):",
 											 			 								min = 100, max = 2000, value = 1000, step = 100),
-											 			 		
-											 			 		sliderInput("edtextf", "Buffer:",
+											 			 		sliderInput("edtbuffer", "Buffer:",
 											 			 								min = 1, max = 2, value = 1.25, step = 0.05)
 											 			 		#h4("Modelos"),
 											 			 		

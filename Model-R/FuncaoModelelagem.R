@@ -29,8 +29,7 @@ modelagem <- function()
 		}
 		
 		## RODANDO A FUNCAO DISMO.MOD
-		dismo.mod(
-			"",
+		dismo.mod("",
 			especie,
 			pred_nf,
 			pred_nf2,

@@ -127,17 +127,19 @@ limparResultadosAnteriores<-function()({
 
 
 # Função Get Ocorrencia: Extair dados de ocorrencia do banco do jabot
-getOcorrencia <-function(pTaxon){
+getOcorrencia <- function(pTaxon) {
 	library("rjson")
 	pTaxon = gsub(' ', '_', pTaxon)
 	json_file <-
 		paste0(
-			"http://aplicacoes.jbrj.gov.br/jabot/v2/ws/server.php?coordenada=S&taxon=", pTaxon)
+			"http://aplicacoes.jbrj.gov.br/jabot/v2/ws/server.php?coordenada=S&taxon=",
+			pTaxon
+		)
 	json_data <- fromJSON(file = json_file, method = "C")
 	final_data <- do.call(rbind, json_data)
 	write.csv(final_data, "final_data.csv")
-	y2 <- final_data[, c("taxoncompleto", "longitude", "latitude")]
 	
+	y2 <- final_data[, c("taxoncompleto", "longitude", "latitude")]
 	y2 <- cbind(as.numeric(y2[, 2]),
 							as.numeric(y2[, 3]))
 	
@@ -191,9 +193,8 @@ function(input, output, session) {
 												future.raster=newdata, # vari?veis futuras
 												write.future=F, # escreve modelos futuros
 												write.projecao=F)
-	
 	{
-		## Carregando bibliotecas
+
 		library(dismo)
 		library(randomForest)
 		library(kernlab)
@@ -210,16 +211,12 @@ function(input, output, session) {
 		unlink(paste0("www/",projeto,'/models/evaluate_ALL_models.txt'), recursive=TRUE)
 		
 		isolate({
-			
 			print(date())
-			
 			cat(paste("Modeling",sp,"...",'\n'))
 			coord <- especie
-			
 			n <- nrow(coord)
 			
 			## Extraindo os valores das vari?veis onde h? pontos de registros
-			
 			presvals<- raster::extract(var,coord)
 			
 			## Seeting seed para sempre criar os mesmos pontos aleat?rios
@@ -234,7 +231,6 @@ function(input, output, session) {
 			
 			## Extraindo os valores das vari?veis onde h? pseudoaus?ncias
 			absvals <- raster::extract(var, backgr)
-			
 			
 			## Cria um vetor contendo algarismo "1" e "0" correspondendo ao n?mero de registros presen?as e aus?ncias respectivamente.
 			pre_abs <- c(rep(1, nrow(presvals)), rep(0, nrow(absvals)))
@@ -1188,6 +1184,8 @@ function(input, output, session) {
 	modelagem <- function() ({
 		limparResultadosAnteriores()
 		library(raster)
+		 
+		buffer<-input$edtbuffer
 		numpontos = input$edtnumpontos
 		numparticoes <- input$edtnumgrupo
 		
@@ -2082,8 +2080,7 @@ function(input, output, session) {
 											 pch = par("pch"),
 											 cex = 1,
 											 col.regres = "red",
-											 ...)
-							{
+											 ...) {
 								points(
 									x,
 									y,
@@ -2220,8 +2217,9 @@ function(input, output, session) {
 	##########################################################
 	#### CARREGAR DADOS DE OCORRÊNCIA (CSV, GBif e Jabot) 
 	##########################################################
-	## Carregar ocorrencias
-	pegaDadosCSV <- eventReactive(input$btnbuscarespecieCSV, {
+	#### Carregar ocorrencias ####
+
+		pegaDadosCSV <- eventReactive(input$btnbuscarespecieCSV, {
 		ETAPA <<- 1
 		inFile <<- input$file1
 		if (is.null(inFile))
@@ -2232,7 +2230,6 @@ function(input, output, session) {
 		{
 			especie<<- read.csv(inFile$datapath, header=input$header, sep=input$sep,
 													quote=input$quote)
-			
 			arquivo_path <<- inFile$datapath
 			arquivo_header <<- input$header
 			arquivo_sep <<- input$sep
@@ -2264,6 +2261,7 @@ function(input, output, session) {
 		ETAPA <<- 1
 		progress <- shiny::Progress$new()
 		progress$set(message = "Collecting data...", value = 0)
+		
 		# Close the progress when this reactive exits (even if there's an error)
 		on.exit(progress$close())
 		
@@ -2366,7 +2364,7 @@ function(input, output, session) {
 	
 	
 	##########################################################
-	### CRIAR/CONSULTAR PROJETO 
+	#### CRIAR/CONSULTAR PROJETO ####
 	##########################################################
 	isolate({
 		projeto <<- paste0('projeto/', input$edtprojeto)
