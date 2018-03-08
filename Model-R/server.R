@@ -2357,195 +2357,172 @@ function(input, output, session) {
   })
   
   # CREATE/CONSULT PROJECT -----------------------------------------------------
-  isolate({
-    projeto <<- paste0("projeto/", input$edtprojeto)
-  })
-  
-  # Creating a new project
-  observeEvent(input$btncriarprojeto, {
-    projeto <<- paste0("projeto/", input$edtprojeto)
-    if (projeto != "projeto/") {
-      if (file.exists(paste0(getwd(), "/www/", projeto)) == TRUE) {
-        showModal(modalDialog(
-          title = "ERROR!", paste0("This Project Id is already in use!
-            \t\t\t\t\t\tPlease insert a different Id."),
-          easyClose = TRUE
-          ))
-      }
+  observeEvent(input$btnrefreshprojeto, {
+    if (input$select_project == "new_proj") {
+      projeto <- paste0("projeto/", input$edtprojeto.create)
       
-      if (file.exists(paste0(getwd(), "/www/", projeto)) == FALSE) {
-        unlink(paste0("www/", projeto), recursive = TRUE)
-        cat(projeto, "\n", file = "teste.txt", append = TRUE)
-        
-        withProgress(message = "", value = 0, {
-          n <- 6
-          mkdirs(paste0("www/", projeto))
-          mkdirs(paste0("www/", projeto, "/csv"))
-          incProgress(1 / n, detail = paste0("Creating directory ", projeto))
-          Sys.sleep(0.6)
-          mkdirs(paste0("www/", projeto, "/final"))
-          incProgress(2 / n, detail = paste0(
-            "Creating directory ", projeto,
-            "/final"
-          ))
-          Sys.sleep(0.6)
-          mkdirs(paste0("www/", projeto, "/futuro"))
-          incProgress(3 / n, detail = paste0(
-            "Creating directory ", projeto,
-            "/futuro"
-          ))
-          Sys.sleep(0.6)
-          mkdirs(paste0("www/", projeto, "/jpg"))
-          incProgress(4 / n, detail = paste0(
-            "Creating directory ", projeto,
-            "/jpg"
-          ))
-          Sys.sleep(0.6)
-          mkdirs(paste0("www/", projeto, "/models"))
-          incProgress(5 / n, detail = paste0(
-            "Creating directory ", projeto,
-            "/models"
-          ))
-          Sys.sleep(0.6)
-          mkdirs(paste0("www/", projeto, "/proj"))
-          incProgress(6 / n, detail = paste0(
-            "Creating directory ", projeto,
-            "/proj"
-          ))
-          Sys.sleep(0.6)
-        })
-        
-        showModal(modalDialog(title = "Project succesfully created!", paste0(
-          "Project directory: ",
-          projeto
-        ), easyClose = TRUE))
-      }
-    }
-    
-    if (projeto == "projeto/") {
-      showModal(modalDialog(
-        title = "Error! Project Id cannot be blank!", paste0("Please enter a valid Id!"),
-        easyClose = TRUE
-      ))
-    }
-    })
-  
-  # Loading outputs from a previous project
-  observeEvent(input$btnconsultarprojeto, {
-    projeto <<- paste0("projeto/", input$edtprojeto)
-    if (projeto != "projeto/") {
-      if (file.exists(paste0(getwd(), "/www/", projeto)) == TRUE) {
-        output$dbgridresultado <- renderDataTable({
-          read.table(paste0("./www/", projeto, "/models/statsALL.txt"))
-        }, options = list(lengthMenu = c(5, 30, 50), pageLength = 10))
-        
-        output$ui <- renderUI({
-          lista_jpg <- list.files(paste0("www/", projeto, "/jpg"), full.names = F,
-            pattern = paste0(".jpg"))
-          lapply(1:length(order(lista_jpg)), function(i) {
-            tags$a(href = paste0(home, projeto, "/jpg/", lista_jpg[i]), tags$img(src = paste0(projeto,
-              "/jpg/", lista_jpg[i]), height = "200px"), target = "_blank")
-          })
-        })
-        
-        output$uifinal <- renderUI({
-          lista_modelsfinal <- list.files(paste0("www/", projeto, "/final"),
-            full.names = F, pattern = paste0(".png"))
-          lapply(1:length(sort(lista_modelsfinal)), function(i) {
-            tags$a(href = paste0(home, projeto, "/final/", lista_modelsfinal[i]),
-              tags$img(src = paste0(projeto, "/final/", lista_modelsfinal[i]),
-                height = "200px"), target = "_blank")
-            
-          })
-        })
-        
-        output$uiarquivosmodelos <- renderUI({
-          lista_models <- list.files(paste0("www/", projeto, "/models"), full.names = F,
-            pattern = paste0("pre_"))
-          lapply(1:length(sort(lista_models)), function(i) {
-            tags$div(tags$a(href = paste0(home, projeto, "/models/", lista_models[i]),
-              paste0(lista_models[i])))
-          })
-        })
-        
-        output$ui <- renderUI({
-          lista_jpg <- list.files(paste0("www/", projeto, "/jpg"), full.names = F,
-            pattern = paste0(".jpg"))
-          lapply(1:length(order(lista_jpg)), function(i) {
-            tags$a(href = paste0(home, projeto, "/jpg/", lista_jpg[i]), tags$img(src = paste0(projeto,
-              "/jpg/", lista_jpg[i]), height = "200px"), target = "_blank")
-          })
-        })
-        
-        output$uiscript <- renderUI({
-          lista_txt <- list.files(paste0("www/", projeto, "/"), full.names = F,
-            pattern = paste0("Script.R"))
-          lapply(1:length(lista_txt), function(i) {
-            tags$div(tags$a(href = paste0(home, projeto, "/", lista_txt[i]),
-              paste0(lista_txt[i]), target = "_blank"))
-          })
-        })
-        
-        output$uiestatistica <- renderUI({
-          lista_txt <- list.files(paste0("www/", projeto, "/models"), full.names = F,
-            pattern = paste0("statsALL.txt"))
-          lapply(1:length(lista_txt), function(i) {
-            tags$div(tags$a(href = paste0(home, projeto, "/models/", lista_txt[i]),
-              paste0(lista_txt[i]), target = "_blank"))
-          })
-        })
-        
-        output$uiarquivosdados <- renderUI({
-          lista_csv <- list.files(paste0("www/", projeto, "/csv"), full.names = F,
-            pattern = paste0(".csv"))
-          lapply(1:length(lista_csv), function(i) {
-            tags$div(tags$a(href = paste0(home, projeto, "/csv/", lista_csv[i]),
-              paste0(lista_csv[i]), target = "_blank"))
-          })
-        })
-        
-        output$uiarquivosensemble <- renderUI({
-          lista_final <- list.files(paste0("www/", projeto, "/final"), full.names = F,
-            pattern = paste0(".tif"))
-          lapply(1:length(sort(lista_final)), function(i) {
-            tags$div(tags$a(href = paste0(home, projeto, "/final/", lista_final[i]),
-              paste0(lista_final[i]), target = "_blank"))
-          })
-        })
-        
-        output$uiarquivosprojecao <- renderUI({
-          lista_proj <- list.files(paste0("www/", projeto, "/proj"), full.names = F,
-            pattern = paste0(".tif"))
-          lapply(1:length(sort(lista_proj)), function(i) {
-            tags$div(tags$a(href = paste0(home, projeto, "/proj/", lista_proj[i]),
-              paste0(lista_proj[i]), target = "_blank"))
-          })
-        })
-        
-        output$uiarquivosprojecaofuturo <- renderUI({
-          lista_futuro <- list.files(paste0("www/", projeto, "futuro"), full.names = F,
-            pattern = paste0(".tif"))
-          lapply(1:length(sort(lista_futuro)), function(i) {
-            tags$div(tags$a(href = paste0(home, projeto, "/futuro/", lista_futuro[i]),
-              paste0(lista_futuro[i]), target = "_blank"))
-          })
-        })
-        showModal(modalDialog(title = paste0("Project '", input$edtprojeto, "' succefully loaded!"),
-          paste0("Output files are dispalyed at the 'Outputs' tab.'"), easyClose = TRUE))
-        
-      }
-      
-      if (file.exists(paste0(getwd(), "/www/", projeto)) == FALSE) {
-        showModal(modalDialog(title = "Invalid Id!", paste0("Project '", input$edtprojeto,
-          "' was not found."), br(), paste0("Please enter a registed Id!"),
+      if (projeto == "projeto/") {
+        showModal(modalDialog(title = "Error! Project Id cannot be blank!", paste0("Please enter a valid Id!"), 
           easyClose = TRUE))
       }
+      
+      if (projeto != "projeto/") {
+        if (file.exists(paste0(getwd(), "/www/", projeto)) != TRUE) {
+          withProgress(message = "", value = 0, {
+            n <- 6
+            mkdirs(paste0("www/", projeto))
+            mkdirs(paste0("www/", projeto, "/csv"))
+            incProgress(1/n, detail = paste0("Creating directory ", projeto))
+            Sys.sleep(0.6)
+            mkdirs(paste0("www/", projeto, "/final"))
+            incProgress(2/n, detail = paste0("Creating directory ", projeto, 
+              "/final"))
+            Sys.sleep(0.6)
+            mkdirs(paste0("www/", projeto, "/futuro"))
+            incProgress(3/n, detail = paste0("Creating directory ", projeto, 
+              "/futuro"))
+            Sys.sleep(0.6)
+            mkdirs(paste0("www/", projeto, "/jpg"))
+            incProgress(4/n, detail = paste0("Creating directory ", projeto, 
+              "/jpg"))
+            Sys.sleep(0.6)
+            mkdirs(paste0("www/", projeto, "/models"))
+            incProgress(5/n, detail = paste0("Creating directory ", projeto, 
+              "/models"))
+            Sys.sleep(0.6)
+            mkdirs(paste0("www/", projeto, "/proj"))
+            incProgress(6/n, detail = paste0("Creating directory ", projeto, 
+              "/proj"))
+            Sys.sleep(0.6)
+          })
+          
+          showModal(modalDialog(title = "Project succesfully created!", paste0("Project directory: ", 
+            projeto), easyClose = TRUE))
+          
+          projeto <<- paste0("projeto/", input$edtprojeto.create)
+        }
+      }
     }
     
-    if (projeto == "projeto/") {
-      showModal(modalDialog(title = "Error! Project Id cannot be blank!", paste0("Please enter a valid Id!"),
-        easyClose = TRUE))
+    if (input$select_project == "load_proj") {
+      projeto <- paste0("projeto/", input$edtprojeto.load)
+      
+      if (projeto != "projeto/") {
+        if (file.exists(paste0(getwd(), "/www/", projeto)) == TRUE) {
+          
+          output$dbgridresultado <- renderDataTable({
+            read.table(paste0("./www/", projeto, "/models/statsALL.txt"))
+          }, options = list(lengthMenu = c(5, 30, 50), pageLength = 10))
+          
+          output$ui <- renderUI({
+            lista_jpg <- list.files(paste0("www/", projeto, "/jpg"), full.names = F, 
+              pattern = paste0(".jpg"))
+            lapply(1:length(order(lista_jpg)), function(i) {
+              tags$a(href = paste0(home, projeto, "/jpg/", lista_jpg[i]), tags$img(src = paste0(projeto, 
+                "/jpg/", lista_jpg[i]), height = "200px"), target = "_blank")
+            })
+          })
+          
+          output$uifinal <- renderUI({
+            lista_modelsfinal <- list.files(paste0("www/", projeto, "/final"), 
+              full.names = F, pattern = paste0(".png"))
+            lapply(1:length(sort(lista_modelsfinal)), function(i) {
+              tags$a(href = paste0(home, projeto, "/final/", lista_modelsfinal[i]), 
+                tags$img(src = paste0(projeto, "/final/", lista_modelsfinal[i]), 
+                  height = "200px"), target = "_blank")
+              
+            })
+          })
+          
+          output$uiarquivosmodelos <- renderUI({
+            lista_models <- list.files(paste0("www/", projeto, "/models"), 
+              full.names = F, pattern = paste0("pre_"))
+            lapply(1:length(sort(lista_models)), function(i) {
+              tags$div(tags$a(href = paste0(home, projeto, "/models/", lista_models[i]), 
+                paste0(lista_models[i])))
+            })
+          })
+          
+          output$ui <- renderUI({
+            lista_jpg <- list.files(paste0("www/", projeto, "/jpg"), full.names = F, 
+              pattern = paste0(".jpg"))
+            lapply(1:length(order(lista_jpg)), function(i) {
+              tags$a(href = paste0(home, projeto, "/jpg/", lista_jpg[i]), tags$img(src = paste0(projeto, 
+                "/jpg/", lista_jpg[i]), height = "200px"), target = "_blank")
+            })
+          })
+          
+          output$uiscript <- renderUI({
+            lista_txt <- list.files(paste0("www/", projeto, "/"), full.names = F, 
+              pattern = paste0("Script.R"))
+            lapply(1:length(lista_txt), function(i) {
+              tags$div(tags$a(href = paste0(home, projeto, "/", lista_txt[i]), 
+                paste0(lista_txt[i]), target = "_blank"))
+            })
+          })
+          
+          output$uiestatistica <- renderUI({
+            lista_txt <- list.files(paste0("www/", projeto, "/models"), full.names = F, 
+              pattern = paste0("statsALL.txt"))
+            lapply(1:length(lista_txt), function(i) {
+              tags$div(tags$a(href = paste0(home, projeto, "/models/", lista_txt[i]), 
+                paste0(lista_txt[i]), target = "_blank"))
+            })
+          })
+          
+          output$uiarquivosdados <- renderUI({
+            lista_csv <- list.files(paste0("www/", projeto, "/csv"), full.names = F, 
+              pattern = paste0(".csv"))
+            lapply(1:length(lista_csv), function(i) {
+              tags$div(tags$a(href = paste0(home, projeto, "/csv/", lista_csv[i]), 
+                paste0(lista_csv[i]), target = "_blank"))
+            })
+          })
+          
+          output$uiarquivosensemble <- renderUI({
+            lista_final <- list.files(paste0("www/", projeto, "/final"), full.names = F, 
+              pattern = paste0(".tif"))
+            lapply(1:length(sort(lista_final)), function(i) {
+              tags$div(tags$a(href = paste0(home, projeto, "/final/", lista_final[i]), 
+                paste0(lista_final[i]), target = "_blank"))
+            })
+          })
+          
+          output$uiarquivosprojecao <- renderUI({
+            lista_proj <- list.files(paste0("www/", projeto, "/proj"), full.names = F, 
+              pattern = paste0(".tif"))
+            lapply(1:length(sort(lista_proj)), function(i) {
+              tags$div(tags$a(href = paste0(home, projeto, "/proj/", lista_proj[i]), 
+                paste0(lista_proj[i]), target = "_blank"))
+            })
+          })
+          
+          output$uiarquivosprojecaofuturo <- renderUI({
+            lista_futuro <- list.files(paste0("www/", projeto, "futuro"), full.names = F, 
+              pattern = paste0(".tif"))
+            lapply(1:length(sort(lista_futuro)), function(i) {
+              tags$div(tags$a(href = paste0(home, projeto, "/futuro/", lista_futuro[i]), 
+                paste0(lista_futuro[i]), target = "_blank"))
+            })
+          })
+          showModal(modalDialog(title = paste0("Project '", input$edtprojeto, 
+            "' succefully loaded!"), paste0("Output files are dispalyed at the 'Outputs' tab.'"), 
+            easyClose = TRUE))
+        }
+        
+        if (file.exists(paste0(getwd(), "/www/", projeto)) != TRUE) {
+          showModal(modalDialog(title = "Invalid Id!", paste0("Project '", 
+            input$edtprojeto, "' was not found."), br(), paste0("Please enter a registed Id!"), 
+            easyClose = TRUE))
+        }
+      }
+      if (projeto == "projeto/") {
+        showModal(modalDialog(title = "Error! Project Id cannot be blank!", paste0("Please enter a valid Id!"), 
+          easyClose = TRUE))
+      }
+      projeto <- paste0("projeto/", input$edtprojeto.load)
     }
+    
   })
   
   mkdirs <- function(fp) {

@@ -88,36 +88,53 @@ body <- dashboardBody(
         title = "Steps",width = NULL,height= "1000px",
         # The id lets us use input$tabset1 on the server to find the current tab
         id = "tabset1",
-        tabPanel("Project Id",
+        
+        tabPanel("Projects",
           column(width = 12,
             id = "tabset1",
             
             tabPanel("Projects", column(
               width = 9,
-              id = "idproject",
               box(
                 width = NULL,
-                textInput("edtprojeto", label = "Project Id", value = ""),
-                actionButton("btncriarprojeto", "Create new project", icon = icon("gear")),
-                actionButton("btnconsultarprojeto", "Search project", icon = icon("search"))
+                
+                h1("CAPA!!!")
+                
               )
             ),
+                
+                
               column(width = 3,
-                box(width = NULL, helpText('Projects'),
+                box(width = NULL,
                   if (length(
                     list.files ("./www/projeto/",full.names = F, pattern = paste0("."))> 0)){
-                    lista_outros <-	list.files("./www/projeto/",
-                      full.names = F,
-                      pattern = paste0("."))
-                    lapply(1:length(lista_outros), function(i) {
-                      tagList(tags$h4(lista_outros[i]))
-                    })
-                  }))
+                    list_projects <-	list.files("./www/projeto/",full.names = F, pattern = paste0("."))
+                    
+                    box(title = "Create/Open project", status = "primary", solidHeader = TRUE,
+                      width = NULL,
+                      selectInput("select_project", "", choices= c(
+                        "Create new project" = "new_proj", "Open project" = "load_proj")),
+                      
+                      conditionalPanel("input.select_project == 'load_proj' ",
+                        helpText('Select project: '),
+                        radioButtons("edtprojeto.load", "Open project:",
+                          choices = c(list_projects), choiceValues =  c(list_projects), selected = NULL)
+                      ),
+                      conditionalPanel("input.select_project == 'new_proj' ",
+                        textInput("edtprojeto.create", label = "Insert Project Id: ", value = "")
+                      ),
+                      actionButton("btnrefreshprojeto", "Submit", icon = icon("gear"))
+                      
+                    )
+                  }
+                  )
+                )
             )
           )
         ),
-        
+
         # Tab 2: Biotic Data
+
         tabPanel("Biotic Data",  column(width = 12,
           tabBox(side = "right",selected = "Load occurrence data",
             title = "",width = NULL,height= "600px",
@@ -171,7 +188,7 @@ body <- dashboardBody(
             )
           )
         )),# End Biotic Data
-        
+
         # Tab 3: Data Cleaning
         tabPanel("Data Cleaning",
           column(width = 6,
@@ -190,7 +207,7 @@ body <- dashboardBody(
               dataTableOutput('dgbriddadosdatacleaning')
             )
           )
-        ), 
+        ),
         # Tab 4: Abiotic data
         tabPanel("Abiotic data",
           column(width = 12,
@@ -203,12 +220,12 @@ body <- dashboardBody(
                   title = "",width = NULL,height= "600px",
                   # The id lets us use input$tabset1 on the server to find the current tab
                   id = "tabset1",
-                  
+
                   tabPanel("Predictor Variables", column(width = 12,
                     box(width = NULL, solidHeader = TRUE,
                       plotOutput(outputId = "mapaabiotico", height = "400px")
                     )
-                    
+
                   )
                   ),
                   tabPanel("Variables correlation", column(width = 9,
@@ -294,17 +311,17 @@ body <- dashboardBody(
                       if (length(list.files("ex/outros/",full.names=T,pattern=c('.*'))>0))
                       {
                         lista_outros <- list.files("ex/outros/",full.names=F,pattern=c('.*'))
-                        
+
                         lapply(1:length(lista_outros), function(i) {
                           checkboxInput( paste0('chboxoutro',i), lista_outros[i] , value = TRUE)
                         })
                       }
                     )
-                    
+
                   )
                 )
               ),
-              
+
               tabPanel("Extent projection", column(width = 8,
                 box(width = NULL, solidHeader = TRUE,
                   leafletOutput('mapapontosextend2', height = 500)
@@ -321,17 +338,17 @@ body <- dashboardBody(
                         min = -90, max = 90, value = 23, step = 1),
                       numericInput("edtextend32", "Latitude lower:",
                         min = -90, max = 90, value = -33, step = 1)
-                      
+
                     )
-                    
-                    
+
+
                   )
                 )
-                
+
               ),
-              
-              
-              
+
+
+
               tabPanel("Model extent", column(width = 8,
                 box(width = NULL, solidHeader = TRUE,
                   leafletOutput('mapapontosextend', height = 500)
@@ -351,13 +368,13 @@ body <- dashboardBody(
                     )
                   )
                 )
-                
+
               )
             )
           )
-          
+
         ), # End Abiotic Data
-        
+
         # 5. Modeling
         tabPanel("Modeling",
           column(width = 6,
@@ -367,7 +384,7 @@ body <- dashboardBody(
               id = "tabset2",
               tabPanel("BC", column(width = 12,
                 leafletOutput('maparesultadobc', height = 500)
-                
+
               )
               ),
               tabPanel("MH", column(width = 12,
@@ -399,11 +416,11 @@ body <- dashboardBody(
                 leafletOutput('maparesultadodo', height = 500)
               )
               )
-              
+
             ),
             plotOutput(outputId = "plotmodelagem",height = "500px",width = "500px")
           ),
-          
+
           column(width = 3,
             box(width = NULL, status = "warning",
               selectInput("dataset", "Partitioning type",
@@ -423,9 +440,9 @@ body <- dashboardBody(
                   "False" = "FALSE"))
             )
           ),
-          
+
           column(width = 3,
-            
+
             box(width = NULL, status = "warning",
               h4("Algorithms"),
               checkboxInput('BIOCLIM', 'Bioclim', value = FALSE),
@@ -442,18 +459,18 @@ body <- dashboardBody(
               #checkboxInput('ENSEMBLE', 'Ensemble', value = TRUE),
               #sliderInput("TSS", "TSS:",
               #             min = 0, max = 1, value = 0.2, step= 0.1)
-              
+
             ),
             box(width = NULL, status = "warning",
               actionButton("btnModelar", "Run",icon = icon("cogs"))
-              
+
             )
-            
+
           )
-          
-          
+
+
         ), ## End Modeling
-        
+
         #6.Outputs
         tabPanel("Outputs",
           column(width = 12,
@@ -467,7 +484,7 @@ body <- dashboardBody(
               ),
               tabPanel("Stats", column(width = 12,
                 dataTableOutput('dbgridresultado')
-                
+
               )
               )
               ,
@@ -514,7 +531,7 @@ body <- dashboardBody(
                     htmlOutput("uiarquivosprojecaofuturo")
                   )
                 )
-                
+
               )
               )
             )
@@ -542,13 +559,13 @@ body <- dashboardBody(
             h5('Cite also randomForest() if you fit random forests, and `kernlab() if you fit SVM')
           )
         ),
-        
+
         tabPanel("Help",
           column(width = 12,
             h4('User manual'),
             tags$a(href="Manual_Model-R.pdf", "Version 1.0")
           )
-          
+
         )
       )
     )
