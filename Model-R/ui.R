@@ -86,8 +86,8 @@ header <- dashboardHeader(title = "Model-R v1.25")
 body <- dashboardBody(
   fluidRow(
     column (width = 12,
-      tabBox(
-        title = "Steps",width = NULL,height= "1000px",
+      tabBox(side = "left",
+        title = "Steps", width = NULL, height= "1000px",
         # The id lets us use input$tabset1 on the server to find the current tab
         id = "tabset1",
         

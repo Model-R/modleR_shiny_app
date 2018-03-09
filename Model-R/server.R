@@ -10,28 +10,28 @@
 
 # Thanks to Steven Worthington for function ipak https://gist.github.com/stevenworthington/3178163 (HT Karlo Guidoni Martins)
 
-# ipak <- function(pkg) {
-#     new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
-#     if (length(new.pkg))
-#         install.packages(new.pkg, dependencies = TRUE)
-#     sapply(pkg, require, character.only = TRUE)
-# }
-#
-# ipak(c("shinydashboard",
-#        "leaflet",
-#        "R.utils",
-#        "raster",
-#        "rjson",
-#        "maps",
-#        "rgdal",
-#        "raster",
-#        "dismo",
-#        "rgbif",
-#        "XML",
-#        "randomForest",
-#        "kernlab",
-#        "rJava",
-#        "data.table"))
+ipak <- function(pkg) {
+    new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+    if (length(new.pkg))
+        install.packages(new.pkg, dependencies = TRUE)
+    sapply(pkg, require, character.only = TRUE)
+}
+
+ipak(c("shinydashboard",
+       "leaflet",
+       "R.utils",
+       "raster",
+       "rjson",
+       "maps",
+       "rgdal",
+       "raster",
+       "dismo",
+       "rgbif",
+       "XML",
+       "randomForest",
+       "kernlab",
+       "rJava",
+       "data.table"))
 
 ##### IMPORTANT! ------------------------------
 # In Mac OS X, to correctly load the rJava package please include dyn.load command exibithed bellow before launching the App
@@ -2097,7 +2097,7 @@ function(input, output, session) {
           lista_outros <- list.files("ex/outros/", full.names = F, pattern = paste0(".*"))
           if (length(lista_outros > 0)) {
             arquivo <- list.files("ex/outros", full.names = T, pattern = paste0(".*"))
-            cat(paste("selecionado=true ", "\n"))
+           # cat(paste("selecionado=true ", "\n"))
             selecionado <- TRUE
           }
         } # Closing other predictors
