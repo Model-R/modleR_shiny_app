@@ -10,33 +10,33 @@
 
 # Thanks to Steven Worthington for function ipak https://gist.github.com/stevenworthington/3178163 (HT Karlo Guidoni Martins)
 
-ipak <- function(pkg) {
-    new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
-    if (length(new.pkg))
-        install.packages(new.pkg, dependencies = TRUE)
-    sapply(pkg, require, character.only = TRUE)
-}
+# ipak <- function(pkg) {
+#     new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+#     if (length(new.pkg))
+#         install.packages(new.pkg, dependencies = TRUE)
+#     sapply(pkg, require, character.only = TRUE)
+# }
 
-ipak(c("shinydashboard",
-       "leaflet",
-       "R.utils",
-       "raster",
-       "rjson",
-       "maps",
-       "rgdal",
-       "raster",
-       "dismo",
-       "rgbif",
-       "XML",
-       "randomForest",
-       "kernlab",
-       "rJava",
-       "data.table"))
+# ipak(c("shinydashboard",
+#        "leaflet",
+#        "R.utils",
+#        "raster",
+#        "rjson",
+#        "maps",
+#        "rgdal",
+#        "raster",
+#        "dismo",
+#        "rgbif",
+#        "XML",
+#        "randomForest",
+#        "kernlab",
+#        "rJava",
+#        "data.table"))
 
 ##### IMPORTANT! ------------------------------
 # In Mac OS X, to correctly load the rJava package please include dyn.load command exibithed bellow before launching the App
 
-jdk_version <- list.files("/Library/Java/JavaVirtualMachines/")
+jdk_version <- list.files("/Library/Java/JavaVirtualMachines/")[2]
 library("shinydashboard")
 library("leaflet")
 library("R.utils")
@@ -49,7 +49,7 @@ library("rgbif")
 library("XML")
 library("randomForest")
 library("kernlab")
-dyn.load(paste0('/Library/Java/JavaVirtualMachines/',jdk_version,'/Contents/Home/jre/lib/server/libjvm.dylib'))
+dyn.load(paste0("/Library/Java/JavaVirtualMachines/", jdk_version, "/Contents/Home/jre/lib/server/libjvm.dylib"))
 library("rJava")
 library("data.table")
 library("sdmpredictors")
@@ -152,7 +152,8 @@ getOcorrencia_jabot <- function(pTaxon) {
   library("rjson")
   pTaxon <- gsub(" ", "_", pTaxon)
   json_file <- paste0(
-    "http://aplicacoes.jbrj.gov.br/jabot/v2/ws/server.php?coordenada=S&taxon=",pTaxon)
+    "http://jabot.jbrj.gov.br/v2/ws/server.php?coordenada=S&taxon=",pTaxon)
+    #"http://aplicacoes.jbrj.gov.br/jabot/v2/ws/server.php?coordenada=S&taxon=",pTaxon)
   json_data <- fromJSON(file = json_file, method = "C")
   final_data <- do.call(rbind, json_data)
   jabot_data <- final_data[, c("taxoncompleto", "longitude", "latitude")]
@@ -1221,8 +1222,12 @@ function(input, output, session) {
       sel.index <- which(stats2[, "TSS"] >= TSS.value)
       mod.sel <- mod[[sel.index]]
       
-      if (length(sel.index) == 0)
+      if (length(sel.index) == 0){
+        cat(paste("\n"))
+        cat(paste("TSS.value: ",TSS.value ,"\n"))
         cat(paste("No partition was selected for", "\n"))
+      }
+      
       
       if (length(sel.index) > 0) {
         mod.sel <- mod[[sel.index]]  #(1)
@@ -1233,6 +1238,8 @@ function(input, output, session) {
       
       # In case just one partition is selected, several models are the same
       if (length(sel.index) == 1) {
+        cat(paste("\n"))
+        cat(paste("TSS.value: ",TSS.value ,"\n"))
         cat(paste(length(sel.index), "partitions was selected for", sp))
         final.sel.cont <- mod.sel  #(1)(2)
         final.sel.bin <- bin.sel  #(5)(3)(7) (8)
@@ -1245,6 +1252,8 @@ function(input, output, session) {
       
       # en caso de que sean aplica el mapa
       if (length(sel.index) > 1) {
+        cat(paste("\n"))
+        cat(paste("TSS.value: ",TSS.value ,"\n"))
         cat(paste(length(sel.index), "partitions were selected for"))
         final.cont.mean <- mean(mod.sel)  #(2)
         final.bin.mean <- (final.cont.mean > th.mean)  #(3)
@@ -1309,7 +1318,7 @@ function(input, output, session) {
     }
     dismo.mod("", occur.data.coord, pred_nf, pred_nf2, input$MAXENT, input$BIOCLIM, input$GLM,
       input$RF, input$SVM, input$MAHALANOBIS, input$DOMAIN, input$SVM2, numparticoes,
-      numpontos, 123, T, T, T, F, F, TSS.value, futuro, pred_nffuturo, futuro,
+      numpontos, 123, T, T, T, F, F, input$edtTSS, futuro, pred_nffuturo, futuro,
       write.projecao)
     
     progress$set(message = paste("Generating script..."), value = 0)

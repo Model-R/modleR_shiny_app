@@ -227,37 +227,38 @@ body <- dashboardBody(
         # Tab 4: Abiotic data
         tabPanel("Environmental data",
           column(width = 12,
-            tabBox(side = "right",
-              title = "",width = NULL,height= "600px",selected = "Model extent",
+            
+            tabBox(side = "left",
+              title = "",width = NULL,height= "600px",selected = "Raster data",
               # The id lets us use input$tabset1 on the server to find the current tab
-              id = "tabset1",
+
               tabPanel("Raster data", 
-                column(width = 8,
-                  tabBox(side = "left",
-                    title = "",width = NULL,height= "600px",
+                column(width = 12,
+                  tabBox(side = "right", selected = "Predictor Variables",
+                    title = "",width = NULL,height= "600px", 
                     # The id lets us use input$tabset1 on the server to find the current tab
-                    id = "tabset1",
-                    
+
+                   
+                    tabPanel("Variables correlation", 
+                      column(width = 8,
+                        box(width = NULL,solidHeader = TRUE,
+                          plotOutput(outputId = "grafico_correlacao", width = "500px"),
+                          dataTableOutput('dgbriddadoscorrelacao')
+                        )
+                      )
+                    #)
+                  #)
+                ),
                     tabPanel("Predictor Variables",
-                      column(width = 12,
+                      column(width = 8,
                         box(width = NULL, solidHeader = TRUE,
                           plotOutput(outputId = "mapaabiotico", height = "400px")
                         )
                         
                       )
                     ),
-                    tabPanel("Variables correlation", 
-                      column(width = 9,
-                        box(width = NULL,solidHeader = TRUE,
-                          plotOutput(outputId = "grafico_correlacao", width = "500px"),
-                          dataTableOutput('dgbriddadoscorrelacao')
-                        )
-                      )
-                    )
-                  )
-                ),
                 column(width = 4,
-                  box(width = NULL, status = "warning",
+                  box(width = 12, status = "warning", height=NULL,
                     actionButton("btnAtualizaSelecaoVariaveis", "Update selected"),
                     selectInput("tipodadoabiotico", "Variables dataset:", varabiotico),
                     conditionalPanel("input.tipodadoabiotico == 'BIOORACLE' ",
@@ -336,11 +337,35 @@ body <- dashboardBody(
                         })
                       }
                     )
-                    
                   )
+                  )
+                )
                 )
               ),
               
+              
+              
+              tabPanel("Model extent", 
+                column(width = 8,
+                  box(width = NULL, solidHeader = TRUE,
+                    leafletOutput('mapapontosextend', height = 500)
+                  )
+                ),
+                column(width = 4,
+                  box(width = NULL, solidHeader = TRUE,
+                    box(width = NULL, status = "warning",
+                      numericInput("edtextend1", "Longitude left:",
+                        min = -180, max = 180, value = -90, step = 1),
+                      numericInput("edtextend2", "Longitude right:",
+                        min = -180, max = 180, value = -32, step = 1),
+                      numericInput("edtextend4", "Latitude higher:",
+                        min = -90, max = 90, value = 23, step = 1),
+                      numericInput("edtextend3", "Latitude lower:",
+                        min = -90, max = 90, value = -33, step = 1)
+                    )
+                  )
+                )
+              ), 
               tabPanel("Extent projection", 
                 column(width = 8,
                   box(width = NULL, solidHeader = TRUE,
@@ -364,28 +389,6 @@ body <- dashboardBody(
                   )
                 )
                 
-              ),
-              
-              tabPanel("Model extent", 
-                column(width = 8,
-                  box(width = NULL, solidHeader = TRUE,
-                    leafletOutput('mapapontosextend', height = 500)
-                  )
-                ),
-                column(width = 4,
-                  box(width = NULL, solidHeader = TRUE,
-                    box(width = NULL, status = "warning",
-                      numericInput("edtextend1", "Longitude left:",
-                        min = -180, max = 180, value = -90, step = 1),
-                      numericInput("edtextend2", "Longitude right:",
-                        min = -180, max = 180, value = -32, step = 1),
-                      numericInput("edtextend4", "Latitude higher:",
-                        min = -90, max = 90, value = 23, step = 1),
-                      numericInput("edtextend3", "Latitude lower:",
-                        min = -90, max = 90, value = -33, step = 1)
-                    )
-                  )
-                )
               )
             )
           )
@@ -448,20 +451,20 @@ body <- dashboardBody(
           column(width = 3,
             box(width = NULL, status = "warning",
               selectInput("dataset", "Partitioning type",
-                choices = c("KFold", "Bootstrap")),
+                choices = c("KFold")),
+               # choices = c("KFold", "Bootstrap")),
               sliderInput("edtnumgrupo", "No. of partitions:",
                 min = 1, max = 50, value = 3, step = 1),
               sliderInput("edtnumpontos", "Pseudo-absences:",
                 min = 100, max = 2000, value = 300, step = 100),
-              sliderInput("edtTSS", "TSS cutoff:",
-                min = 0, max = 1, value = 0.2, step = 0.05),
               sliderInput("edtTSS", "TSS score cutoff:",
-                min = 0, max = 1, value = 0.2, step = 0.05),
-              radioButtons("edtBuffer", "Buffer:",
-                c("Median" = "MEDIAN",
-                  "Maximum" = "MAX",
-                  "Minimum" = "MIN",
-                  "False" = "FALSE"))
+                min = 0, max = 1, value = 0.7, step = 0.05)
+              
+              # radioButtons("edtBuffer", "Buffer:",
+              #   c("Median" = "MEDIAN",
+              #     "Maximum" = "MAX",
+              #     "Minimum" = "MIN",
+              #     "False" = "FALSE"))
             )
           ),
           
