@@ -91,11 +91,11 @@ body <- dashboardBody(
         # The id lets us use input$tabset1 on the server to find the current tab
         id = "tabset1",
         
-        tabPanel("Projects",
+        tabPanel("Welcome",
           column(width = 12,
             id = "tabset1",
             
-            tabPanel("Projects", column(
+            tabPanel("", column(
               width = 9,
               box(
                 width = NULL,
@@ -125,9 +125,19 @@ body <- dashboardBody(
                         textInput("edtprojeto.create", label = "Insert Project Id: ", value = "")
                       ),
                       actionButton("btnrefreshprojeto", "Submit", icon = icon("gear"))
-                      
+                    )
+                  } else {
+                    
+                    box(title = "Create/Open project", status = "primary", solidHeader = TRUE,
+                      width = NULL,
+                      selectInput("select_project", "", choices= c("Create new project" = "new_proj")),
+                      conditionalPanel("input.select_project == 'new_proj' ",
+                        textInput("edtprojeto.create", label = "Insert Project Id: ", value = "")
+                      ),
+                      actionButton("btnrefreshprojeto", "Submit", icon = icon("gear"))
                     )
                   }
+                  
                 )
               )
             )

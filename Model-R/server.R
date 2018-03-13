@@ -1649,6 +1649,9 @@ function(input, output, session) {
   })
   
   # EVIRONMENTAL VARIABLES -----------------------------------------------------
+ 
+
+  
   output$mapaabiotico <- renderPlot({
     input$btnAtualizaSelecaoVariaveis
     withProgress(message = "", value = 0, {
@@ -1657,7 +1660,8 @@ function(input, output, session) {
       ETAPA <<- 3
       
       isolate({
-        # WorldClim layers
+       
+         # WorldClim layers
         if (input$tipodadoabiotico == "CLIMA") {
           path <- paste0(getwd(), "/ex/clima/current/", input$resolucao)
           pathfuturo <- paste0(
@@ -1668,7 +1672,7 @@ function(input, output, session) {
           arquivo <- list()
           arquivofuturo <- list()
           selecionado <- FALSE
-          
+
           if (input$resolucao != "30s") {
             files.bil <- paste0(path, "/bio", 1, ".bil")
             for (i in c(2:19)) {
@@ -1676,14 +1680,18 @@ function(input, output, session) {
               files.bil <- c(files.bil, add)
             }
             if (any(file.exists(files.bil) != T)) {
-              zip_current <- paste0("bio_", input$resolucao, "_bil.zip")
-              url <- paste0(
-                "http://biogeo.ucdavis.edu/data/climate/worldclim/1_4/grid/cur/",
-                zip_current
-              )
-              download.file(url, zip_current, mode = "wb")
-              unzip(zip_current, exdir = path)
-              unlink(zip_current)
+              showModal(modalDialog(
+                title = "Important message",
+                "This is an important message!",
+                footer = modalButton("Dismiss")
+              ))
+              
+                zip_current <- paste0("bio_", input$resolucao, "_bil.zip")
+                url <- paste0("http://biogeo.ucdavis.edu/data/climate/worldclim/1_4/grid/cur/",zip_current)
+                download.file(url, zip_current, mode = "wb")
+                unzip(zip_current, exdir = path)
+                unlink(zip_current)
+              }
             }
           }
           
@@ -1695,6 +1703,13 @@ function(input, output, session) {
               input$Bio1, input$Bio2, input$Bio3, input$Bio4, input$Bio5,
               input$Bio6, input$Bio7, input$Bio8, input$Bio9
             )) {
+              
+              showModal(modalDialog(
+                title = "Important message",
+                "This is an important message!",
+                footer = modalButton("Dismiss")
+              ))
+              
               download.file(url1, "bio_30s1.zip", mode = "wb")
               unzip("bio_30s1.zip", exdir = path)
               unlink("bio_30s1.zip")
@@ -1709,6 +1724,12 @@ function(input, output, session) {
               input$Bio10, input$Bio11, input$Bio12, input$Bio13, input$Bio14,
               input$Bio15, input$Bio16, input$Bio17, input$Bio18, input$Bio19
             )) {
+              showModal(modalDialog(
+                title = "Important message",
+                "This is an important message!",
+                footer = modalButton("Dismiss")
+              ))
+              
               download.file(url2, "bio_30s2.zip", mode = "wb")
               unzip("bio_30s2.zip", exdir = path)
               unlink("bio_30s2.zip")
@@ -1719,8 +1740,8 @@ function(input, output, session) {
               ))
             }
           }
-          
-          if (input$Bio1 == TRUE) {
+        
+            if (input$Bio1 == TRUE) {
             arquivo <- c(arquivo, paste0(path, "/bio1.bil"))
             selecionado <- TRUE
           }
@@ -1797,6 +1818,7 @@ function(input, output, session) {
             selecionado <- TRUE
           }
           
+           
           # Loading future conditions layers
           if (input$periodo != "current") {
             year <- sub(".*(\\d+{2}).*$", "\\1", input$periodo)
@@ -1948,7 +1970,7 @@ function(input, output, session) {
             
             cat(paste("arquivo: ", arquivo, "\n"))
             cat(paste("arquivofuturo: ", arquivofuturo, "\n"))
-          }
+         
         } # Closing WorldClim
         
         # Bio-Oracle layers
