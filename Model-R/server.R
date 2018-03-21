@@ -37,10 +37,10 @@ ipak(c("shinydashboard",
 ##### IMPORTANT! ------------------------------
 # In Mac OS X, to correctly load the rJava package please include dyn.load command exibithed bellow before launching the App
 
-#jdk_version <- list.files("/Library/Java/JavaVirtualMachines/")
-#dyn.load(paste0("/Library/Java/JavaVirtualMachines/" ,jdk_version,"/Contents/Home/lib/server/libjvm.dylib"))
+jdk_version <- list.files("/Library/Java/JavaVirtualMachines/")
+dyn.load(paste0("/Library/Java/JavaVirtualMachines/" ,jdk_version,"/Contents/Home/lib/server/libjvm.dylib"))
 
-library("rJava")
+#library("rJava")
 library("shinydashboard")
 library("leaflet")
 library("R.utils")
@@ -80,7 +80,7 @@ ETAPA <- 0
 
 spname <<- ""
 
-# # MaxEnt.jar#### baixa e descompacta o maxent java
+# MaxEnt.jar#### baixa e descompacta o maxent java
 # jar <- paste0(system.file(package = "dismo"), "/java/maxent.jar")
 # if (file.exists(jar) != T) {
 #   url = "http://biodiversityinformatics.amnh.org/open_source/maxent/maxent.php?op=download"
@@ -2389,9 +2389,16 @@ function(input, output, session) {
     }
   })
   
+  
+  
+  
+  
+  
+  
   # CREATE/CONSULT PROJECT -----------------------------------------------------
   observeEvent(input$btnrefreshprojeto, {
-    if (input$select_project == "new_proj") {
+   
+     if (input$select_project == "new_proj") {
       projeto <- paste0("projeto/", input$edtprojeto.create)
       
       if (projeto == "projeto/") {
@@ -2400,6 +2407,7 @@ function(input, output, session) {
       }
       
       if (projeto != "projeto/") {
+        
         if (file.exists(paste0(getwd(), "/www/", projeto)) != TRUE) {
           withProgress(message = "", value = 0, {
             n <- 6
@@ -2538,8 +2546,8 @@ function(input, output, session) {
                 paste0(lista_futuro[i]), target = "_blank"))
             })
           })
-          showModal(modalDialog(title = paste0("Project '", input$edtprojeto, 
-            "' succefully loaded!"), paste0("Output files are dispalyed at the 'Outputs' tab.'"), 
+          showModal(modalDialog(title = paste0("Project ",input$edtprojeto.load, 
+            " succefully loaded!"), paste0("Output files are dispalyed at the 'Outputs' tab.'"), 
             easyClose = TRUE))
         }
         

@@ -79,18 +79,16 @@ cenariobiooracle <- c("A1B" = "A1B",
 cenariobiooracle_2200 <- c("A1B" = "A1B",
   "B1" = "B1")
 
-
-
+################################################################################
 header <- dashboardHeader(title = "Model-R v1.25")
-
 body <- dashboardBody(
   fluidRow(
     column (width = 12,
       tabBox(side = "left",
         title = "Steps", width = NULL, height= "1000px",
-        # The id lets us use input$tabset1 on the server to find the current tab
         id = "tabset1",
         
+        ########################################################################
         tabPanel("Welcome",
           column(width = 12,
             id = "tabset1",
@@ -99,22 +97,35 @@ body <- dashboardBody(
               width = 9,
               box(
                 width = NULL,
-                
-                h1("CAPA!!!")
-                
+                column (width = 2,
+                  br(),
+                  img (src="logo.png", width = 90)
+                ),
+                column (width = 9,
+                  h2("Model-R"),
+                  h4("A Framework for Scalable and
+                  Reproducible Ecological Niche Modeling")
+                  
+                ), 
+                column (width = 12,
+                  br(),
+                  p("Please cite..."),
+                  br(),
+                  p("...ABSTRACT...")
+                )
               )
             ),
               column(width = 3,
-                
                 box(width = NULL,
                   if (length(
                     list.files ("./www/projeto/",full.names = F, pattern = paste0("."))> 0)){
                     list_projects <-	list.files("./www/projeto/",full.names = F, pattern = paste0("."))
-                    
                     box(title = "Create/Open project", status = "primary", solidHeader = TRUE,
                       width = NULL,
-                      selectInput("select_project", "", choices= c(
-                        "Create new project" = "new_proj", "Open project" = "load_proj")),
+                      selectInput("select_project", "Select project: ", 
+                        choices= c(
+                          "Create new project" = "new_proj", "Open project" = "load_proj")),
+                      
                       
                       conditionalPanel("input.select_project == 'load_proj' ",
                         helpText('Select project: '),
@@ -124,10 +135,9 @@ body <- dashboardBody(
                       conditionalPanel("input.select_project == 'new_proj' ",
                         textInput("edtprojeto.create", label = "Insert Project Id: ", value = "")
                       ),
-                      actionButton("btnrefreshprojeto", "Submit", icon = icon("gear"))
+                      actionButton("btnrefreshprojeto", "Submit", icon = icon("ok", lib = "glyphicon"))
                     )
                   } else {
-                    
                     box(title = "Create/Open project", status = "primary", solidHeader = TRUE,
                       width = NULL,
                       selectInput("select_project", "", choices= c("Create new project" = "new_proj")),
@@ -137,22 +147,19 @@ body <- dashboardBody(
                       actionButton("btnrefreshprojeto", "Submit", icon = icon("gear"))
                     )
                   }
-                  
                 )
               )
             )
           )
         ),
         
-        
+        ########################################################################       
         tabPanel("Species occurrence data",  
           column(width = 12,
-            
             tabBox(side = "left", selected = "Import occurrence dataset",
               title = "",width = NULL, height= "600px",
               id = "tabset1",
               
-              # Biotic Data
               tabPanel("Import occurrence dataset",  
                 column(width = 12,
                   tabBox(side = "right",selected = "Load occurrence data",
@@ -165,6 +172,7 @@ body <- dashboardBody(
                           leafletOutput('mapadistribuicao'), height = 500)
                       )
                     ),
+                    
                     tabPanel("Load occurrence data", 
                       column(width = 9,
                         box(width = NULL,
@@ -209,9 +217,8 @@ body <- dashboardBody(
                     )
                   )
                 )
-              ),# End Biotic Data
+              ),
               
-              # Tab 3: Data Cleaning
               tabPanel("Data Cleaning",
                 column(width = 6,
                   box(width = NULL, solidHeader = TRUE,
@@ -234,21 +241,17 @@ body <- dashboardBody(
           )
         ), 
         
-        # Tab 4: Abiotic data
+        ########################################################################      
         tabPanel("Environmental data",
           column(width = 12,
-            
             tabBox(side = "left",
               title = "",width = NULL,height= "600px",selected = "Raster data",
-              # The id lets us use input$tabset1 on the server to find the current tab
-
+              
               tabPanel("Raster data", 
                 column(width = 12,
                   tabBox(side = "right", selected = "Predictor Variables",
                     title = "",width = NULL,height= "600px", 
-                    # The id lets us use input$tabset1 on the server to find the current tab
-
-                   
+                    
                     tabPanel("Variables correlation", 
                       column(width = 8,
                         box(width = NULL,solidHeader = TRUE,
@@ -256,104 +259,99 @@ body <- dashboardBody(
                           dataTableOutput('dgbriddadoscorrelacao')
                         )
                       )
-                    #)
-                  #)
-                ),
+                    ),
+                    
                     tabPanel("Predictor Variables",
                       column(width = 8,
                         box(width = NULL, solidHeader = TRUE,
                           plotOutput(outputId = "mapaabiotico", height = "400px")
                         )
-                        
                       )
                     ),
-                column(width = 4,
-                  box(width = 12, status = "warning", height=NULL,
-                    actionButton("btnAtualizaSelecaoVariaveis", "Update selected"),
-                    selectInput("tipodadoabiotico", "Variables dataset:", varabiotico),
-                    conditionalPanel("input.tipodadoabiotico == 'BIOORACLE' ",
-                      selectInput("periodobiooracle", "Period:", periodobiooracle, selected = "current"),
-                      conditionalPanel("input.periodobiooracle != 'current' ",
-                        conditionalPanel("input.periodobiooracle == '2100' ",
-                          selectInput("cenariobiooracle", "Scenario:", cenariobiooracle, selected = "A1B")
+                    column(width = 4,
+                      box(width = 12, status = "warning", height=NULL,
+                        actionButton("btnAtualizaSelecaoVariaveis", "Update selected"),
+                        selectInput("tipodadoabiotico", "Variables dataset:", varabiotico),
+                        conditionalPanel("input.tipodadoabiotico == 'BIOORACLE' ",
+                          selectInput("periodobiooracle", "Period:", periodobiooracle, selected = "current"),
+                          conditionalPanel("input.periodobiooracle != 'current' ",
+                            conditionalPanel("input.periodobiooracle == '2100' ",
+                              selectInput("cenariobiooracle", "Scenario:", cenariobiooracle, selected = "A1B")
+                            ),
+                            conditionalPanel("input.periodobiooracle == '2200' ",
+                              selectInput("cenariobiooracle_2200", "Scenario:", cenariobiooracle_2200, selected = "A1B")
+                            )
+                          ),
+                          checkboxInput('sstmax','Temperature (Max) ', value = FALSE),
+                          checkboxInput('sstmin','Temperature (Min) ', value = FALSE),
+                          checkboxInput('sstrange','Temperature (Range)', value = FALSE),
+                          checkboxInput('sstmean', 'Temperature (Mean)', value = FALSE),
+                          checkboxInput('salinity', 'Salinity', value = FALSE),
+                          conditionalPanel("input.periodobiooracle == 'current' ",
+                            checkboxInput('calcite', 'Calcite', value = FALSE),
+                            checkboxInput('nitrate', 'Nitrate', value = FALSE),
+                            checkboxInput('ph', 'pH', value = FALSE),
+                            checkboxInput('silicate', 'Silicate', value = FALSE),
+                            checkboxInput('phosphate', 'Phosphate', value = FALSE),
+                            checkboxInput('dissox', 'Dissolved mol. oxygen', value = FALSE),
+                            checkboxInput('chlomin', 'Chlorophyll (Min)', value = FALSE),
+                            checkboxInput('chlomax', 'Chlorophyll (Max)', value = FALSE),
+                            checkboxInput('chlorange', 'Chlorophyll (Range)', value = FALSE),
+                            checkboxInput('chlomean', 'Chlorophyll(Mean)', value = FALSE),
+                            checkboxInput('cloudmean', 'Cloud cover (Mean)', value = FALSE),
+                            checkboxInput('cloudmax', 'Cloud cover (Max)', value = FALSE),
+                            checkboxInput('cloudmin', 'Cloud cover (Min)', value = FALSE),
+                            checkboxInput('damean', 'Diffuse attenuation (Mean)', value = FALSE),
+                            checkboxInput('damin', 'Diffuse attenuation (Min)', value = FALSE),
+                            checkboxInput('damax', 'Diffuse attenuation (Max)', value = FALSE),
+                            checkboxInput('parmax', 'Photosynt. Avail. Radiation (Max)', value = FALSE),
+                            checkboxInput('parmean', 'Photosynt. Avail. Radiation (Mean)', value = FALSE)
+                          )
                         ),
-                        conditionalPanel("input.periodobiooracle == '2200' ",
-                          selectInput("cenariobiooracle_2200", "Scenario:", cenariobiooracle_2200, selected = "A1B")
+                        conditionalPanel("input.tipodadoabiotico == 'CLIMA' ",
+                          selectInput("periodo", "Time period:", periodo, selected = "current"),
+                          selectInput("resolucao", "Resolution:", resolucao, selected = "10min"),
+                          conditionalPanel("input.periodo != 'current' ",
+                            selectInput("gcm", "General Circulation Model (GCM):", gcm, selected = "bc"),
+                            selectInput("rcp", "Emission Scenario (RCP):", rcp, selected = "26")
+                          ),
+                          checkboxInput('Bio1', '(Bio1) Annual Mean Temperature', value = FALSE),
+                          checkboxInput('Bio2', '(Bio2) Mean Diurnal Range', value = FALSE),
+                          checkboxInput('Bio3', '(Bio3) Isothermality', value = FALSE),
+                          checkboxInput('Bio4', '(Bio4) Temperature Seasonality', value = FALSE),
+                          checkboxInput('Bio5', '(Bio5) Max Temperature of Warmest Month', value = FALSE),
+                          checkboxInput('Bio6', '(Bio6) Min Temperature of Coldest Month', value = FALSE),
+                          checkboxInput('Bio7', '(Bio7) Temperature Annual Range', value = FALSE),
+                          checkboxInput('Bio8', '(Bio8) Mean Temperature of Wettest Quarter', value = FALSE),
+                          checkboxInput('Bio9', '(Bio9) Mean Temperature of Driest Quarter', value = FALSE),
+                          checkboxInput('Bio10', '(Bio10) Mean Temperature of Warmest Quarter', value = FALSE),
+                          checkboxInput('Bio11', '(Bio11) Mean Temperature of Coldest Quarter', value = FALSE),
+                          checkboxInput('Bio12', '(Bio12) Annual Precipitation', value = FALSE),
+                          checkboxInput('Bio13', '(Bio13) Precipitation of Wettest Month', value = FALSE),
+                          checkboxInput('Bio14', '(Bio14) Precipitation of Driest Month', value = FALSE),
+                          checkboxInput('Bio15', '(Bio15) Precipitation Seasonality', value = FALSE),
+                          checkboxInput('Bio16', '(Bio16) Precipitation of Wettest Quarter', value = FALSE),
+                          checkboxInput('Bio17', '(Bio17) Precipitation of Driest Quarter', value = FALSE),
+                          checkboxInput('Bio18', '(Bio18) Precipitation of Warmest Quarter', value = FALSE),
+                          checkboxInput('Bio19', '(Bio19) Precipitation of Coldest Quarter', value = FALSE)
+                        ),
+                        conditionalPanel("input.tipodadoabiotico == 'Others' ",
+                          helpText('All layers should have the same spatial extent, resolution, origin, and projection'),
+                          helpText(''),
+                          helpText('Accepted formats: ".tif";  '),
+                          if (length(list.files("ex/outros/",full.names=T,pattern=c('.*'))>0))
+                          {
+                            lista_outros <- list.files("ex/outros/",full.names=F,pattern=c('.*'))
+                            lapply(1:length(lista_outros), function(i) {
+                              checkboxInput( paste0('chboxoutro',i), lista_outros[i] , value = TRUE)
+                            })
+                          }
                         )
-                      ),
-                      checkboxInput('sstmax','Temperature (Max) ', value = FALSE),
-                      checkboxInput('sstmin','Temperature (Min) ', value = FALSE),
-                      checkboxInput('sstrange','Temperature (Range)', value = FALSE),
-                      checkboxInput('sstmean', 'Temperature (Mean)', value = FALSE),
-                      checkboxInput('salinity', 'Salinity', value = FALSE),
-                      conditionalPanel("input.periodobiooracle == 'current' ",
-                        checkboxInput('calcite', 'Calcite', value = FALSE),
-                        checkboxInput('nitrate', 'Nitrate', value = FALSE),
-                        checkboxInput('ph', 'pH', value = FALSE),
-                        checkboxInput('silicate', 'Silicate', value = FALSE),
-                        checkboxInput('phosphate', 'Phosphate', value = FALSE),
-                        checkboxInput('dissox', 'Dissolved mol. oxygen', value = FALSE),
-                        checkboxInput('chlomin', 'Chlorophyll (Min)', value = FALSE),
-                        checkboxInput('chlomax', 'Chlorophyll (Max)', value = FALSE),
-                        checkboxInput('chlorange', 'Chlorophyll (Range)', value = FALSE),
-                        checkboxInput('chlomean', 'Chlorophyll(Mean)', value = FALSE),
-                        checkboxInput('cloudmean', 'Cloud cover (Mean)', value = FALSE),
-                        checkboxInput('cloudmax', 'Cloud cover (Max)', value = FALSE),
-                        checkboxInput('cloudmin', 'Cloud cover (Min)', value = FALSE),
-                        checkboxInput('damean', 'Diffuse attenuation (Mean)', value = FALSE),
-                        checkboxInput('damin', 'Diffuse attenuation (Min)', value = FALSE),
-                        checkboxInput('damax', 'Diffuse attenuation (Max)', value = FALSE),
-                        checkboxInput('parmax', 'Photosynt. Avail. Radiation (Max)', value = FALSE),
-                        checkboxInput('parmean', 'Photosynt. Avail. Radiation (Mean)', value = FALSE)
                       )
-                    ),
-                    conditionalPanel("input.tipodadoabiotico == 'CLIMA' ",
-                      selectInput("periodo", "Time period:", periodo, selected = "current"),
-                      selectInput("resolucao", "Resolution:", resolucao, selected = "10min"),
-                      conditionalPanel("input.periodo != 'current' ",
-                        selectInput("gcm", "General Circulation Model (GCM):", gcm, selected = "bc"),
-                        selectInput("rcp", "Emission Scenario (RCP):", rcp, selected = "26")
-                      ),
-                      checkboxInput('Bio1', '(Bio1) Annual Mean Temperature', value = FALSE),
-                      checkboxInput('Bio2', '(Bio2) Mean Diurnal Range', value = FALSE),
-                      checkboxInput('Bio3', '(Bio3) Isothermality', value = FALSE),
-                      checkboxInput('Bio4', '(Bio4) Temperature Seasonality', value = FALSE),
-                      checkboxInput('Bio5', '(Bio5) Max Temperature of Warmest Month', value = FALSE),
-                      checkboxInput('Bio6', '(Bio6) Min Temperature of Coldest Month', value = FALSE),
-                      checkboxInput('Bio7', '(Bio7) Temperature Annual Range', value = FALSE),
-                      checkboxInput('Bio8', '(Bio8) Mean Temperature of Wettest Quarter', value = FALSE),
-                      checkboxInput('Bio9', '(Bio9) Mean Temperature of Driest Quarter', value = FALSE),
-                      checkboxInput('Bio10', '(Bio10) Mean Temperature of Warmest Quarter', value = FALSE),
-                      checkboxInput('Bio11', '(Bio11) Mean Temperature of Coldest Quarter', value = FALSE),
-                      checkboxInput('Bio12', '(Bio12) Annual Precipitation', value = FALSE),
-                      checkboxInput('Bio13', '(Bio13) Precipitation of Wettest Month', value = FALSE),
-                      checkboxInput('Bio14', '(Bio14) Precipitation of Driest Month', value = FALSE),
-                      checkboxInput('Bio15', '(Bio15) Precipitation Seasonality', value = FALSE),
-                      checkboxInput('Bio16', '(Bio16) Precipitation of Wettest Quarter', value = FALSE),
-                      checkboxInput('Bio17', '(Bio17) Precipitation of Driest Quarter', value = FALSE),
-                      checkboxInput('Bio18', '(Bio18) Precipitation of Warmest Quarter', value = FALSE),
-                      checkboxInput('Bio19', '(Bio19) Precipitation of Coldest Quarter', value = FALSE)
-                    ),
-                    conditionalPanel("input.tipodadoabiotico == 'Others' ",
-                      helpText('All layers should have the same spatial extent, resolution, origin, and projection'),
-                      helpText(''),
-                      helpText('Accepted formats: ".tif";  '),
-                      if (length(list.files("ex/outros/",full.names=T,pattern=c('.*'))>0))
-                      {
-                        lista_outros <- list.files("ex/outros/",full.names=F,pattern=c('.*'))
-                        
-                        lapply(1:length(lista_outros), function(i) {
-                          checkboxInput( paste0('chboxoutro',i), lista_outros[i] , value = TRUE)
-                        })
-                      }
                     )
                   )
-                  )
-                )
                 )
               ),
-              
-              
               
               tabPanel("Model extent", 
                 column(width = 8,
@@ -376,6 +374,7 @@ body <- dashboardBody(
                   )
                 )
               ), 
+              
               tabPanel("Extent projection", 
                 column(width = 8,
                   box(width = NULL, solidHeader = TRUE,
@@ -393,83 +392,80 @@ body <- dashboardBody(
                         min = -90, max = 90, value = 23, step = 1),
                       numericInput("edtextend32", "Latitude lower:",
                         min = -90, max = 90, value = -33, step = 1)
-                      
                     )
-                    
                   )
                 )
-                
               )
             )
           )
-          
-        ), # End Abiotic Data
-        
-        # 5. Modeling
+        ), 
+        ########################################################################
         tabPanel("Modeling",
           column(width = 6,
             tabBox(side = "left",
               title = "",width = NULL, height = 500,
-              # The id lets us use input$tabset1 on the server to find the current tab
               id = "tabset2",
+              
               tabPanel("BC", 
                 column(width = 12,
                   leafletOutput('maparesultadobc', height = 500)
-                  
                 )
               ),
+              
               tabPanel("MH", 
                 column(width = 12,
                   leafletOutput('maparesultadomh', height = 500)
                 )
               )
               ,
+              
               tabPanel("MX", 
                 column(width = 12,
                   leafletOutput('maparesultadomax', height = 500)
                 )
               )
               ,
+              
               tabPanel("GLM", 
                 column(width = 12,
                   leafletOutput('maparesultadoglm', height = 500)
                 )
               )
               ,
+              
               tabPanel("RF", 
                 column(width = 12,
                   leafletOutput('maparesultadorf', height = 500)
                 )
               )
               ,
+              
               tabPanel("SVM", 
                 column(width = 12,
                   leafletOutput('maparesultadosvm', height = 500)
                 )
               )
               ,
+              
               tabPanel("Domain", 
                 column(width = 12,
                   leafletOutput('maparesultadodo', height = 500)
                 )
               )
-              
             ),
             plotOutput(outputId = "plotmodelagem",height = "500px",width = "500px")
           ),
-          
           column(width = 3,
             box(width = NULL, status = "warning",
               selectInput("dataset", "Partitioning type",
                 choices = c("KFold")),
-               # choices = c("KFold", "Bootstrap")),
+              # choices = c("KFold", "Bootstrap")),
               sliderInput("edtnumgrupo", "No. of partitions:",
                 min = 1, max = 50, value = 3, step = 1),
               sliderInput("edtnumpontos", "Pseudo-absences:",
                 min = 100, max = 2000, value = 300, step = 100),
               sliderInput("edtTSS", "TSS score cutoff:",
                 min = 0, max = 1, value = 0.7, step = 0.05)
-              
               # radioButtons("edtBuffer", "Buffer:",
               #   c("Median" = "MEDIAN",
               #     "Maximum" = "MAX",
@@ -477,9 +473,7 @@ body <- dashboardBody(
               #     "False" = "FALSE"))
             )
           ),
-          
           column(width = 3,
-            
             box(width = NULL, status = "warning",
               h4("Algorithms"),
               checkboxInput('BIOCLIM', 'Bioclim', value = FALSE),
@@ -492,33 +486,32 @@ body <- dashboardBody(
               tags$hr(),
               checkboxInput('PROJETAR', 'Design on another extension', value = FALSE)
             ),
-            
             box(width = NULL, status = "warning",
               actionButton("btnModelar", "Run",icon = icon("cogs"))
             )
-            
           )
-          
-        ), ## End Modeling
+        ), 
         
-        #6.Outputs
+        ########################################################################      
         tabPanel("Outputs",
           column(width = 12,
             tabBox(side = "left",
               title = "",width = '100%',height = 500,
               # The id lets us use input$tabset1 on the server to find the current tab
               id = "tabset2",
+              
               tabPanel("Binary and continuous models", 
                 column(width = 12,
                   htmlOutput("ui")
                 )
               ),
+              
               tabPanel("Stats",
                 column(width = 12,
                   dataTableOutput('dbgridresultado')
-                  
                 )
               ),
+              
               tabPanel("Output files", 
                 column(width = 12,
                   column(width = 2,
@@ -563,13 +556,13 @@ body <- dashboardBody(
                       htmlOutput("uiarquivosprojecaofuturo")
                     )
                   )
-                  
                 )
               )
             )
           )
-        ) # End Outputs
-        ,
+        ),
+        
+        ########################################################################      
         tabPanel("About",
           column(width = 2,
             img(src="Logoenbtpequeno.gif")
@@ -591,18 +584,19 @@ body <- dashboardBody(
             h5('Cite also randomForest() if you fit random forests, and `kernlab() if you fit SVM')
           )
         ),
-        
+        ########################################################################      
         tabPanel("Help",
           column(width = 12,
-            h4('User manual'),
-            tags$a(href="Manual_Model-R.pdf", "Version 1.0")
+            h4('User manual')
+            
           )
-          
         )
-      )
-    )
-  )
-) # BODY
+        
+        ########################################################################
+      ) # tabBox
+    ) # column
+  ) # fluidrow
+) # Body
 
 dashboardPage(
   header,
