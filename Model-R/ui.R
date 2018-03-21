@@ -414,18 +414,24 @@ body <- dashboardBody(
                   )
                     ),
                     column(width = 6,
-                      box(width = NULL, title="Time projections" , padding=0,
+                     
                       box(width = 6, solidHeader = TRUE, collapsible = TRUE, title="Future conditions" ,
-                      checkboxGroupInput("periodo", "Time period:", periodo),
-                      checkboxGroupInput("gcm", "General Circulation Models (GCM):", gcm, selected = "bc"),
+                        box(width = 12, solidHeader = TRUE, collapsible = TRUE, title="Time period" ,
+                      checkboxGroupInput("periodo", "Time period:", periodo)
+                        ),
+                        box(width = 12, solidHeader = TRUE, collapsible = TRUE, title="General Circulation Models (GCM)",
+                      checkboxGroupInput("gcm", "General Circulation Models (GCM):", gcm, selected = "bc")
+                        ),
+                        box(width = 12, solidHeader = TRUE, collapsible = TRUE, title="Emission Scenarios (RCP)",
                       checkboxGroupInput("rcp", "Emission Scenarios (RCP):", rcp, selected = "26")
+                      )
                       ),
                       box(width =6, solidHeader = TRUE,collapsible = TRUE, title="Past conditions" ,
                         checkboxGroupInput("periodo", "Time period:", periodo),
                         checkboxGroupInput("gcm", "General Circulation Models (GCM):", gcm, selected = "bc"),
                         checkboxGroupInput("rcp", "Emission Scenarios (RCP):", rcp, selected = "26")
                       )
-                    )
+                    
                     )
                   
               )
