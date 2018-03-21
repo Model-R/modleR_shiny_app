@@ -10,33 +10,37 @@
 
 # Thanks to Steven Worthington for function ipak https://gist.github.com/stevenworthington/3178163 (HT Karlo Guidoni Martins)
 
-# ipak <- function(pkg) {
-#     new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
-#     if (length(new.pkg))
-#         install.packages(new.pkg, dependencies = TRUE)
-#     sapply(pkg, require, character.only = TRUE)
-# }
+ipak <- function(pkg) {
+    new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+    if (length(new.pkg))
+        install.packages(new.pkg, dependencies = TRUE)
+    sapply(pkg, require, character.only = TRUE)
+}
 
-# ipak(c("shinydashboard",
-#        "leaflet",
-#        "R.utils",
-#        "raster",
-#        "rjson",
-#        "maps",
-#        "rgdal",
-#        "raster",
-#        "dismo",
-#        "rgbif",
-#        "XML",
-#        "randomForest",
-#        "kernlab",
-#        "rJava",
-#        "data.table"))
+ipak(c("shinydashboard",
+       "leaflet",
+       "R.utils",
+       "raster",
+       "rjson",
+       "maps",
+       "rgdal",
+       "raster",
+       "dismo",
+       "rgbif",
+       "XML",
+       "randomForest",
+       "kernlab",
+       "rJava",
+       "data.table", 
+       "sdmpredictors"))
 
 ##### IMPORTANT! ------------------------------
 # In Mac OS X, to correctly load the rJava package please include dyn.load command exibithed bellow before launching the App
 
-jdk_version <- list.files("/Library/Java/JavaVirtualMachines/")[2]
+#jdk_version <- list.files("/Library/Java/JavaVirtualMachines/")
+#dyn.load(paste0("/Library/Java/JavaVirtualMachines/" ,jdk_version,"/Contents/Home/lib/server/libjvm.dylib"))
+
+library("rJava")
 library("shinydashboard")
 library("leaflet")
 library("R.utils")
@@ -49,8 +53,6 @@ library("rgbif")
 library("XML")
 library("randomForest")
 library("kernlab")
-dyn.load(paste0("/Library/Java/JavaVirtualMachines/", jdk_version, "/Contents/Home/jre/lib/server/libjvm.dylib"))
-library("rJava")
 library("data.table")
 library("sdmpredictors")
 
