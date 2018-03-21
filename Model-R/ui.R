@@ -398,7 +398,6 @@ body <- dashboardBody(
                       ),
                       
                       column(width = 4,
-                        box(width = NULL, solidHeader = TRUE,
                           box(width = NULL, 
                             numericInput("edtextend12", "Longitude left:",
                               min = -180, max = 180, value = -90, step = 1),
@@ -409,7 +408,7 @@ body <- dashboardBody(
                             numericInput("edtextend32", "Latitude lower:",
                               min = -90, max = 90, value = -33, step = 1)
                           )
-                        )
+                        
                       )
                   )
                     ),
