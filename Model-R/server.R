@@ -1,7 +1,7 @@
 #############################
 ## ----   MODEL-R    ----  ##
-## ANDREA SÁNCHEZ TAPIA    ##
-## FELIPE SODRÉ BARROS     ##
+## ANDREA S??NCHEZ TAPIA    ##
+## FELIPE SODR?? BARROS     ##
 ## GUILHERME GALL          ##
 ## DIOGO SOUZA B. ROCHA    ##
 ## RAFAEL OLIVEIRA LIMA    ##
@@ -1164,9 +1164,9 @@ function(input, output, session) {
         ensemble.projecao <- mean(ensemble_raster_projecao, ensemble_raster_projecao)
         writeRaster(ensemble.projecao, filename = paste0("www/", projeto, "/final/",
           "proj_ensemble.tif"), format = "GTiff", overwrite = T)
-        plot(ensemble.projecao, main = paste("Ensemble Projeção"))
+        plot(ensemble.projecao, main = paste("Ensemble Proje????o"))
         png(filename = paste0("./www/", projeto, "/jpg/ensemble_projecao", ".jpg"))
-        plot(ensemble.projecao, main = paste("Ensemble Projeção"))
+        plot(ensemble.projecao, main = paste("Ensemble Proje????o"))
         dev.off()
       } # Close geographic proj. ensemble
       
@@ -1663,16 +1663,25 @@ function(input, output, session) {
       
       isolate({
        
-         # WorldClim layers
+        # WorldClim layers
         if (input$tipodadoabiotico == "CLIMA") {
-          path <- paste0(getwd(), "/ex/clima/current/", input$resolucao)
-          pathfuturo <- paste0(
-            getwd(), "/ex/clima/", input$periodo, "/",
-            input$resolucao, "/", input$gcm, "/", input$rcp)
+         
+          path <- paste0(getwd(), "/ex/clima/current/", input$resolution)
+          
+          path_future <- paste0(getwd(), "/ex/clima/", input$future_wc, "/",
+            input$resolution, "/", input$gcm_future_wc, "/", input$rcp)
+          
+          path_past <- paste0(getwd(), "/ex/clima/", input$past_wc, "/",
+            input$resolution, "/", input$gcm_past_wc, "/", input$rcp)
+         
           cat(paste("WorldClim current layers: ", path, "\n"))
-          cat(paste("WorldClim future layers: ", pathfuturo, "\n"))
+          cat(paste("WorldClim future layers: ", path_future, "\n"))
+          cat(paste("WorldClim past layers: ", path_past, "\n"))
+         
           arquivo <- list()
           arquivofuturo <- list()
+          arquivopassado <- list()
+          
           selecionado <- FALSE
 
           if (input$resolucao != "30s") {
@@ -1682,20 +1691,15 @@ function(input, output, session) {
               files.bil <- c(files.bil, add)
             }
             if (any(file.exists(files.bil) != T)) {
-              showModal(modalDialog(
-                title = "Important message",
-                "This is an important message!",
-                footer = modalButton("Dismiss")
-              ))
-              
-                zip_current <- paste0("bio_", input$resolucao, "_bil.zip")
+            
+                zip_current <- paste0("bio_", input$resolution, "_bil.zip")
                 url <- paste0("http://biogeo.ucdavis.edu/data/climate/worldclim/1_4/grid/cur/",zip_current)
                 download.file(url, zip_current, mode = "wb")
                 unzip(zip_current, exdir = path)
                 unlink(zip_current)
               }
             }
-          }
+         
           
           if (input$resolucao == "30s") {
             url1 <- "http://biogeo.ucdavis.edu/data/climate/worldclim/1_4/grid/cur/bio1-9_30s_bil.zip"
@@ -1822,15 +1826,17 @@ function(input, output, session) {
           
            
           # Loading future conditions layers
-          if (input$periodo != "current") {
+          
+        if (input$forecasting_wc == 'y' ) {
+          
             year <- sub(".*(\\d+{2}).*$", "\\1", input$periodo)
             files.tif <- paste0(
-              pathfuturo, "/", input$gcm, input$rcp, "bi",
+              path_future, "/", input$gcm, input$rcp, "bi",
               year, 1, ".tif"
             )
             for (i in c(2:19)) {
               add <- paste0(
-                pathfuturo, "/", input$gcm, input$rcp, "bi",
+                path_future, "/", input$gcm, input$rcp, "bi",
                 year, i, ".tif"
               )
               files.tif <- c(files.tif, add)
@@ -1851,138 +1857,138 @@ function(input, output, session) {
               }
               
               download.file(url, zip_future, mode = "wb")
-              unzip(zip_future, exdir = pathfuturo)
+              unzip(zip_future, exdir = path_future)
               unlink(zip_future)
             }
             
             if (input$Bio1 == TRUE) {
               arquivofuturo <- c(arquivofuturo, paste0(
-                pathfuturo, "/", input$gcm,
+                path_future, "/", input$gcm,
                 input$rcp, "bi", year, 1, ".tif"
               ))
             }
             if (input$Bio2 == TRUE) {
               arquivofuturo <- c(arquivofuturo, paste0(
-                pathfuturo, "/", input$gcm,
+                path_future, "/", input$gcm,
                 input$rcp, "bi", year, 2, ".tif"
               ))
             }
             if (input$Bio3 == TRUE) {
               arquivofuturo <- c(arquivofuturo, paste0(
-                pathfuturo, "/", input$gcm,
+                path_future, "/", input$gcm,
                 input$rcp, "bi", year, 3, ".tif"
               ))
             }
             if (input$Bio4 == TRUE) {
               arquivofuturo <- c(arquivofuturo, paste0(
-                pathfuturo, "/", input$gcm,
+                path_future, "/", input$gcm,
                 input$rcp, "bi", year, 4, ".tif"
               ))
             }
             if (input$Bio5 == TRUE) {
               arquivofuturo <- c(arquivofuturo, paste0(
-                pathfuturo, "/", input$gcm,
+                path_future, "/", input$gcm,
                 input$rcp, "bi", year, 5, ".tif"
               ))
             }
             if (input$Bio6 == TRUE) {
               arquivofuturo <- c(arquivofuturo, paste0(
-                pathfuturo, "/", input$gcm,
+                path_future, "/", input$gcm,
                 input$rcp, "bi", year, 6, ".tif"
               ))
             }
             if (input$Bio7 == TRUE) {
               arquivofuturo <- c(arquivofuturo, paste0(
-                pathfuturo, "/", input$gcm,
+                path_future, "/", input$gcm,
                 input$rcp, "bi", year, 7, ".tif"
               ))
             }
             if (input$Bio8 == TRUE) {
               arquivofuturo <- c(arquivofuturo, paste0(
-                pathfuturo, "/", input$gcm,
+                path_future, "/", input$gcm,
                 input$rcp, "bi", year, 8, ".tif"
               ))
             }
             if (input$Bio9 == TRUE) {
               arquivofuturo <- c(arquivofuturo, paste0(
-                pathfuturo, "/", input$gcm,
+                path_future, "/", input$gcm,
                 input$rcp, "bi", year, 9, ".tif"
               ))
             }
             if (input$Bio10 == TRUE) {
               arquivofuturo <- c(arquivofuturo, paste0(
-                pathfuturo, "/", input$gcm,
+                path_future, "/", input$gcm,
                 input$rcp, "bi", year, 10, ".tif"
               ))
             }
             if (input$Bio11 == TRUE) {
               arquivofuturo <- c(arquivofuturo, paste0(
-                pathfuturo, "/", input$gcm,
+                path_future, "/", input$gcm,
                 input$rcp, "bi", year, 11, ".tif"
               ))
             }
             if (input$Bio12 == TRUE) {
               arquivofuturo <- c(arquivofuturo, paste0(
-                pathfuturo, "/", input$gcm,
+                path_future, "/", input$gcm,
                 input$rcp, "bi", year, 12, ".tif"
               ))
             }
             if (input$Bio13 == TRUE) {
               arquivofuturo <- c(arquivofuturo, paste0(
-                pathfuturo, "/", input$gcm,
+                path_future, "/", input$gcm,
                 input$rcp, "bi", year, 13, ".tif"
               ))
             }
             if (input$Bio14 == TRUE) {
               arquivofuturo <- c(arquivofuturo, paste0(
-                pathfuturo, "/", input$gcm,
+                path_future, "/", input$gcm,
                 input$rcp, "bi", year, 14, ".tif"
               ))
             }
             if (input$Bio15 == TRUE) {
               arquivofuturo <- c(arquivofuturo, paste0(
-                pathfuturo, "/", input$gcm,
+                path_future, "/", input$gcm,
                 input$rcp, "bi", year, 15, ".tif"
               ))
             }
             if (input$Bio16 == TRUE) {
               arquivofuturo <- c(arquivofuturo, paste0(
-                pathfuturo, "/", input$gcm,
+                path_future, "/", input$gcm,
                 input$rcp, "bi", year, 16, ".tif"
               ))
             }
             if (input$Bio17 == TRUE) {
               arquivofuturo <- c(arquivofuturo, paste0(
-                pathfuturo, "/", input$gcm,
+                path_future, "/", input$gcm,
                 input$rcp, "bi", year, 17, ".tif"
               ))
             }
             if (input$Bio18 == TRUE) {
               arquivofuturo <- c(arquivofuturo, paste0(
-                pathfuturo, "/", input$gcm,
+                path_future, "/", input$gcm,
                 input$rcp, "bi", year, 18, ".tif"
               ))
             }
             if (input$Bio19 == TRUE) {
               arquivofuturo <- c(arquivofuturo, paste0(
-                pathfuturo, "/", input$gcm,
+                path_future, "/", input$gcm,
                 input$rcp, "bi", year, 19, ".tif"
               ))
             }
             
             cat(paste("arquivo: ", arquivo, "\n"))
             cat(paste("arquivofuturo: ", arquivofuturo, "\n"))
-         
+        }
         } # Closing WorldClim
         
         # Bio-Oracle layers
         if (input$tipodadoabiotico == "BIOORACLE") {
           path <- paste(getwd(), "/ex/biooracle/current", sep = "")
-          pathfuturo <- paste(getwd(), "/ex/biooracle/", input$periodobiooracle,
+          path_future <- paste(getwd(), "/ex/biooracle/", input$periodobiooracle,
             "/", input$cenariobiooracle, sep = ""
           )
           cat(paste("Bio-Oracle current layers: ", path, "\n"))
-          cat(paste("Bio-Oracle future layers: ", pathfuturo, "\n"))
+          cat(paste("Bio-Oracle future layers: ", path_future, "\n"))
           arquivo <- list()
           arquivofuturo <- list()
           selecionado <- FALSE
@@ -2088,35 +2094,35 @@ function(input, output, session) {
                 "BO_",
                 input$cenariobiooracle, "_", input$periodobiooracle, "_",
                 "sstmin"
-              ), rasterstack = FALSE, datadir = pathfuturo))
+              ), rasterstack = FALSE, datadir = path_future))
             }
             if (input$sstmax == TRUE) {
               arquivofuturo <- c(arquivofuturo, load_layers(paste0(
                 "BO_",
                 input$cenariobiooracle, "_", input$periodobiooracle, "_",
                 "sstmax"
-              ), rasterstack = FALSE, datadir = pathfuturo))
+              ), rasterstack = FALSE, datadir = path_future))
             }
             if (input$sstrange == TRUE) {
               arquivofuturo <- c(arquivofuturo, load_layers(paste0(
                 "BO_",
                 input$cenariobiooracle, "_", input$periodobiooracle, "_",
                 "sstrange"
-              ), rasterstack = FALSE, datadir = pathfuturo))
+              ), rasterstack = FALSE, datadir = path_future))
             }
             if (input$salinity == TRUE) {
               arquivofuturo <- c(arquivofuturo, load_layers(paste0(
                 "BO_",
                 input$cenariobiooracle, "_", input$periodobiooracle, "_",
                 "salinity"
-              ), rasterstack = FALSE, datadir = pathfuturo))
+              ), rasterstack = FALSE, datadir = path_future))
             }
             if (input$sstmean == TRUE) {
               arquivofuturo <- c(arquivofuturo, load_layers(paste0(
                 "BO_",
                 input$cenariobiooracle, "_", input$periodobiooracle, "_",
                 "sstmean"
-              ), rasterstack = FALSE, datadir = pathfuturo))
+              ), rasterstack = FALSE, datadir = path_future))
             }
           }
         } # Closing Bio-Oracle
@@ -2135,13 +2141,15 @@ function(input, output, session) {
           }
         } # Closing other predictors
         
+        
         incProgress(2 / n, detail = paste0("Checking correlation..."))
         arquivo2 <<- arquivo
         arquivo3 <- arquivo
         cat(paste("Checking... ", "\n"))
         
         if (length(arquivo) > 0) {
-          if ((selecionado == TRUE) && (exists("occur.data.coord"))) {
+         
+           if ((selecionado == TRUE) && (exists("occur.data.coord"))) {
             predictors <- stack(arquivo)
             predictors3 <- stack(arquivo3)
             if (input$tipodadoabiotico != "Others") {
@@ -2169,7 +2177,11 @@ function(input, output, session) {
             }
             
             presvals <<- raster::extract(pred_nf, occur.data.coord)
-            plot(pred_nf)
+           
+             plot(pred_nf)
+          }
+        }
+            
             cat(paste("Estou aqui 3 ", "\n"))
             backgr <- randomPoints(pred_nf, 300)
             colnames(backgr) <- c("Longitude", "Latitude")
@@ -2194,8 +2206,9 @@ function(input, output, session) {
                 plot(0, 0)
               })
             }
-          }
-        }
+ 
+          #}
+        #}
       })
       incProgress(3 / n, detail = paste0("Ploting..."))
     })
