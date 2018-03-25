@@ -15,26 +15,34 @@ ipak <- function(pkg) {
 }
 ipak(c("shinydashboard", "leaflet"))
 #vars <- c(	"GBif - The Global Biodiversity Information Facility" = "gbif",
-bio_datasource <- c(	"GBif - The Global Biodiversity Information Facility" = "gbif",
-  "Jabot - JBRJ Database" = "jabot",
-  "CSV - Comma Separated Values" = "csv")
+bio_datasource <-
+  c(
+    "GBif - The Global Biodiversity Information Facility" = "gbif",
+    "Jabot - JBRJ Database" = "jabot",
+    "CSV - Comma Separated Values" = "csv"
+  )
 #varabiotico <- c(	"WorldClim v.1.4" = "CLIMA",
-env_datasource <- c(	"WorldClim v.1.4" = "CLIMA",
+env_datasource <- c(
+  "WorldClim v.1.4" = "CLIMA",
   "Bio-ORACLE v.1" = "BIOORACLE",
-  "Upload Dataset" = "Others")
+  "Upload Dataset" = "Others"
+)
 # varabioticopassado <- c("WorldClim" = "CLIMA",
 #   "Bio-ORACLE" = "BIOORACLE")
 time_scale <- c("current" = "current",
   "future" = "future",
-  "past" = "past" )
+  "past" = "past")
 #resolucao <- c("10 arc-minutes" = "10m",
-resolution <- c("10 arc-minutes" = "10m",
+resolution <- c(
+  "10 arc-minutes" = "10m",
   "5 arc-minutes" = "5m",
   "2.5 arc-minutes" = "2-5m",
-  "30 arc-seconds" = "30s")
-future_wc <- c("2050" = "2050",
+  "30 arc-seconds" = "30s"
+)
+future_wc_dates <- c("2050" = "2050",
   "2070" = "2070")
-gcm_future_wc <- c(	"BCC-CSM1-1" = "bc",
+gcm_future_wc <- c(
+  "BCC-CSM1-1" = "bc",
   "CCSM4" = "cc",
   "GISS-E2-R" = "gs",
   "HadGEM2-AO" = "hd",
@@ -44,12 +52,15 @@ gcm_future_wc <- c(	"BCC-CSM1-1" = "bc",
   "MIROC-ESM" = "mr",
   "MIROC5" = "mc",
   "MRI-CGCM3" = "mg",
-  "NorESM1-M" = "no")
-rcp <- c("rcp26" = "26",
+  "NorESM1-M" = "no"
+)
+rcp <- c(
+  "rcp26" = "26",
   "rcp45" = "45",
   "rcp60" = "60",
-  "rcp85" = "85")
-past_wc <- c("Mid Holocene" = "mid_holo",
+  "rcp85" = "85"
+)
+past_wc_dates <- c("Mid Holocene" = "mid_holo",
   "Last Glacial Maximum" = "lgm")
 # gcm_past_wc_midholo <- c(	"BCC-CSM1-1" = "bc",
 #   "CCSM4" = "cc",
@@ -63,7 +74,7 @@ past_wc <- c("Mid Holocene" = "mid_holo",
 # gcm_past_wc_lgm <- c(	"CCSM4" = "cc",
 #   "MIROC-ESM" = "mr",
 #   "MPI-ESM-P" = "me")
-future_bo <- c("2100" = "2100",
+future_bo_dates <- c("2100" = "2100",
   "2200" = "2200")
 scenario_bo_2100 <- c("A1B" = "A1B",
   "A2" = "A2",
@@ -82,596 +93,896 @@ scenario_bo_2200 <- c("A1B" = "A1B",
 #   "WorldClim" = "CLIMA")
 # tipomapa <- c("World" = "world",
 #   "South America" = "South America")
-# projections<-c("No projection" = "no_projection", 
-#   "Geographic" = "geo_projection", 
-#   "Time" = "time_projection", 
+# projections<-c("No projection" = "no_projection",
+#   "Geographic" = "geo_projection",
+#   "Time" = "time_projection",
 #   "Geographic + time" = "geotime_projection")
 ################################################################################
 header <- dashboardHeader(title = "Model-R v1.25")
-body <- dashboardBody(
-  fluidRow(
-    tags$head(
-      tags$link(rel = "stylesheet", type = "text/css", href = "style.css")
-    ),
-    column (width = 12,
-      tabBox(side = "left",
-        title = "Steps", width = NULL, height= "1000px",
-        id = "tabset1",
-        ########################################################################
-        tabPanel("Welcome",
-          column(width = 12,
-            id = "tabset1",
-            tabPanel("", column(
-              width = 9,
-              box(
-                width = NULL,
-                column (width = 2,
-                  br(),
-                  img (src="logo.png", width = 90)
+body <- dashboardBody(fluidRow(
+  useShinyjs(),
+  tags$head(
+    tags$link(rel = "stylesheet", type = "text/css", href = "style.css")
+    #tags$script(type="text/javascript", src = "disable.js")
+  ),
+  column (
+    width = 12,
+    tabBox(
+      side = "left",
+      title = "Steps",
+      width = NULL,
+      height = "1000px",
+      id = "tabset1",
+      ########################################################################
+      tabPanel("Welcome",
+        column(
+          width = 12,
+          id = "tabset1",
+          tabPanel("", column(
+            width = 9,
+            box(
+              width = NULL,
+              column (width = 2,
+                br(),
+                img (src = "logo.png", width = 90)),
+              column (
+                width = 9,
+                h2("Model-R"),
+                h4(
+                  "A Framework for Scalable and
+                  Reproducible Ecological Niche Modeling"
+                )
                 ),
-                column (width = 9,
-                  h2("Model-R"),
-                  h4("A Framework for Scalable and
-                    Reproducible Ecological Niche Modeling")
-                  ), 
-                column (width = 12,
-                  br(),
-                  p("Please cite..."),
-                  br(),
-                  p("...ABSTRACT...")
+              column (width = 12,
+                br(),
+                p("Please cite..."),
+                br(),
+                p("...ABSTRACT..."))
+              )
+          ),
+            column(width = 3,
+              box(width = NULL,
+                if (length(list.files (
+                  "./www/projeto/",
+                  full.names = F,
+                  pattern = paste0(".")
+                ) > 0)) {
+                  list_projects <-
+                    list.files("./www/projeto/",
+                      full.names = F,
+                      pattern = paste0("."))
+                  box(
+                    title = "Create/Open project",
+                    status = "primary",
+                    solidHeader = TRUE,
+                    width = NULL,
+                    selectInput(
+                      "select_project",
+                      "Select project: ",
+                      choices = c("Create new project" = "new_proj", "Open project" = "load_proj")
+                    ),
+                    conditionalPanel(
+                      "input.select_project == 'load_proj' ",
+                      helpText('Select project: '),
+                      radioButtons(
+                        "edtprojeto.load",
+                        "Open project:",
+                        choices = c(list_projects),
+                        choiceValues =  c(list_projects),
+                        selected = NULL
+                      )
+                    ),
+                    conditionalPanel(
+                      "input.select_project == 'new_proj' ",
+                      textInput("edtprojeto.create", label = "Insert Project Id: ", value = "")
+                    ),
+                    actionButton("btnrefreshprojeto", "Submit", icon = icon("ok", lib = "glyphicon"))
+                  )
+                } else {
+                  box(
+                    title = "Create/Open project",
+                    status = "primary",
+                    solidHeader = TRUE,
+                    width = NULL,
+                    selectInput(
+                      "select_project",
+                      "",
+                      choices = c("Create new project" = "new_proj")
+                    ),
+                    conditionalPanel(
+                      "input.select_project == 'new_proj' ",
+                      textInput("edtprojeto.create", label = "Insert Project Id: ", value = "")
+                    ),
+                    actionButton("btnrefreshprojeto", "Submit", icon = icon("gear"))
+                  )
+                })))
+        )),
+      ########################################################################
+      tabPanel("Species occurrence data",
+        column(
+          width = 12,
+          tabBox(
+            side = "left",
+            selected = "Import occurrence dataset",
+            title = "",
+            width = NULL,
+            height = "600px",
+            id = "tabset1",
+            tabPanel("Import occurrence dataset",
+              column(
+                width = 12,
+                tabBox(
+                  side = "right",
+                  selected = "Load occurrence data",
+                  title = "",
+                  width = NULL,
+                  height = "600px",
+                  id = "tabset1",
+                  tabPanel(
+                    "Load occurrence data",
+                    column(width = 8,
+                      box(width = NULL,
+                        dataTableOutput('dgbriddados'))),
+                    column(
+                      width = 4,
+                      box(
+                        width = NULL,
+                        status = "warning",
+                        helpText('Select species occurence database or browse csv dataset'),
+                        selectInput("tipodado", "Occurence data", bio_datasource, selected = "jabot"),
+                        conditionalPanel(
+                          "input.tipodado == 'csv' ",
+                          helpText('Format: [Species, Longitude, Latitude]'),
+                          fileInput(
+                            'file1',
+                            '',
+                            accept = c('text/csv',
+                              'text/comma-separated-values,text/plain',
+                              '.csv')
+                          ),
+                          checkboxInput('header', 'Header', TRUE),
+                          radioButtons(
+                            'sep',
+                            'Separator',
+                            c(
+                              "Comma" = ',',
+                              "Semicolon" = ';',
+                              "Tab" = '\t'
+                            ),
+                            ',',
+                            inline = TRUE
+                          ),
+                          radioButtons(
+                            'quote',
+                            'Quote',
+                            c(
+                              'Without' = '',
+                              'Double' = '"',
+                              'Simple' = "'"
+                            ),
+                            '"',
+                            inline = TRUE
+                          ),
+                          actionButton("btnbuscarespecieCSV", "Viewer", icon = icon("search"))
+                        ),
+                        conditionalPanel(
+                          "input.tipodado == 'jabot' ",
+                          helpText('Insert Species Scientific Name'),
+                          textInput("edtespeciejabot", label = "Species name:", value = "Caesalpinia echinata"),
+                          actionButton("btnbuscarespeciejabot", "Search", icon = icon("search"))
+                        ),
+                        conditionalPanel(
+                          "input.tipodado == 'gbif' ",
+                          helpText('Insert Species Scientific Name'),
+                          textInput("edtespecie", label = "Species name:", value = "Caesalpinia echinata"),
+                          actionButton("btnbuscarespecie", "Search", icon = icon("search"))
+                        )
+                      )
+                    )
+                  ),
+                  tabPanel("View occurrence map",
+                    column(
+                      width = 12,
+                      box(
+                        width = NULL,
+                        solidHeader = TRUE,
+                        leafletOutput('mapadistribuicao'),
+                        height = 500
+                      )
+                    ))
                 )
-                )
-            ),
-              column(width = 3,
+              )),
+            tabPanel(
+              "Data Cleaning",
+              column(width = 6,
+                box(
+                  width = NULL,
+                  solidHeader = TRUE,
+                  leafletOutput('mapadistribuicaodatacleaning', height = 500)
+                )),
+              column(
+                width = 6,
+                box(
+                  width = NULL,
+                  status = "warning",
+                  numericInput(
+                    "edtelemento",
+                    "Occurence record ID:",
+                    min = 0,
+                    max = 100,
+                    value = 0
+                  ),
+                  actionButton("btnapagar", "Delete selected ID", icon = icon("trash")),
+                  actionButton('btneliminarduplicatas', 'Delete duplicates', icon = icon("cubes")),
+                  downloadButton('downloadData', 'Download data')
+                ),
                 box(width = NULL,
-                  if (length(
-                    list.files ("./www/projeto/",full.names = F, pattern = paste0("."))> 0)){
-                    list_projects <-	list.files("./www/projeto/",full.names = F, pattern = paste0("."))
-                    box(title = "Create/Open project", status = "primary", solidHeader = TRUE,
-                      width = NULL,
-                      selectInput("select_project", "Select project: ", 
-                        choices= c(
-                          "Create new project" = "new_proj", "Open project" = "load_proj")),
-                      conditionalPanel("input.select_project == 'load_proj' ",
-                        helpText('Select project: '),
-                        radioButtons("edtprojeto.load", "Open project:",
-                          choices = c(list_projects), choiceValues =  c(list_projects), selected = NULL)
-                      ),
-                      conditionalPanel("input.select_project == 'new_proj' ",
-                        textInput("edtprojeto.create", label = "Insert Project Id: ", value = "")
-                      ),
-                      actionButton("btnrefreshprojeto", "Submit", icon = icon("ok", lib = "glyphicon"))
-                    )
-                  } else {
-                    box(title = "Create/Open project", status = "primary", solidHeader = TRUE,
-                      width = NULL,
-                      selectInput("select_project", "", choices= c("Create new project" = "new_proj")),
-                      conditionalPanel("input.select_project == 'new_proj' ",
-                        textInput("edtprojeto.create", label = "Insert Project Id: ", value = "")
-                      ),
-                      actionButton("btnrefreshprojeto", "Submit", icon = icon("gear"))
-                    )
-                  }
-                )
+                  dataTableOutput('dgbriddadosdatacleaning'))
               )
             )
           )
-        ),
-        ########################################################################       
-        tabPanel("Species occurrence data",  
-          column(width = 12,
-            tabBox(side = "left", selected = "Import occurrence dataset",
-              title = "",width = NULL, height= "600px",
-              id = "tabset1",
-              tabPanel("Import occurrence dataset",  
-                column(width = 12,
-                  tabBox(side = "right",selected = "Load occurrence data",
-                    title = "",width = NULL,height= "600px",
-                    id = "tabset1",
-                    tabPanel("Load occurrence data", 
-                      column(width = 8,
-                        box(width = NULL,
-                          dataTableOutput('dgbriddados')
-                        )
-                      ),
-                      column(width = 4,
-                        box(width = NULL, status = "warning",
-                          helpText('Select species occurence database or browse csv dataset'),
-                          selectInput("tipodado", "Occurence data", bio_datasource, selected = "jabot"),
-                          conditionalPanel("input.tipodado == 'csv' ",
-                            helpText('Format: [Species, Longitude, Latitude]'),
-                            fileInput('file1', '',
-                              accept=c('text/csv',
-                                'text/comma-separated-values,text/plain',
-                                '.csv')),
-                            checkboxInput('header', 'Header', TRUE),
-                            radioButtons('sep', 'Separator',
-                              c("Comma"=',',
-                                "Semicolon"=';',
-                                "Tab"='\t'),
-                              ',', inline = TRUE),
-                            radioButtons('quote', 'Quote',
-                              c('Without'='',
-                                'Double'='"',
-                                'Simple'="'"),
-                              '"', inline = TRUE),
-                            actionButton("btnbuscarespecieCSV", "Viewer",icon = icon("search"))
-                          ),
-                          conditionalPanel("input.tipodado == 'jabot' ",
-                            helpText('Insert Species Scientific Name'),
-                            textInput("edtespeciejabot", label = "Species name:", value = "Caesalpinia echinata"),
-                            actionButton("btnbuscarespeciejabot", "Search", icon = icon("search"))
-                          ),
-                          conditionalPanel("input.tipodado == 'gbif' ",
-                            helpText('Insert Species Scientific Name'),
-                            textInput("edtespecie", label = "Species name:", value = "Caesalpinia echinata"),
-                            actionButton("btnbuscarespecie", "Search", icon = icon("search"))
-                          )
+        )),
+      ########################################################################
+      tabPanel("Environmental data",
+        column(
+          width = 12,
+          tabBox(
+            side = "left",
+            title = "",
+            width = NULL,
+            height = "600px",
+            selected = "Model Extent",
+            
+            tabPanel(
+              "Select Predictors",
+              column(
+                width = 4,
+                box(
+                  width = NULL,
+                  status = "warning",
+                  height = NULL,
+                  actionButton("btnAtualizaSelecaoVariaveis", "Update selected"),
+                  selectInput("tipodadoabiotico", "Variables dataset:", env_datasource),
+                  conditionalPanel(
+                    "input.tipodadoabiotico == 'BIOORACLE' ",
+                    checkboxGroupInput(
+                      "forecasting_bo",
+                      label = "Incude forecasting: ",
+                      choices = c('Future conditions' = 'future_bo')
+                    ),
+                    conditionalPanel(
+                      "input.forecasting_bo.includes('future_bo') ",
+                      checkboxGroupInput(
+                        "pred_vars",
+                        label = "Select variables: ",
+                        choices = c(
+                          'Temperature (Max) ' = 'sstmax',
+                          'Temperature (Min) ' = 'sstmin',
+                          'Temperature (Range)' = 'sstrange',
+                          'Temperature (Mean)' = 'sstmean',
+                          'Salinity' = 'salinity'
                         )
                       )
                     ),
-                    tabPanel("View occurrence map", 
-                      column(width = 12,
-                        box(width = NULL, solidHeader = TRUE,
-                          leafletOutput('mapadistribuicao'), height = 500)
+                    conditionalPanel(
+                      "input.forecasting_bo != 'future_bo' ",
+                      checkboxGroupInput(
+                        "pred_vars",
+                        label = "Select variables: ",
+                        choices = c(
+                          'Temperature (Max) ' = 'sstmax',
+                          'Temperature (Min) ' = 'sstmin',
+                          'Temperature (Range)' = 'sstrange',
+                          'Temperature (Mean)' = 'sstmean',
+                          'Salinity' = 'salinity',
+                          'Calcite' =   'calcite',
+                          'Nitrate' =  'nitrate',
+                          'pH' = 'ph',
+                          'Silicate' = 'silicate' ,
+                          'Phosphate' = 'phosphate',
+                          'Dissolved mol. oxygen' = 'dissox',
+                          'Chlorophyll (Min)' =  'chlomin',
+                          'Chlorophyll (Max)' =  'chlomax',
+                          'Chlorophyll (Range)' =  'chlorange',
+                          'Chlorophyll(Mean)' =  'chlomean',
+                          'Cloud cover (Mean)' = 'cloudmean',
+                          'Cloud cover (Max)' = 'cloudmax',
+                          'Cloud cover (Min)' =  'cloudmin',
+                          'Diffuse attenuation (Mean)' =  'damean',
+                          'Diffuse attenuation (Min)' =   'damin',
+                          'Diffuse attenuation (Max)' = 'damax',
+                          'Photosynt. Avail. Radiation (Max)' =  'parmax',
+                          'Photosynt. Avail. Radiation (Mean)' =  'parmean'
+                        )
                       )
                     )
+                  ),
+                  conditionalPanel(
+                    "input.tipodadoabiotico == 'CLIMA' ",
+                    selectInput("resolution", "Resolution:", resolution, selected = "10min"),
+                    checkboxGroupInput(
+                      "forecasting_wc",
+                      label = "Incude forecasting: ",
+                      choices = c('Future conditions' = 'future_wc',
+                        'Past conditions' = 'past_wc')
+                    ),
+                    checkboxGroupInput(
+                      "pred_vars",
+                      label = "Select variables: ",
+                      choices = c(
+                        '(Bio1) Annual Mean Temperature' = 'Bio1',
+                        '(Bio2) Mean Diurnal Range' = 'Bio2',
+                        '(Bio3) Isothermality' = 'Bio3',
+                        '(Bio4) Temperature Seasonality' = 'Bio4',
+                        '(Bio5) Max Temperature of Warmest Month' = 'Bio5',
+                        '(Bio6) Min Temperature of Coldest Month' = 'Bio6',
+                        '(Bio7) Temperature Annual Range' = 'Bio7',
+                        '(Bio8) Mean Temperature of Wettest Quarter' = 'Bio8',
+                        '(Bio9) Mean Temperature of Driest Quarter' = 'Bio9',
+                        '(Bio10) Mean Temperature of Warmest Quarter' = 'Bio10',
+                        '(Bio11) Mean Temperature of Coldest Quarter' = 'Bio11',
+                        '(Bio12) Annual Precipitation' = 'Bio12',
+                        '(Bio13) Precipitation of Wettest Month' = 'Bio13',
+                        '(Bio14) Precipitation of Driest Month' = 'Bio14',
+                        '(Bio15) Precipitation Seasonality' = 'Bio15',
+                        '(Bio16) Precipitation of Wettest Quarter' = 'Bio16',
+                        '(Bio17) Precipitation of Driest Quarter' = 'Bio17',
+                        '(Bio18) Precipitation of Warmest Quarter' = 'Bio18',
+                        '(Bio19) Precipitation of Coldest Quarter' = 'Bio19'
+                      )
+                    )
+                  ),
+                  conditionalPanel(
+                    "input.tipodadoabiotico == 'Others' ",
+                    helpText(
+                      'All layers should have the same spatial extent, resolution, origin, and projection'
+                    ),
+                    helpText(''),
+                    helpText('Accepted formats: ".tif";  '),
+                    if (length(list.files(
+                      "ex/outros/",
+                      full.names = T,
+                      pattern = c('.*')
+                    ) > 0))
+                    {
+                      lista_outros <-
+                        list.files("ex/outros/",
+                          full.names = F,
+                          pattern = c('.*'))
+                      lapply(1:length(lista_outros), function(i) {
+                        checkboxInput(paste0('chboxoutro', i), lista_outros[i] , value = TRUE)
+                      })
+                    }
                   )
                 )
               ),
-              tabPanel("Data Cleaning",
-                column(width = 6,
-                  box(width = NULL, solidHeader = TRUE,
-                    leafletOutput('mapadistribuicaodatacleaning', height = 500)
-                  )
-                ),
-                column(width = 6,
-                  box(width = NULL, status = "warning",
-                    numericInput("edtelemento", "Occurence record ID:", min = 0, max = 100, value = 0),
-                    actionButton("btnapagar", "Delete selected ID",icon = icon("trash")),
-                    actionButton('btneliminarduplicatas', 'Delete duplicates',icon = icon("cubes")),
-                    downloadButton('downloadData', 'Download data')
+              column(width = 8,
+                tabBox(
+                  width = NULL,
+                  tabPanel(
+                    "Check correlation",
+                    plotOutput(outputId = "grafico_correlacao", width = "500px"),
+                    dataTableOutput('dgbriddadoscorrelacao')
                   ),
-                  box(width = NULL,
-                    dataTableOutput('dgbriddadosdatacleaning')
+                  tabPanel(
+                    "View raster layers",
+                    plotOutput(outputId = "mapaabiotico", height = "400px")
+                  )
+                ))
+              
+            ),
+            
+            
+            
+            tabPanel("Model Extent",
+              column(
+                width = 12,
+                box(
+                  width = 7,
+                  title = "Define modelling area",
+                  column(width = 8,
+                    box(
+                      width = NULL,
+                      solidHeader = TRUE,
+                      leafletOutput('mapapontosextend', height = 500)
+                    )),
+                  column(width = 4,
+                    box(
+                      width = NULL,
+                      solidHeader = TRUE,
+                      box(
+                        width = NULL,
+                        status = "warning",
+                        numericInput(
+                          "edtextend1",
+                          "Longitude left:",
+                          min = -180,
+                          max = 180,
+                          value = -90,
+                          step = 1
+                        ),
+                        numericInput(
+                          "edtextend2",
+                          "Longitude right:",
+                          min = -180,
+                          max = 180,
+                          value = -32,
+                          step = 1
+                        ),
+                        numericInput(
+                          "edtextend4",
+                          "Latitude higher:",
+                          min = -90,
+                          max = 90,
+                          value = 23,
+                          step = 1
+                        ),
+                        numericInput(
+                          "edtextend3",
+                          "Latitude lower:",
+                          min = -90,
+                          max = 90,
+                          value = -33,
+                          step = 1
+                        )
+                      )
+                    ))
+                ),
+                box(
+                  width = 5,
+                  collapsible = TRUE,
+                  collapsed = TRUE,
+                  title = "Define tranferability",
+                  column(width = 8,
+                    box(
+                      width = NULL,
+                      solidHeader = FALSE,
+                      leafletOutput('mapapontosextend2', height = 500)
+                    )),
+                  column(
+                    width = 4,
+                    box(
+                      width = NULL,
+                      numericInput(
+                        "edtextend12",
+                        "Longitude left:",
+                        min = -180,
+                        max = 180,
+                        value = -90,
+                        step = 1
+                      ),
+                      numericInput(
+                        "edtextend22",
+                        "Longitude right:",
+                        min = -180,
+                        max = 180,
+                        value = -32,
+                        step = 1
+                      ),
+                      numericInput(
+                        "edtextend42",
+                        "Latitude higher:",
+                        min = -90,
+                        max = 90,
+                        value = 23,
+                        step = 1
+                      ),
+                      numericInput(
+                        "edtextend32",
+                        "Latitude lower:",
+                        min = -90,
+                        max = 90,
+                        value = -33,
+                        step = 1
+                      )
+                    )
                   )
                 )
-              )
-            )
-          )
-        ), 
-        ########################################################################      
-        tabPanel("Environmental data",
-          column(width = 12,
-            tabBox(side = "left",
-              title = "", width = NULL,height= "600px", selected= "Model Extent",
-              tabPanel("Select Predictors",
-                column(width = 3,
-                  box(width = NULL, status = "warning", height = NULL,
-                    actionButton("btnAtualizaSelecaoVariaveis", "Update selected"),
-                    selectInput("tipodadoabiotico", "Variables dataset:", env_datasource),
-                    conditionalPanel("input.tipodadoabiotico == 'BIOORACLE' ",
-                      radioButtons("forecasting_bo", "Incude forecasting:", choices = c("Yes" = "y","No" = "n"), selected = 'n', inline = TRUE ),
-                      conditionalPanel("input.forecasting_bo == 'y' ",
-                        
-                        checkboxGroupInput("pred_vars",label ="", 
-                          choices = c(
-                            'Temperature (Max) ' = 'sstmax',
-                            'Temperature (Min) ' = 'sstmin',
-                            'Temperature (Range)' ='sstrange',
-                            'Temperature (Mean)' = 'sstmean',
-                            'Salinity' = 'salinity')
-                        )
-                      ),
-                      conditionalPanel("input.forecasting_bo == 'n' ",
-                        checkboxGroupInput("pred_vars",label ="", 
-                          choices = c(
-                            'Temperature (Max) ' = 'sstmax',
-                            'Temperature (Min) ' = 'sstmin',
-                            'Temperature (Range)' = 'sstrange',
-                            'Temperature (Mean)' = 'sstmean',
-                            'Salinity' = 'salinity',
-                            'Calcite' =   'calcite',
-                            'Nitrate' =  'nitrate',
-                            'pH' = 'ph',
-                            'Silicate' = 'silicate' ,
-                            'Phosphate' = 'phosphate',
-                            'Dissolved mol. oxygen' = 'dissox',
-                            'Chlorophyll (Min)' =  'chlomin',
-                            'Chlorophyll (Max)' =  'chlomax',
-                            'Chlorophyll (Range)' =  'chlorange',
-                            'Chlorophyll(Mean)' =  'chlomean',
-                            'Cloud cover (Mean)' = 'cloudmean',
-                            'Cloud cover (Max)' = 'cloudmax',
-                            'Cloud cover (Min)' =  'cloudmin',
-                            'Diffuse attenuation (Mean)' =  'damean',
-                            'Diffuse attenuation (Min)' =   'damin',
-                            'Diffuse attenuation (Max)' = 'damax',
-                            'Photosynt. Avail. Radiation (Max)' =  'parmax',
-                            'Photosynt. Avail. Radiation (Mean)' =  'parmean')
-                        )
-                      )
-                    ), 
-                    conditionalPanel("input.tipodadoabiotico == 'CLIMA' ",
-                      selectInput("resolution", "Resolution:", resolution, selected = "10min"),
-                      radioButtons("forecasting_wc", "Incude forecasting:", choices = c("Yes" = "y","No" = "n"), selected = 'n', inline = TRUE ),
-                      checkboxGroupInput("pred_vars",label = "Select variables: ", 
-                        choices = c(
-                          '(Bio1) Annual Mean Temperature' = 'Bio1',
-                          '(Bio2) Mean Diurnal Range' = 'Bio2',
-                          '(Bio3) Isothermality' = 'Bio3',
-                          '(Bio4) Temperature Seasonality' = 'Bio4',
-                          '(Bio5) Max Temperature of Warmest Month' = 'Bio5',
-                          '(Bio6) Min Temperature of Coldest Month' = 'Bio6',
-                          '(Bio7) Temperature Annual Range' = 'Bio7',
-                          '(Bio8) Mean Temperature of Wettest Quarter' = 'Bio8',
-                          '(Bio9) Mean Temperature of Driest Quarter' = 'Bio9',
-                          '(Bio10) Mean Temperature of Warmest Quarter' = 'Bio10',
-                          '(Bio11) Mean Temperature of Coldest Quarter' = 'Bio11',
-                          '(Bio12) Annual Precipitation' = 'Bio12',
-                          '(Bio13) Precipitation of Wettest Month' = 'Bio13',
-                          '(Bio14) Precipitation of Driest Month' = 'Bio14',
-                          '(Bio15) Precipitation Seasonality' = 'Bio15',
-                          '(Bio16) Precipitation of Wettest Quarter' = 'Bio16',
-                          '(Bio17) Precipitation of Driest Quarter' = 'Bio17',
-                          '(Bio18) Precipitation of Warmest Quarter' = 'Bio18',
-                          '(Bio19) Precipitation of Coldest Quarter' = 'Bio19')
-                      )
-                    ),
-                    conditionalPanel("input.tipodadoabiotico == 'Others' ",
-                      helpText('All layers should have the same spatial extent, resolution, origin, and projection'),
-                      helpText(''),
-                      helpText('Accepted formats: ".tif";  '),
-                      if (length(list.files("ex/outros/",full.names = T,pattern=c('.*'))>0))
-                      {
-                        lista_outros <- list.files("ex/outros/",full.names=F,pattern=c('.*'))
-                        lapply(1:length(lista_outros), function(i) {
-                          checkboxInput( paste0('chboxoutro',i), lista_outros[i] , value = TRUE)
-                        })
-                      }
-                    )
-                  )
-                ), 
-                column(width = 8,
-                  tabBox(width = NULL, 
-                    tabPanel("Check correlation",
-                      plotOutput(outputId = "grafico_correlacao", width = "500px"),
-                      dataTableOutput('dgbriddadoscorrelacao')
-                    ),
-                    tabPanel("View raster layers",
-                      plotOutput(outputId = "mapaabiotico", height = "400px")
-                    )
-                  )
-                ),
-                conditionalPanel("input.tipodadoabiotico == 'CLIMA' && input.forecasting_wc == 'y'",
-                  column(width = 8,
-                    tabBox(width = NULL,
-                      tabPanel("Future", 
-                        checkboxInput("write_future", "Future conditions", value = FALSE),
-                       
-                         conditionalPanel("input.write_future",
-                          box(width = 4, collapsible = TRUE, collapsed = TRUE, 
+              )),
+            
+            
+            tabPanel("Extrapolation",
+              column(width = 12,
+                box(
+                  width = NULL,
+                  tabBox(
+                    tabPanel(
+                      "Future",
+                      width = NULL,
+                      conditionalPanel(
+                        "input.tipodadoabiotico == 'CLIMA' ",
+                        conditionalPanel(
+                          "input.forecasting_wc.includes('future_wc')",
+                          box(
+                            width = 8,
+                            collapsible = TRUE,
+                            collapsed = TRUE,
                             title = "Time period" ,
-                            checkboxGroupInput("future_wc", label=NULL, future_wc) 
-                          ), 
-                           box(width = 4 , collapsible = TRUE, collapsed = TRUE,
-                             title ="Emission Scenarios (RCP)",
-                             checkboxGroupInput("rcp", label=NULL, rcp, selected = "26")
-                           ),
-                          box(width = 4 , collapsible = TRUE,collapsed = TRUE, 
-                            title = "General Circulation Models (GCM)",
-                            checkboxGroupInput("gcm_future_wc",label=NULL, gcm_future_wc, selected = "bc")
-                          )
-                          
-                        )
-                      ),
-                      tabPanel("Past",
-                        checkboxInput("write_past", "Past conditions", value = FALSE),
-                        conditionalPanel("input.write_past",
-                          box(width = 4, collapsible = TRUE, collapsed = TRUE, 
-                            title = "Time period" ,
-                            checkboxGroupInput("past_wc",label=NULL, past_wc) 
+                            checkboxGroupInput("future_wc_dates", label = NULL, future_wc_dates)
                           ),
-                          box(width = 4 , collapsible = TRUE,collapsed = TRUE, 
+                          box(
+                            width = 8 ,
+                            collapsible = TRUE,
+                            collapsed = TRUE,
+                            title = "Emission Scenarios (RCP)",
+                            checkboxGroupInput("rcp", label = NULL, rcp, selected = "26")
+                          ),
+                          box(
+                            width = 8 ,
+                            collapsible = TRUE,
+                            collapsed = TRUE,
                             title = "General Circulation Models (GCM)",
-                            conditionalPanel("input.past_wc.includes('mid_holo')",
-                              checkboxGroupInput("gcm_past_wc_mh", label = "Mid holo. models:", choices= c("CCSM4" = "cc",
-                                "MIROC-ESM" = "mr",
-                                "MPI-ESM-P" = "me",
-                                "BCC-CSM1-1" = "bc",
-                                "CNRM-CM5 " = "cn",
-                                "HadGEM2-CC" = "hg",
-                                "HadGEM2-ES" = "he",
-                                "IPSL-CM5A-LR" = "ip",
-                                "MRI-CGCM3" = "mg"), 
-                                selected = FALSE)
+                            checkboxGroupInput(
+                              "gcm_future_wc",
+                              label = NULL,
+                              gcm_future_wc,
+                              selected = "bc"
+                            )
+                          )
+                        )
+                        
+                      ),
+                      conditionalPanel(
+                        "input.tipodadoabiotico == 'BIOORACLE' ",
+                        checkboxGroupInput("future_bo_dates", label = NULL, future_bo_dates) ,
+                        
+                        conditionalPanel(
+                          "input.future_bo_dates.includes('2100')",
+                          tabBox(
+                            width = 6,
+                            title = "2100" ,
+                            
+                            box(
+                              width = NULL ,
+                              collapsible = TRUE,
+                              collapsed = TRUE,
+                              title = "Scenario",
+                              checkboxGroupInput(
+                                "scenario_bo_2100",
+                                label = NULL,
+                                scenario_bo_2100,
+                                selected = FALSE
+                              )
                             ),
-                            conditionalPanel("input.past_wc.includes('lgm')",
-                              checkboxGroupInput("gcm_past_wc_lgm", label = "LGM models:", choices= c("CCSM4" = "cc",
-                                "MIROC-ESM" = "mr",
-                                "MPI-ESM-P" = "me"),
-                                selected = FALSE)
+                            box(
+                              width = NULL ,
+                              collapsible = TRUE,
+                              collapsed = TRUE,
+                              title = "Emission Scenarios (RCP)",
+                              checkboxGroupInput("rcp", label = NULL, rcp, selected = "26")
+                            )
+                          )
+                        ),
+                        conditionalPanel(
+                          "input.future_bo_dates.includes('2200')",
+                          tabBox(
+                            width = 6,
+                            title = "2200" ,
+                            box(
+                              width = NULL ,
+                              collapsible = TRUE,
+                              collapsed = TRUE,
+                              title = "Scenario",
+                              
+                              checkboxGroupInput(
+                                "scenario_bo_2200",
+                                label = NULL,
+                                scenario_bo_2200,
+                                selected = FALSE
+                              )
+                            ),
+                            box(
+                              width = NULL ,
+                              collapsible = TRUE,
+                              collapsed = TRUE,
+                              title = "Emission Scenarios (RCP)",
+                              checkboxGroupInput("rcp", label = NULL, rcp, selected = "26")
+                            )
+                          )
+                        )
+                      )
+                    ),
+                    tabPanel(
+                      "Past",
+                      width = NULL,
+                      conditionalPanel(
+                        "input.tipodadoabiotico == 'CLIMA' ",
+                        conditionalPanel(
+                          "input.forecasting_wc.includes('past_wc')",
+                          
+                          box(
+                            width = 8,
+                            collapsible = TRUE,
+                            collapsed = TRUE,
+                            title = "Time period",
+                            checkboxGroupInput("past_wc_dates", label = NULL, past_wc_dates)
+                          ),
+                          box(
+                            width = 8 ,
+                            collapsible = TRUE,
+                            collapsed = TRUE,
+                            title = "General Circulation Models (GCM)",
+                            conditionalPanel(
+                              "input.past_wc_date.includes('mid_holo')",
+                              checkboxGroupInput(
+                                "gcm_past_wc_mh",
+                                label = "Mid holo. models:",
+                                choices = c(
+                                  "CCSM4" = "cc",
+                                  "MIROC-ESM" = "mr",
+                                  "MPI-ESM-P" = "me",
+                                  "BCC-CSM1-1" = "bc",
+                                  "CNRM-CM5 " = "cn",
+                                  "HadGEM2-CC" = "hg",
+                                  "HadGEM2-ES" = "he",
+                                  "IPSL-CM5A-LR" = "ip",
+                                  "MRI-CGCM3" = "mg"
+                                ),
+                                selected = FALSE
+                              )
+                            ),
+                            conditionalPanel(
+                              "input.past_wc_date.includes('lgm')",
+                              checkboxGroupInput(
+                                "gcm_past_wc_lgm",
+                                label = "LGM models:",
+                                choices = c(
+                                  "CCSM4" = "cc",
+                                  "MIROC-ESM" = "mr",
+                                  "MPI-ESM-P" = "me"
+                                ),
+                                selected = FALSE
+                              )
                             )
                           )
                         )
                       )
                     )
                   )
-                ),
-                conditionalPanel("input.tipodadoabiotico == 'BIOORACLE' && input.forecasting_bo == 'y' ",
-                  column(width = 8, offset = 3,
-                    tabBox(width = NULL,
-                      tabPanel("Future", 
-                        checkboxGroupInput("future_bo", label=NULL, future_bo) ,
-                          conditionalPanel("input.future_bo.includes('2100')",
-                          tabBox(width = 6, 
-                            title = "2100" ,
-                           
-                          box(width = NULL , collapsible = TRUE,collapsed = TRUE, 
-                            title = "Scenario",
-                              checkboxGroupInput("scenario_bo_2100", label=NULL, scenario_bo_2100, selected = FALSE)
-                          ),
-                          box(width = NULL , collapsible = TRUE, collapsed = TRUE,
-                            title = "Emission Scenarios (RCP)",
-                            checkboxGroupInput("rcp",label=NULL, rcp, selected = "26")
-                          )
-                        )
-                      ),
-                        
-                      conditionalPanel("input.future_bo.includes('2200')",
-                        tabBox(width = 6, 
-                          title = "2200" ,
-                          
-                          box(width = NULL , collapsible = TRUE,collapsed = TRUE, 
-                            title = "Scenario",
-
-                              checkboxGroupInput("scenario_bo_2200", label=NULL, scenario_bo_2200, selected = FALSE)
-                          
-                          ),
-                          box(width = NULL , collapsible = TRUE, collapsed = TRUE,
-                            title = "Emission Scenarios (RCP)",
-                            checkboxGroupInput("rcp",label=NULL, rcp, selected = "26")
-                          )
-                        )
-                        )
-                      )
-
-                    )
-                  )
-                )
-              ),
-              tabPanel("Model Extent", 
-                column(width = 12,
-                  box(width = 7, title= "Define modelling area",
-                    column(width = 8,
-                      box(width = NULL, solidHeader = TRUE, 
-                        leafletOutput('mapapontosextend', height = 500)
-                      )
-                    ), 
-                    column(width = 4,
-                      box(width = NULL, solidHeader = TRUE, 
-                        box(width = NULL, status = "warning",
-                          numericInput("edtextend1", "Longitude left:",
-                            min = -180, max = 180, value = -90, step = 1),
-                          numericInput("edtextend2", "Longitude right:",
-                            min = -180, max = 180, value = -32, step = 1),
-                          numericInput("edtextend4", "Latitude higher:",
-                            min = -90, max = 90, value = 23, step = 1),
-                          numericInput("edtextend3", "Latitude lower:",
-                            min = -90, max = 90, value = -33, step = 1)
-                        )
-                      )
-                    )
-                  ),
-                  box(width = 5, collapsible =TRUE, collapsed = TRUE, title= "Define tranferability",
-                    column(width = 8,
-                      box(width = NULL, solidHeader = FALSE,
-                        leafletOutput('mapapontosextend2', height = 500)
-                      )
-                    ),
-                    column(width = 4,
-                      box(width = NULL, 
-                        numericInput("edtextend12", "Longitude left:",
-                          min = -180, max = 180, value = -90, step = 1),
-                        numericInput("edtextend22", "Longitude right:",
-                          min = -180, max = 180, value = -32, step = 1),
-                        numericInput("edtextend42", "Latitude higher:",
-                          min = -90, max = 90, value = 23, step = 1),
-                        numericInput("edtextend32", "Latitude lower:",
-                          min = -90, max = 90, value = -33, step = 1)
-                      )
-                    )
-                  )
-                )
-              )
-            )
+                  
+                )))#Extra
           )
-        ), 
-        ########################################################################
-        tabPanel("Modeling",
-          column(width = 6,
-            tabBox(side = "left",
-              title = "",width = NULL, height = 500,
-              id = "tabset2",
-              tabPanel("BC", 
-                column(width = 12,
-                  leafletOutput('maparesultadobc', height = 500)
-                )
-              ),
-              tabPanel("MH", 
-                column(width = 12,
-                  leafletOutput('maparesultadomh', height = 500)
-                )
-              )
-              ,
-              tabPanel("MX", 
-                column(width = 12,
-                  leafletOutput('maparesultadomax', height = 500)
-                )
-              )
-              ,
-              tabPanel("GLM", 
-                column(width = 12,
-                  leafletOutput('maparesultadoglm', height = 500)
-                )
-              )
-              ,
-              tabPanel("RF", 
-                column(width = 12,
-                  leafletOutput('maparesultadorf', height = 500)
-                )
-              )
-              ,
-              tabPanel("SVM", 
-                column(width = 12,
-                  leafletOutput('maparesultadosvm', height = 500)
-                )
-              )
-              ,
-              tabPanel("Domain", 
-                column(width = 12,
-                  leafletOutput('maparesultadodo', height = 500)
-                )
-              )
-            ),
-            plotOutput(outputId = "plotmodelagem",height = "500px",width = "500px")
+        )),
+      ########################################################################
+      tabPanel(
+        "Modeling",
+        column(
+          width = 6,
+          tabBox(
+            side = "left",
+            title = "",
+            width = NULL,
+            height = 500,
+            id = "tabset2",
+            tabPanel("BC",
+              column(
+                width = 12,
+                leafletOutput('maparesultadobc', height = 500)
+              )),
+            tabPanel("MH",
+              column(
+                width = 12,
+                leafletOutput('maparesultadomh', height = 500)
+              ))
+            ,
+            tabPanel("MX",
+              column(
+                width = 12,
+                leafletOutput('maparesultadomax', height = 500)
+              ))
+            ,
+            tabPanel("GLM",
+              column(
+                width = 12,
+                leafletOutput('maparesultadoglm', height = 500)
+              ))
+            ,
+            tabPanel("RF",
+              column(
+                width = 12,
+                leafletOutput('maparesultadorf', height = 500)
+              ))
+            ,
+            tabPanel("SVM",
+              column(
+                width = 12,
+                leafletOutput('maparesultadosvm', height = 500)
+              ))
+            ,
+            tabPanel("Domain",
+              column(
+                width = 12,
+                leafletOutput('maparesultadodo', height = 500)
+              ))
           ),
-          column(width = 3,
-            box(width = NULL, status = "warning",
-              selectInput("dataset", "Partitioning type",
-                choices = c("KFold")),
-              # choices = c("KFold", "Bootstrap")),
-              sliderInput("edtnumgrupo", "No. of partitions:",
-                min = 1, max = 50, value = 3, step = 1),
-              sliderInput("edtnumpontos", "Pseudo-absences:",
-                min = 100, max = 2000, value = 300, step = 100),
-              sliderInput("edtTSS", "TSS score cutoff:",
-                min = 0, max = 1, value = 0.7, step = 0.05)
-              # radioButtons("edtBuffer", "Buffer:",
-              #   c("Median" = "MEDIAN",
-              #     "Maximum" = "MAX",
-              #     "Minimum" = "MIN",
-              #     "False" = "FALSE"))
-            )
-          ),
-          column(width = 3,
-            box(width = NULL, status = "warning",
-              h4("Algorithms"),
-              checkboxInput('BIOCLIM', 'Bioclim', value = FALSE),
-              checkboxInput('MAHALANOBIS', 'Mahalanobis', value = FALSE),
-              checkboxInput('MAXENT', 'Maxent', value = FALSE),
-              checkboxInput('GLM', 'GLM', value = FALSE),
-              checkboxInput('RF', 'RandomForest', value = FALSE),
-              checkboxInput('SVM', 'SVM', value = FALSE),
-              checkboxInput('DOMAIN', 'Domain', value = FALSE),
-              tags$hr(),
-              checkboxInput('PROJETAR', 'Design on another extension', value = FALSE)
-            ),
-            box(width = NULL, status = "warning",
-              actionButton("btnModelar", "Run",icon = icon("cogs"))
-            )
-          )
-        ), 
-        ########################################################################      
-        tabPanel("Outputs",
-          column(width = 12,
-            tabBox(side = "left",
-              title = "",width = '100%',height = 500,
-              id = "tabset2",
-              tabPanel("Binary and continuous models", 
-                column(width = 12,
-                  htmlOutput("ui")
-                )
-              ),
-              tabPanel("Stats",
-                column(width = 12,
-                  dataTableOutput('dbgridresultado')
-                )
-              ),
-              tabPanel("Output files", 
-                column(width = 12,
-                  column(width = 2,
-                    box(width = NULL,status = "warning",
-                      h4("Script"),
-                      htmlOutput("uiscript")
-                    )
-                  ),
-                  column(width = 2,
-                    box(width = NULL,status = "warning",
-                      h4("Statistics"),
-                      htmlOutput("uiestatistica")
-                    )
-                  ),
-                  column(width = 2,
-                    box(width = NULL,status = "warning",
-                      h4("Occurence dataset"),
-                      htmlOutput("uiarquivosdados")
-                    )
-                  ),
-                  column(width = 2,
-                    box(width = NULL,status = "warning",
-                      h4("Models"),
-                      htmlOutput("uiarquivosmodelos")
-                    )
-                  ),
-                  column(width = 2,
-                    box(width = NULL,status = "warning",
-                      h4("Ensemble"),
-                      htmlOutput("uiarquivosensemble")
-                    )
-                  ),
-                  column(width = 2,
-                    box(width = NULL,status = "warning",
-                      h4("Projection"),
-                      htmlOutput("uiarquivosprojecao")
-                    )
-                  ),
-                  column(width = 2,
-                    box(width = NULL,status = "warning",
-                      h4("Projection future"),
-                      htmlOutput("uiarquivosprojecaofuturo")
-                    )
-                  )
-                )
-              )
-            )
+          plotOutput(
+            outputId = "plotmodelagem",
+            height = "500px",
+            width = "500px"
           )
         ),
-        ########################################################################      
-        tabPanel("About",
-          column(width = 2,
-            img(src="Logoenbtpequeno.gif")
-          ),
-          column(width = 10,
-            h4('Instituto de Pesquisas Jardim Bot??nico do Rio de Janeiro'),
-            h4('Escola Nacional de Bot??nica Tropical'),
-            h4('Model-R: A Framework for Scalable and Reproducible Ecological Niche Modeling'),
-            h4('https://github.com/Model-R/Model-R'),
-            h5('The shiny app was written as Rafael Oliveira Lima dissertation: '),
-            h5('Programa de Mestrado Profissional: Biodiversidade em Unidades de Conserva????o'),
-            h5('Projeto de Trabalho de Conclus??o de Curso de Mestrado Profissional - 2015'),
-            h5('T??tulo: Desenvolvimento de programas para automatiza????o de processos em an??lises espaciais e ecol??gicas no ambiente R.'),
-            h5('Aluno: Rafael Oliveira Lima'),
-            h5('Orientador: Marinez Ferreira de Siqueira'),
-            h5('Coorientador: Luis Alexandre da Silva Estev??o'),
-            h5('The backend code was written by: Andrea S??nchez Tapia, Felipe Sodr?? Barros, Guilherme Gall'),
-            h5('Please cite `dismo()` package: Robert J. Hijmans, Steven Phillips, John Leathwick and Jane Elith (2017). dismo: Species Distribution Modeling. R package version 1.1-4. http://CRAN.R-project.org/package=dismo'),
-            h5('Cite also randomForest() if you fit random forests, and `kernlab() if you fit SVM')
+        column(
+          width = 3,
+          box(
+            width = NULL,
+            status = "warning",
+            selectInput("dataset", "Partitioning type",
+              choices = c("KFold")),
+            # choices = c("KFold", "Bootstrap")),
+            sliderInput(
+              "edtnumgrupo",
+              "No. of partitions:",
+              min = 1,
+              max = 50,
+              value = 3,
+              step = 1
+            ),
+            sliderInput(
+              "edtnumpontos",
+              "Pseudo-absences:",
+              min = 100,
+              max = 2000,
+              value = 300,
+              step = 100
+            ),
+            sliderInput(
+              "edtTSS",
+              "TSS score cutoff:",
+              min = 0,
+              max = 1,
+              value = 0.7,
+              step = 0.05
+            )
+            # radioButtons("edtBuffer", "Buffer:",
+            #   c("Median" = "MEDIAN",
+            #     "Maximum" = "MAX",
+            #     "Minimum" = "MIN",
+            #     "False" = "FALSE"))
           )
         ),
-        ########################################################################      
-        tabPanel("Help",
-          column(width = 12,
-            h4('User manual')
+        column(
+          width = 3,
+          box(
+            width = NULL,
+            status = "warning",
+            h4("Algorithms"),
+            checkboxInput('BIOCLIM', 'Bioclim', value = FALSE),
+            checkboxInput('MAHALANOBIS', 'Mahalanobis', value = FALSE),
+            checkboxInput('MAXENT', 'Maxent', value = FALSE),
+            checkboxInput('GLM', 'GLM', value = FALSE),
+            checkboxInput('RF', 'RandomForest', value = FALSE),
+            checkboxInput('SVM', 'SVM', value = FALSE),
+            checkboxInput('DOMAIN', 'Domain', value = FALSE),
+            tags$hr(),
+            checkboxInput('PROJETAR', 'Design on another extension', value = FALSE)
+          ),
+          box(
+            width = NULL,
+            status = "warning",
+            actionButton("btnModelar", "Run", icon = icon("cogs"))
           )
         )
-        ########################################################################
-      ) # tabBox
-      ) # column
-    ) # fluidrow
-  ) # Body
-dashboardPage(
-  header,
-  dashboardSidebar(disable = TRUE),
-  body
-)
+      ),
+      ########################################################################
+      tabPanel("Outputs",
+        column(
+          width = 12,
+          tabBox(
+            side = "left",
+            title = "",
+            width = '100%',
+            height = 500,
+            id = "tabset2",
+            tabPanel("Binary and continuous models",
+              column(width = 12,
+                htmlOutput("ui"))),
+            tabPanel("Stats",
+              column(
+                width = 12,
+                dataTableOutput('dbgridresultado')
+              )),
+            tabPanel(
+              "Output files",
+              column(
+                width = 12,
+                column(width = 2,
+                  box(
+                    width = NULL,
+                    status = "warning",
+                    h4("Script"),
+                    htmlOutput("uiscript")
+                  )),
+                column(width = 2,
+                  box(
+                    width = NULL,
+                    status = "warning",
+                    h4("Statistics"),
+                    htmlOutput("uiestatistica")
+                  )),
+                column(width = 2,
+                  box(
+                    width = NULL,
+                    status = "warning",
+                    h4("Occurence dataset"),
+                    htmlOutput("uiarquivosdados")
+                  )),
+                column(width = 2,
+                  box(
+                    width = NULL,
+                    status = "warning",
+                    h4("Models"),
+                    htmlOutput("uiarquivosmodelos")
+                  )),
+                column(width = 2,
+                  box(
+                    width = NULL,
+                    status = "warning",
+                    h4("Ensemble"),
+                    htmlOutput("uiarquivosensemble")
+                  )),
+                column(width = 2,
+                  box(
+                    width = NULL,
+                    status = "warning",
+                    h4("Projection"),
+                    htmlOutput("uiarquivosprojecao")
+                  )),
+                column(width = 2,
+                  box(
+                    width = NULL,
+                    status = "warning",
+                    h4("Projection future"),
+                    htmlOutput("uiarquivosprojecaofuturo")
+                  ))
+              )
+            )
+          )
+        )),
+      ########################################################################
+      tabPanel(
+        "About",
+        column(width = 2,
+          img(src = "Logoenbtpequeno.gif")),
+        column(
+          width = 10,
+          h4('Instituto de Pesquisas Jardim Bot??nico do Rio de Janeiro'),
+          h4('Escola Nacional de Bot??nica Tropical'),
+          h4(
+            'Model-R: A Framework for Scalable and Reproducible Ecological Niche Modeling'
+          ),
+          h4('https://github.com/Model-R/Model-R'),
+          h5('The shiny app was written as Rafael Oliveira Lima dissertation: '),
+          h5(
+            'Programa de Mestrado Profissional: Biodiversidade em Unidades de Conserva????o'
+          ),
+          h5(
+            'Projeto de Trabalho de Conclus??o de Curso de Mestrado Profissional - 2015'
+          ),
+          h5(
+            'T??tulo: Desenvolvimento de programas para automatiza????o de processos em an??lises espaciais e ecol??gicas no ambiente R.'
+          ),
+          h5('Aluno: Rafael Oliveira Lima'),
+          h5('Orientador: Marinez Ferreira de Siqueira'),
+          h5('Coorientador: Luis Alexandre da Silva Estev??o'),
+          h5(
+            'The backend code was written by: Andrea S??nchez Tapia, Felipe Sodr?? Barros, Guilherme Gall'
+          ),
+          h5(
+            'Please cite `dismo()` package: Robert J. Hijmans, Steven Phillips, John Leathwick and Jane Elith (2017). dismo: Species Distribution Modeling. R package version 1.1-4. http://CRAN.R-project.org/package=dismo'
+          ),
+          h5(
+            'Cite also randomForest() if you fit random forests, and `kernlab() if you fit SVM'
+          )
+        )
+      ),
+      ########################################################################
+      tabPanel("Help",
+        column(width = 12,
+          h4('User manual')))
+      ########################################################################
+    ) # tabBox
+  ) # column
+  ) # fluidrow)#Body
+  dashboardPage(header,
+    dashboardSidebar(disable = TRUE),
+    body)
