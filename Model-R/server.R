@@ -1657,124 +1657,97 @@
         n <- 3
         incProgress(1 / n, detail = paste0("Loading predictor layers.."))
         ETAPA <<- 3
-
+        
         isolate({
-
+          
           # WorldClim layers
           if (input$tipodadoabiotico == "CLIMA") {
             arquivo <- list()
             path <- paste0(getwd(), "/ex/clima/current/", input$resolution)
-
             cat(paste("WorldClim current layers: ", path, "\n"))
             selecionado <- FALSE
             pred_lay_wc <- paste(input$pred_vars_wc)
-
+            
             if(length(input$pred_vars_wc)>0){
               for(i in c(1:length(input$pred_vars_wc))){
                 add.layer <- paste0(path, "/", pred_lay_wc[i], ".bil")
                 arquivo <- c(arquivo, add.layer)
                 selecionado <- TRUE
               }
-
+            }
           }
-}
+          
           if (input$tipodadoabiotico == "BIOORACLE") {
             arquivo <- list()
             path <- paste0(getwd(), "/ex/biooracle/current")
-
             cat(paste("Biooracle current layers: ", path, "\n"))
             selecionado <- FALSE
             pred_lay_bo <- paste(input$pred_vars_bo)
-
+            
             if(length(input$pred_vars_bo)>0){
               for(i in c(1:length(input$pred_vars_bo))){
                 layer_code <-paste0("BO_",input$pred_vars_bo[i])
                 arquivo <- c(arquivo, load_layers(layer_code, rasterstack = FALSE, datadir=path))
                 selecionado <- TRUE
               }
+            }
           }
-}
+          
           if (input$tipodadoabiotico == "Others") {
-             path <- paste(getwd(), "/ex/outros/", sep = "")
-             cat(paste("presente: ", path, "\n"))
+            path <- paste(getwd(), "/ex/outros/", sep = "")
+            cat(paste("presente: ", path, "\n"))
             arquivo <- list()
             selecionado <- FALSE
             lista_outros <- list.files("ex/outros/", full.names = F, pattern = paste0(".*"))
-             if (length(lista_outros > 0)) {
-               arquivo <- list.files("ex/outros", full.names = T, pattern = paste0(".*"))
-               selecionado <- TRUE
-             }
-           }
-
+            if (length(lista_outros > 0)) {
+              arquivo <- list.files("ex/outros", full.names = T, pattern = paste0(".*"))
+              selecionado <- TRUE
+            }
+          }
+          
           incProgress(2 / n, detail = paste0("Checking correlation..."))
           arquivo2 <<- arquivo
           arquivo3 <- arquivo
           cat(paste("Checking... ", "\n"))
-
+          
           if (length(arquivo) > 0) {
             cat(paste(arquivo, "\n"))
-             if ((selecionado == TRUE) && (exists("occur.data.coord"))) {
+            if ((selecionado == TRUE) && (exists("occur.data.coord"))) {
               predictors <- stack(arquivo)
               predictors3 <- stack(arquivo3)
               if (input$tipodadoabiotico != "Others") {
                 cat(paste("Estou aqui 1 ", "\n"))
-
-                # if (input$periodo == "future_wc") {
-                #   predictorsfuturo <- stack(arquivofuturo)
-                # }
-                # if (input$periodobiooracle == "future_bo") {
-                #   predictorsfuturo <- stack(arquivofuturo)
-                # }
               }
-
+              
               ext <<- extent(ext1, ext2, ext3, ext4)
-              # ext2 <- extent(ext12, ext22, ext32, ext42)
-
               pred_nf <<- crop(predictors, ext)
-              # pred_nf2 <<- crop(predictors3, ext2)
-
-              # if (input$tipodadoabiotico != "Others") {
-              #   # if (input$periodo == "future_wc") {
-              #   #   pred_nffuturo <<- crop(predictorsfuturo, ext)
-              #   # }
-              #   # if (input$periodobiooracle == "future_bo") {
-              #   #   pred_nffuturo <<- crop(predictorsfuturo, ext)
-              #   # }
-              # }
-
               presvals <<- raster::extract(pred_nf, occur.data.coord)
-
-               plot(pred_nf)
+              plot(pred_nf)
             }
           }
-
-              cat(paste("Estou aqui 3 ", "\n"))
-              backgr <- randomPoints(pred_nf, 300)
-              colnames(backgr) <- c("Longitude", "Latitude")
-              absvals <- raster::extract(pred_nf, backgr)
-
-              if (length(arquivo) > 1) {
-                sdmdata <- data.frame(cbind(absvals))
-                # sdmdata <- data.frame(cbind(presvals))
-
-                # Exhibit correlation plots
-                output$grafico_correlacao <- renderPlot({
-                  pairs(
-                    sdmdata, cex = 0.1, fig = TRUE, lower.panel = panel.reg,
-                    diag.panel = panel.hist, upper.panel = panel.cor
-                  )
-                })
-                output$dgbriddadoscorrelacao <- renderDataTable({
-                  round(cor(sdmdata), 2)
-                })
-              } else {
-                output$grafico_correlacao <- renderPlot({
-                  plot(0, 0)
-                })
-              }
-
-            #}
-          #}
+          
+          cat(paste("Estou aqui 3 ", "\n"))
+          backgr <- randomPoints(pred_nf, 300)
+          colnames(backgr) <- c("Longitude", "Latitude")
+          absvals <- raster::extract(pred_nf, backgr)
+          
+          if (length(arquivo) > 1) {
+            sdmdata <- data.frame(cbind(absvals))
+            # Exhibit correlation plots
+            output$grafico_correlacao <- renderPlot({
+              pairs(
+                sdmdata, cex = 0.1, fig = TRUE, lower.panel = panel.reg,
+                diag.panel = panel.hist, upper.panel = panel.cor
+              )
+            })
+            output$dgbriddadoscorrelacao <- renderDataTable({
+              round(cor(sdmdata), 2)
+            })
+          } else {
+            output$grafico_correlacao <- renderPlot({
+              plot(0, 0)
+            })
+          }
         })
         incProgress(3 / n, detail = paste0("Ploting..."))
       })
