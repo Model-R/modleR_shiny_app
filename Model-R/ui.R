@@ -105,8 +105,7 @@ body <- dashboardBody(fluidRow(
     tags$link(rel = "stylesheet", type = "text/css", href = "style.css")
     #tags$script(type="text/javascript", src = "disable.js")
   ),
-  column (
-    width = 12,
+  column (width = 12,
     tabBox(
       side = "left",
       title = "Steps",
@@ -115,30 +114,26 @@ body <- dashboardBody(fluidRow(
       id = "tabset1",
       ########################################################################
       tabPanel("Welcome",
-        column(
-          width = 12,
+        column(width = 12,
           id = "tabset1",
-          tabPanel("", column(
-            width = 9,
-            box(
-              width = NULL,
+          tabPanel("", column(width = 9,
+            box(width = NULL,
               column (width = 2,
                 br(),
                 img (src = "logo.png", width = 90)),
-              column (
-                width = 9,
+              column (width = 9,
                 h2("Model-R"),
                 h4(
                   "A Framework for Scalable and
                   Reproducible Ecological Niche Modeling"
                 )
-                ),
+              ),
               column (width = 12,
                 br(),
                 p("Please cite..."),
                 br(),
                 p("...ABSTRACT..."))
-              )
+            )
           ),
             column(width = 3,
               box(width = NULL,
@@ -161,8 +156,7 @@ body <- dashboardBody(fluidRow(
                       "Select project: ",
                       choices = c("Create new project" = "new_proj", "Open project" = "load_proj")
                     ),
-                    conditionalPanel(
-                      "input.select_project == 'load_proj' ",
+                    conditionalPanel("input.select_project == 'load_proj' ",
                       helpText('Select project: '),
                       radioButtons(
                         "edtprojeto.load",
@@ -172,8 +166,7 @@ body <- dashboardBody(fluidRow(
                         selected = NULL
                       )
                     ),
-                    conditionalPanel(
-                      "input.select_project == 'new_proj' ",
+                    conditionalPanel("input.select_project == 'new_proj' ",
                       textInput("edtprojeto.create", label = "Insert Project Id: ", value = "")
                     ),
                     actionButton("btnrefreshprojeto", "Submit", icon = icon("ok", lib = "glyphicon"))
@@ -189,18 +182,20 @@ body <- dashboardBody(fluidRow(
                       "",
                       choices = c("Create new project" = "new_proj")
                     ),
-                    conditionalPanel(
-                      "input.select_project == 'new_proj' ",
+                    conditionalPanel("input.select_project == 'new_proj' ",
                       textInput("edtprojeto.create", label = "Insert Project Id: ", value = "")
                     ),
                     actionButton("btnrefreshprojeto", "Submit", icon = icon("gear"))
                   )
-                })))
-        )),
+                }
+              )
+            )
+          )
+        )
+      ),
       ########################################################################
       tabPanel("Species occurrence data",
-        column(
-          width = 12,
+        column(width = 12,
           tabBox(
             side = "left",
             selected = "Import occurrence dataset",
@@ -209,8 +204,7 @@ body <- dashboardBody(fluidRow(
             height = "600px",
             id = "tabset1",
             tabPanel("Import occurrence dataset",
-              column(
-                width = 12,
+              column(width = 12,
                 tabBox(
                   side = "right",
                   selected = "Load occurrence data",
@@ -223,15 +217,12 @@ body <- dashboardBody(fluidRow(
                     column(width = 8,
                       box(width = NULL,
                         dataTableOutput('dgbriddados'))),
-                    column(
-                      width = 4,
-                      box(
-                        width = NULL,
+                    column(width = 4,
+                      box(width = NULL,
                         status = "warning",
                         helpText('Select species occurence database or browse csv dataset'),
                         selectInput("tipodado", "Occurence data", bio_datasource, selected = "jabot"),
-                        conditionalPanel(
-                          "input.tipodado == 'csv' ",
+                        conditionalPanel("input.tipodado == 'csv' ",
                           helpText('Format: [Species, Longitude, Latitude]'),
                           fileInput(
                             'file1',
@@ -265,14 +256,12 @@ body <- dashboardBody(fluidRow(
                           ),
                           actionButton("btnbuscarespecieCSV", "Viewer", icon = icon("search"))
                         ),
-                        conditionalPanel(
-                          "input.tipodado == 'jabot' ",
+                        conditionalPanel("input.tipodado == 'jabot' ",
                           helpText('Insert Species Scientific Name'),
                           textInput("edtespeciejabot", label = "Species name:", value = "Caesalpinia echinata"),
                           actionButton("btnbuscarespeciejabot", "Search", icon = icon("search"))
                         ),
-                        conditionalPanel(
-                          "input.tipodado == 'gbif' ",
+                        conditionalPanel("input.tipodado == 'gbif' ",
                           helpText('Insert Species Scientific Name'),
                           textInput("edtespecie", label = "Species name:", value = "Caesalpinia echinata"),
                           actionButton("btnbuscarespecie", "Search", icon = icon("search"))
@@ -281,29 +270,27 @@ body <- dashboardBody(fluidRow(
                     )
                   ),
                   tabPanel("View occurrence map",
-                    column(
-                      width = 12,
-                      box(
-                        width = NULL,
+                    column(width = 12,
+                      box(width = NULL,
                         solidHeader = TRUE,
                         leafletOutput('mapadistribuicao'),
                         height = 500
                       )
-                    ))
+                    )
+                  )
                 )
-              )),
+              )
+            ),
             tabPanel(
               "Data Cleaning",
               column(width = 6,
-                box(
-                  width = NULL,
+                box(width = NULL,
                   solidHeader = TRUE,
                   leafletOutput('mapadistribuicaodatacleaning', height = 500)
-                )),
-              column(
-                width = 6,
-                box(
-                  width = NULL,
+                )
+              ),
+              column(width = 6,
+                box(width = NULL,
                   status = "warning",
                   numericInput(
                     "edtelemento",
@@ -321,144 +308,177 @@ body <- dashboardBody(fluidRow(
               )
             )
           )
-        )),
+        )
+      ),
       ########################################################################
       tabPanel("Environmental data",
-        column(
-          width = 12,
+        column(width = 12,
           tabBox(
             side = "left",
             title = "",
             width = NULL,
             height = "600px",
             selected = "Model Extent",
-            
-            tabPanel(
-              "Select Predictors",
-              column(
-                width = 4,
-                box(
-                  width = NULL,
+            tabPanel("Model Extent",
+              box(width = 8,
+                title = "Define modelling area",
+                solidHeader = TRUE,
+                leafletOutput('mapapontosextend', height = 500)
+              ),
+              box(width = 4,
+                solidHeader = TRUE,
+                box(width = NULL,
                   status = "warning",
-                  height = NULL,
-                  actionButton("btnAtualizaSelecaoVariaveis", "Update selected"),
-                  selectInput("tipodadoabiotico", "Variables dataset:", env_datasource),
-                  conditionalPanel(
-                    "input.tipodadoabiotico == 'BIOORACLE' ",
-                    checkboxGroupInput(
-                      "forecasting_bo",
-                      label = "Incude forecasting: ",
-                      choices = c('Future conditions' = 'future_bo')
-                    ),
-                    conditionalPanel(
-                      "input.forecasting_bo.includes('future_bo') ",
-                      checkboxGroupInput(
-                        "pred_vars",
-                        label = "Select variables: ",
-                        choices = c(
-                          'Temperature (Max) ' = 'sstmax',
-                          'Temperature (Min) ' = 'sstmin',
-                          'Temperature (Range)' = 'sstrange',
-                          'Temperature (Mean)' = 'sstmean',
-                          'Salinity' = 'salinity'
-                        )
-                      )
-                    ),
-                    conditionalPanel(
-                      "input.forecasting_bo != 'future_bo' ",
-                      checkboxGroupInput(
-                        "pred_vars",
-                        label = "Select variables: ",
-                        choices = c(
-                          'Temperature (Max) ' = 'sstmax',
-                          'Temperature (Min) ' = 'sstmin',
-                          'Temperature (Range)' = 'sstrange',
-                          'Temperature (Mean)' = 'sstmean',
-                          'Salinity' = 'salinity',
-                          'Calcite' =   'calcite',
-                          'Nitrate' =  'nitrate',
-                          'pH' = 'ph',
-                          'Silicate' = 'silicate' ,
-                          'Phosphate' = 'phosphate',
-                          'Dissolved mol. oxygen' = 'dissox',
-                          'Chlorophyll (Min)' =  'chlomin',
-                          'Chlorophyll (Max)' =  'chlomax',
-                          'Chlorophyll (Range)' =  'chlorange',
-                          'Chlorophyll(Mean)' =  'chlomean',
-                          'Cloud cover (Mean)' = 'cloudmean',
-                          'Cloud cover (Max)' = 'cloudmax',
-                          'Cloud cover (Min)' =  'cloudmin',
-                          'Diffuse attenuation (Mean)' =  'damean',
-                          'Diffuse attenuation (Min)' =   'damin',
-                          'Diffuse attenuation (Max)' = 'damax',
-                          'Photosynt. Avail. Radiation (Max)' =  'parmax',
-                          'Photosynt. Avail. Radiation (Mean)' =  'parmean'
-                        )
-                      )
-                    )
+                  numericInput(
+                    "edtextend1",
+                    "Longitude left:",
+                    min = -180,
+                    max = 180,
+                    value = -90,
+                    step = 1
                   ),
-                  conditionalPanel(
-                    "input.tipodadoabiotico == 'CLIMA' ",
-                    selectInput("resolution", "Resolution:", resolution, selected = "10min"),
-                    checkboxGroupInput(
-                      "forecasting_wc",
-                      label = "Incude forecasting: ",
-                      choices = c('Future conditions' = 'future_wc',
-                        'Past conditions' = 'past_wc')
-                    ),
+                  numericInput(
+                    "edtextend2",
+                    "Longitude right:",
+                    min = -180,
+                    max = 180,
+                    value = -32,
+                    step = 1
+                  ),
+                  numericInput(
+                    "edtextend4",
+                    "Latitude higher:",
+                    min = -90,
+                    max = 90,
+                    value = 23,
+                    step = 1
+                  ),
+                  numericInput(
+                    "edtextend3",
+                    "Latitude lower:",
+                    min = -90,
+                    max = 90,
+                    value = -33,
+                    step = 1
+                  )
+                )
+              )
+            ),
+            tabPanel("Select Predictors",
+              box(width = 4,
+                status = "warning",
+                height = NULL,
+                actionButton("btnAtualizaSelecaoVariaveis", "Update selected"),
+                selectInput("tipodadoabiotico", "Variables dataset:", env_datasource),
+                conditionalPanel("input.tipodadoabiotico == 'BIOORACLE' ",
+                  checkboxGroupInput(
+                    "forecasting_bo",
+                    label = "Incude forecasting: ",
+                    choices = c('Future conditions' = 'future_bo')
+                  ),
+                  conditionalPanel("input.forecasting_bo.includes('future_bo') ",
                     checkboxGroupInput(
                       "pred_vars",
                       label = "Select variables: ",
                       choices = c(
-                        '(Bio1) Annual Mean Temperature' = 'Bio1',
-                        '(Bio2) Mean Diurnal Range' = 'Bio2',
-                        '(Bio3) Isothermality' = 'Bio3',
-                        '(Bio4) Temperature Seasonality' = 'Bio4',
-                        '(Bio5) Max Temperature of Warmest Month' = 'Bio5',
-                        '(Bio6) Min Temperature of Coldest Month' = 'Bio6',
-                        '(Bio7) Temperature Annual Range' = 'Bio7',
-                        '(Bio8) Mean Temperature of Wettest Quarter' = 'Bio8',
-                        '(Bio9) Mean Temperature of Driest Quarter' = 'Bio9',
-                        '(Bio10) Mean Temperature of Warmest Quarter' = 'Bio10',
-                        '(Bio11) Mean Temperature of Coldest Quarter' = 'Bio11',
-                        '(Bio12) Annual Precipitation' = 'Bio12',
-                        '(Bio13) Precipitation of Wettest Month' = 'Bio13',
-                        '(Bio14) Precipitation of Driest Month' = 'Bio14',
-                        '(Bio15) Precipitation Seasonality' = 'Bio15',
-                        '(Bio16) Precipitation of Wettest Quarter' = 'Bio16',
-                        '(Bio17) Precipitation of Driest Quarter' = 'Bio17',
-                        '(Bio18) Precipitation of Warmest Quarter' = 'Bio18',
-                        '(Bio19) Precipitation of Coldest Quarter' = 'Bio19'
+                        'Temperature (Max) ' = 'sstmax',
+                        'Temperature (Min) ' = 'sstmin',
+                        'Temperature (Range)' = 'sstrange',
+                        'Temperature (Mean)' = 'sstmean',
+                        'Salinity' = 'salinity'
                       )
                     )
                   ),
-                  conditionalPanel(
-                    "input.tipodadoabiotico == 'Others' ",
-                    helpText(
-                      'All layers should have the same spatial extent, resolution, origin, and projection'
-                    ),
-                    helpText(''),
-                    helpText('Accepted formats: ".tif";  '),
-                    if (length(list.files(
-                      "ex/outros/",
-                      full.names = T,
-                      pattern = c('.*')
-                    ) > 0))
-                    {
-                      lista_outros <-
-                        list.files("ex/outros/",
-                          full.names = F,
-                          pattern = c('.*'))
-                      lapply(1:length(lista_outros), function(i) {
-                        checkboxInput(paste0('chboxoutro', i), lista_outros[i] , value = TRUE)
-                      })
-                    }
+                  conditionalPanel("input.forecasting_bo != 'future_bo' ",
+                    checkboxGroupInput(
+                      "pred_vars",
+                      label = "Select variables: ",
+                      choices = c(
+                        'Temperature (Max) ' = 'sstmax',
+                        'Temperature (Min) ' = 'sstmin',
+                        'Temperature (Range)' = 'sstrange',
+                        'Temperature (Mean)' = 'sstmean',
+                        'Salinity' = 'salinity',
+                        'Calcite' =   'calcite',
+                        'Nitrate' =  'nitrate',
+                        'pH' = 'ph',
+                        'Silicate' = 'silicate' ,
+                        'Phosphate' = 'phosphate',
+                        'Dissolved mol. oxygen' = 'dissox',
+                        'Chlorophyll (Min)' =  'chlomin',
+                        'Chlorophyll (Max)' =  'chlomax',
+                        'Chlorophyll (Range)' =  'chlorange',
+                        'Chlorophyll(Mean)' =  'chlomean',
+                        'Cloud cover (Mean)' = 'cloudmean',
+                        'Cloud cover (Max)' = 'cloudmax',
+                        'Cloud cover (Min)' =  'cloudmin',
+                        'Diffuse attenuation (Mean)' =  'damean',
+                        'Diffuse attenuation (Min)' =   'damin',
+                        'Diffuse attenuation (Max)' = 'damax',
+                        'Photosynt. Avail. Radiation (Max)' =  'parmax',
+                        'Photosynt. Avail. Radiation (Mean)' =  'parmean'
+                      )
+                    )
                   )
+                ),
+                conditionalPanel("input.tipodadoabiotico == 'CLIMA' ",
+                  selectInput("resolution", "Resolution:", resolution, selected = "10min"),
+                  checkboxGroupInput(
+                    "forecasting_wc",
+                    label = "Incude forecasting: ",
+                    choices = c('Future conditions' = 'future_wc',
+                      'Past conditions' = 'past_wc')
+                  ),
+                  checkboxGroupInput(
+                    "pred_vars",
+                    label = "Select variables: ",
+                    choices = c(
+                      '(Bio1) Annual Mean Temperature' = 'Bio1',
+                      '(Bio2) Mean Diurnal Range' = 'Bio2',
+                      '(Bio3) Isothermality' = 'Bio3',
+                      '(Bio4) Temperature Seasonality' = 'Bio4',
+                      '(Bio5) Max Temperature of Warmest Month' = 'Bio5',
+                      '(Bio6) Min Temperature of Coldest Month' = 'Bio6',
+                      '(Bio7) Temperature Annual Range' = 'Bio7',
+                      '(Bio8) Mean Temperature of Wettest Quarter' = 'Bio8',
+                      '(Bio9) Mean Temperature of Driest Quarter' = 'Bio9',
+                      '(Bio10) Mean Temperature of Warmest Quarter' = 'Bio10',
+                      '(Bio11) Mean Temperature of Coldest Quarter' = 'Bio11',
+                      '(Bio12) Annual Precipitation' = 'Bio12',
+                      '(Bio13) Precipitation of Wettest Month' = 'Bio13',
+                      '(Bio14) Precipitation of Driest Month' = 'Bio14',
+                      '(Bio15) Precipitation Seasonality' = 'Bio15',
+                      '(Bio16) Precipitation of Wettest Quarter' = 'Bio16',
+                      '(Bio17) Precipitation of Driest Quarter' = 'Bio17',
+                      '(Bio18) Precipitation of Warmest Quarter' = 'Bio18',
+                      '(Bio19) Precipitation of Coldest Quarter' = 'Bio19'
+                    )
+                  )
+                ),
+                conditionalPanel("input.tipodadoabiotico == 'Others' ",
+                  helpText(
+                    'All layers should have the same spatial extent, resolution, origin, and projection'
+                  ),
+                  helpText(''),
+                  helpText('Accepted formats: ".tif";  '),
+                  if (length(list.files(
+                    "ex/outros/",
+                    full.names = T,
+                    pattern = c('.*')
+                  ) > 0))
+                  {
+                    lista_outros <-
+                      list.files("ex/outros/",
+                        full.names = F,
+                        pattern = c('.*'))
+                    lapply(1:length(lista_outros), function(i) {
+                      checkboxInput(paste0('chboxoutro', i), lista_outros[i] , value = TRUE)
+                    })
+                  }
                 )
               ),
               column(width = 8,
-                tabBox(
-                  width = NULL,
+                tabBox(width = NULL,
                   tabPanel(
                     "Check correlation",
                     plotOutput(outputId = "grafico_correlacao", width = "500px"),
@@ -468,286 +488,220 @@ body <- dashboardBody(fluidRow(
                     "View raster layers",
                     plotOutput(outputId = "mapaabiotico", height = "400px")
                   )
-                ))
-              
+                )
+              )
             ),
-            
-            
-            
-            tabPanel("Model Extent",
-              column(
-                width = 12,
-                box(
-                  width = 7,
-                  title = "Define modelling area",
-                  column(width = 8,
-                    box(
-                      width = NULL,
-                      solidHeader = TRUE,
-                      leafletOutput('mapapontosextend', height = 500)
-                    )),
-                  column(width = 4,
-                    box(
-                      width = NULL,
-                      solidHeader = TRUE,
-                      box(
-                        width = NULL,
-                        status = "warning",
-                        numericInput(
-                          "edtextend1",
-                          "Longitude left:",
-                          min = -180,
-                          max = 180,
-                          value = -90,
-                          step = 1
-                        ),
-                        numericInput(
-                          "edtextend2",
-                          "Longitude right:",
-                          min = -180,
-                          max = 180,
-                          value = -32,
-                          step = 1
-                        ),
-                        numericInput(
-                          "edtextend4",
-                          "Latitude higher:",
-                          min = -90,
-                          max = 90,
-                          value = 23,
-                          step = 1
-                        ),
-                        numericInput(
-                          "edtextend3",
-                          "Latitude lower:",
-                          min = -90,
-                          max = 90,
-                          value = -33,
-                          step = 1
+            tabPanel("Extrapolation",
+              column(width = 12,
+                tabBox(
+                  side = "left",
+                  selected = "Transferability",
+                  title = "",
+                  width = NULL,
+                  height = "600px",
+                  id = "tabset1",
+                  tabPanel("Transfer",
+                    box(width = 12,
+                      collapsible = TRUE,
+                      collapsed = TRUE,
+                      title = "Define tranferability",
+                      column(width = 8,
+                        box(width = NULL,
+                          solidHeader = FALSE,
+                          leafletOutput('mapapontosextend2', height = 500)
+                        )
+                      ),
+                      column(width = 4,
+                        box(width = NULL,
+                          numericInput(
+                            "edtextend12",
+                            "Longitude left:",
+                            min = -180,
+                            max = 180,
+                            value = -90,
+                            step = 1
+                          ),
+                          numericInput(
+                            "edtextend22",
+                            "Longitude right:",
+                            min = -180,
+                            max = 180,
+                            value = -32,
+                            step = 1
+                          ),
+                          numericInput(
+                            "edtextend42",
+                            "Latitude higher:",
+                            min = -90,
+                            max = 90,
+                            value = 23,
+                            step = 1
+                          ),
+                          numericInput(
+                            "edtextend32",
+                            "Latitude lower:",
+                            min = -90,
+                            max = 90,
+                            value = -33,
+                            step = 1
+                          )
                         )
                       )
-                    ))
-                ),
-                box(
-                  width = 5,
-                  collapsible = TRUE,
-                  collapsed = TRUE,
-                  title = "Define tranferability",
-                  column(width = 8,
-                    box(
-                      width = NULL,
-                      solidHeader = FALSE,
-                      leafletOutput('mapapontosextend2', height = 500)
                     )),
-                  column(
-                    width = 4,
-                    box(
-                      width = NULL,
-                      numericInput(
-                        "edtextend12",
-                        "Longitude left:",
-                        min = -180,
-                        max = 180,
-                        value = -90,
-                        step = 1
-                      ),
-                      numericInput(
-                        "edtextend22",
-                        "Longitude right:",
-                        min = -180,
-                        max = 180,
-                        value = -32,
-                        step = 1
-                      ),
-                      numericInput(
-                        "edtextend42",
-                        "Latitude higher:",
-                        min = -90,
-                        max = 90,
-                        value = 23,
-                        step = 1
-                      ),
-                      numericInput(
-                        "edtextend32",
-                        "Latitude lower:",
-                        min = -90,
-                        max = 90,
-                        value = -33,
-                        step = 1
+                  tabPanel("Forecasting",
+                    column(width = 12,
+                      box(width = NULL,
+                        tabBox(width = 12,
+                          tabPanel("Future",
+                            width = NULL,
+                            conditionalPanel("input.tipodadoabiotico == 'CLIMA' ",
+                              conditionalPanel("input.forecasting_wc.includes('future_wc')",
+                                checkboxGroupInput("future_wc_dates", label = NULL, future_wc_dates),
+                                box( width = 6,
+                                  title="2050",
+                                  conditionalPanel("input.future_wc_dates.includes('2050')",
+                                    box(width = 6 ,
+                                      collapsible = TRUE,
+                                      collapsed = TRUE,
+                                      title = "Emission Scenarios (RCP)",
+                                      checkboxGroupInput("rcp", label = NULL, rcp, selected = "26")
+                                    ),
+                                    box(width = 6 ,
+                                      collapsible = TRUE,
+                                      collapsed = TRUE,
+                                      title = "General Circulation Models (GCM)",
+                                      checkboxGroupInput(
+                                        "gcm_future_wc",
+                                        label = NULL,
+                                        gcm_future_wc,
+                                        selected = "bc"
+                                      )
+                                    )
+                                  )
+                                ),
+                                box(width  =6,
+                                  title = "2070",
+                                  conditionalPanel("input.future_wc_dates.includes('2070')",
+                                    box(width = 6 ,
+                                      collapsible = TRUE,
+                                      collapsed = TRUE,
+                                      title = "Emission Scenarios (RCP)",
+                                      checkboxGroupInput("rcp", label = NULL, rcp, selected = "26")
+                                    ),
+                                    box(width = 6 ,
+                                      collapsible = TRUE,
+                                      collapsed = TRUE,
+                                      title = "General Circulation Models (GCM)",
+                                      checkboxGroupInput(
+                                        "gcm_future_wc",
+                                        label = NULL,
+                                        gcm_future_wc,
+                                        selected = "bc"
+                                      )
+                                    )
+                                  )
+                                )
+                              )
+                            ),
+                            
+                            conditionalPanel("input.tipodadoabiotico == 'BIOORACLE' ",
+                              checkboxGroupInput("future_bo_dates", label=NULL, future_bo_dates) ,
+                              
+                              conditionalPanel("input.future_bo_dates.includes('2100')",
+                                box(width = 6, 
+                                  title = "2100" ,
+                                  
+                                  box(width = NULL , collapsible = TRUE,collapsed = TRUE, 
+                                    title = "Scenario",
+                                    checkboxGroupInput("scenario_bo_2100", label=NULL, scenario_bo_2100, selected = FALSE)
+                                  ),
+                                  box(width = NULL , collapsible = TRUE, collapsed = TRUE,
+                                    title = "Emission Scenarios (RCP)",
+                                    checkboxGroupInput("rcp",label=NULL, rcp, selected = "26")
+                                  )
+                                )
+                              ),
+                              
+                              conditionalPanel("input.future_bo_dates.includes('2200')",
+                                box(width = 6, 
+                                  title = "2200" ,
+                                  
+                                  box(width = NULL , collapsible = TRUE,collapsed = TRUE, 
+                                    title = "Scenario",
+                                    
+                                    checkboxGroupInput("scenario_bo_2200", label=NULL, scenario_bo_2200, selected = FALSE)
+                                    
+                                  ),
+                                  box(width = NULL , collapsible = TRUE, collapsed = TRUE,
+                                    title = "Emission Scenarios (RCP)",
+                                    checkboxGroupInput("rcp",label=NULL, rcp, selected = "26")
+                                  )
+                                )
+                              )
+                            )
+                          ),
+                          tabPanel("Past",
+                            width = NULL,
+                            conditionalPanel("input.tipodadoabiotico == 'CLIMA' ",
+                              conditionalPanel("input.forecasting_wc.includes('past_wc')",
+                                checkboxGroupInput("past_wc_dates", label = NULL, past_wc_dates),
+                                box(width = 6,
+                                  title = "Mid Holocene" ,
+                                  conditionalPanel("input.past_wc_dates.includes('mid_holo')",
+                                    box(width = NULL ,
+                                      collapsible = TRUE,
+                                      collapsed = TRUE,
+                                      title = "General Circulation Models (GCM)",
+                                      checkboxGroupInput("gcm_past_wc_mh",
+                                        label = "",
+                                        choices = c(
+                                          "CCSM4" = "cc",
+                                          "MIROC-ESM" = "mr",
+                                          "MPI-ESM-P" = "me",
+                                          "BCC-CSM1-1" = "bc",
+                                          "CNRM-CM5 " = "cn",
+                                          "HadGEM2-CC" = "hg",
+                                          "HadGEM2-ES" = "he",
+                                          "IPSL-CM5A-LR" = "ip",
+                                          "MRI-CGCM3" = "mg"
+                                        ),selected = FALSE
+                                      )
+                                    )
+                                  )
+                                ),
+                                box(width = 6,
+                                  title = "Last Glaciation Maximum" ,
+                                  conditionalPanel("input.past_wc_dates.includes('lgm')",
+                                    box(width = NULL ,
+                                      collapsible = TRUE,
+                                      collapsed = TRUE,
+                                      title = "General Circulation Models (GCM)",
+                                      checkboxGroupInput("gcm_past_wc_lgm",
+                                        label = "",
+                                        choices = c(
+                                          "CCSM4" = "cc",
+                                          "MIROC-ESM" = "mr",
+                                          "MPI-ESM-P" = "me"),
+                                        selected = FALSE)
+                                    )
+                                  )
+                                )
+                              )
+                            )
+                          )
+                        )
                       )
                     )
                   )
                 )
-              )),
-            
-            
-            tabPanel("Extrapolation",
-              column(width = 12,
-                box(
-                  width = NULL,
-                  tabBox(
-                    tabPanel(
-                      "Future",
-                      width = NULL,
-                      conditionalPanel(
-                        "input.tipodadoabiotico == 'CLIMA' ",
-                        conditionalPanel(
-                          "input.forecasting_wc.includes('future_wc')",
-                          box(
-                            width = 8,
-                            collapsible = TRUE,
-                            collapsed = TRUE,
-                            title = "Time period" ,
-                            checkboxGroupInput("future_wc_dates", label = NULL, future_wc_dates)
-                          ),
-                          box(
-                            width = 8 ,
-                            collapsible = TRUE,
-                            collapsed = TRUE,
-                            title = "Emission Scenarios (RCP)",
-                            checkboxGroupInput("rcp", label = NULL, rcp, selected = "26")
-                          ),
-                          box(
-                            width = 8 ,
-                            collapsible = TRUE,
-                            collapsed = TRUE,
-                            title = "General Circulation Models (GCM)",
-                            checkboxGroupInput(
-                              "gcm_future_wc",
-                              label = NULL,
-                              gcm_future_wc,
-                              selected = "bc"
-                            )
-                          )
-                        )
-                        
-                      ),
-                      conditionalPanel(
-                        "input.tipodadoabiotico == 'BIOORACLE' ",
-                        checkboxGroupInput("future_bo_dates", label = NULL, future_bo_dates) ,
-                        
-                        conditionalPanel(
-                          "input.future_bo_dates.includes('2100')",
-                          tabBox(
-                            width = 6,
-                            title = "2100" ,
-                            
-                            box(
-                              width = NULL ,
-                              collapsible = TRUE,
-                              collapsed = TRUE,
-                              title = "Scenario",
-                              checkboxGroupInput(
-                                "scenario_bo_2100",
-                                label = NULL,
-                                scenario_bo_2100,
-                                selected = FALSE
-                              )
-                            ),
-                            box(
-                              width = NULL ,
-                              collapsible = TRUE,
-                              collapsed = TRUE,
-                              title = "Emission Scenarios (RCP)",
-                              checkboxGroupInput("rcp", label = NULL, rcp, selected = "26")
-                            )
-                          )
-                        ),
-                        conditionalPanel(
-                          "input.future_bo_dates.includes('2200')",
-                          tabBox(
-                            width = 6,
-                            title = "2200" ,
-                            box(
-                              width = NULL ,
-                              collapsible = TRUE,
-                              collapsed = TRUE,
-                              title = "Scenario",
-                              
-                              checkboxGroupInput(
-                                "scenario_bo_2200",
-                                label = NULL,
-                                scenario_bo_2200,
-                                selected = FALSE
-                              )
-                            ),
-                            box(
-                              width = NULL ,
-                              collapsible = TRUE,
-                              collapsed = TRUE,
-                              title = "Emission Scenarios (RCP)",
-                              checkboxGroupInput("rcp", label = NULL, rcp, selected = "26")
-                            )
-                          )
-                        )
-                      )
-                    ),
-                    tabPanel(
-                      "Past",
-                      width = NULL,
-                      conditionalPanel(
-                        "input.tipodadoabiotico == 'CLIMA' ",
-                        conditionalPanel(
-                          "input.forecasting_wc.includes('past_wc')",
-                          
-                          box(
-                            width = 8,
-                            collapsible = TRUE,
-                            collapsed = TRUE,
-                            title = "Time period",
-                            checkboxGroupInput("past_wc_dates", label = NULL, past_wc_dates)
-                          ),
-                          box(
-                            width = 8 ,
-                            collapsible = TRUE,
-                            collapsed = TRUE,
-                            title = "General Circulation Models (GCM)",
-                            conditionalPanel(
-                              "input.past_wc_date.includes('mid_holo')",
-                              checkboxGroupInput(
-                                "gcm_past_wc_mh",
-                                label = "Mid holo. models:",
-                                choices = c(
-                                  "CCSM4" = "cc",
-                                  "MIROC-ESM" = "mr",
-                                  "MPI-ESM-P" = "me",
-                                  "BCC-CSM1-1" = "bc",
-                                  "CNRM-CM5 " = "cn",
-                                  "HadGEM2-CC" = "hg",
-                                  "HadGEM2-ES" = "he",
-                                  "IPSL-CM5A-LR" = "ip",
-                                  "MRI-CGCM3" = "mg"
-                                ),
-                                selected = FALSE
-                              )
-                            ),
-                            conditionalPanel(
-                              "input.past_wc_date.includes('lgm')",
-                              checkboxGroupInput(
-                                "gcm_past_wc_lgm",
-                                label = "LGM models:",
-                                choices = c(
-                                  "CCSM4" = "cc",
-                                  "MIROC-ESM" = "mr",
-                                  "MPI-ESM-P" = "me"
-                                ),
-                                selected = FALSE
-                              )
-                            )
-                          )
-                        )
-                      )
-                    )
-                  )
-                  
-                )))#Extra
+              )
+            )
           )
-        )),
+        )
+      ),
       ########################################################################
-      tabPanel(
-        "Modeling",
-        column(
-          width = 6,
+      tabPanel("Modeling",
+        column(width = 6,
           tabBox(
             side = "left",
             title = "",
@@ -755,43 +709,36 @@ body <- dashboardBody(fluidRow(
             height = 500,
             id = "tabset2",
             tabPanel("BC",
-              column(
-                width = 12,
+              column(width = 12,
                 leafletOutput('maparesultadobc', height = 500)
               )),
             tabPanel("MH",
-              column(
-                width = 12,
+              column(width = 12,
                 leafletOutput('maparesultadomh', height = 500)
               ))
             ,
             tabPanel("MX",
-              column(
-                width = 12,
+              column(width = 12,
                 leafletOutput('maparesultadomax', height = 500)
               ))
             ,
             tabPanel("GLM",
-              column(
-                width = 12,
+              column(width = 12,
                 leafletOutput('maparesultadoglm', height = 500)
               ))
             ,
             tabPanel("RF",
-              column(
-                width = 12,
+              column(width = 12,
                 leafletOutput('maparesultadorf', height = 500)
               ))
             ,
             tabPanel("SVM",
-              column(
-                width = 12,
+              column(width = 12,
                 leafletOutput('maparesultadosvm', height = 500)
               ))
             ,
             tabPanel("Domain",
-              column(
-                width = 12,
+              column(width = 12,
                 leafletOutput('maparesultadodo', height = 500)
               ))
           ),
@@ -801,10 +748,8 @@ body <- dashboardBody(fluidRow(
             width = "500px"
           )
         ),
-        column(
-          width = 3,
-          box(
-            width = NULL,
+        column(width = 3,
+          box(width = NULL,
             status = "warning",
             selectInput("dataset", "Partitioning type",
               choices = c("KFold")),
@@ -840,10 +785,8 @@ body <- dashboardBody(fluidRow(
             #     "False" = "FALSE"))
           )
         ),
-        column(
-          width = 3,
-          box(
-            width = NULL,
+        column(width = 3,
+          box(width = NULL,
             status = "warning",
             h4("Algorithms"),
             checkboxInput('BIOCLIM', 'Bioclim', value = FALSE),
@@ -856,8 +799,7 @@ body <- dashboardBody(fluidRow(
             tags$hr(),
             checkboxInput('PROJETAR', 'Design on another extension', value = FALSE)
           ),
-          box(
-            width = NULL,
+          box(width = NULL,
             status = "warning",
             actionButton("btnModelar", "Run", icon = icon("cogs"))
           )
@@ -865,8 +807,7 @@ body <- dashboardBody(fluidRow(
       ),
       ########################################################################
       tabPanel("Outputs",
-        column(
-          width = 12,
+        column(width = 12,
           tabBox(
             side = "left",
             title = "",
@@ -877,59 +818,50 @@ body <- dashboardBody(fluidRow(
               column(width = 12,
                 htmlOutput("ui"))),
             tabPanel("Stats",
-              column(
-                width = 12,
+              column(width = 12,
                 dataTableOutput('dbgridresultado')
               )),
             tabPanel(
               "Output files",
-              column(
-                width = 12,
+              column(width = 12,
                 column(width = 2,
-                  box(
-                    width = NULL,
+                  box(width = NULL,
                     status = "warning",
                     h4("Script"),
                     htmlOutput("uiscript")
                   )),
                 column(width = 2,
-                  box(
-                    width = NULL,
+                  box(width = NULL,
                     status = "warning",
                     h4("Statistics"),
                     htmlOutput("uiestatistica")
                   )),
                 column(width = 2,
-                  box(
-                    width = NULL,
+                  box(width = NULL,
                     status = "warning",
                     h4("Occurence dataset"),
                     htmlOutput("uiarquivosdados")
                   )),
                 column(width = 2,
-                  box(
-                    width = NULL,
+                  box(width = NULL,
                     status = "warning",
                     h4("Models"),
                     htmlOutput("uiarquivosmodelos")
                   )),
                 column(width = 2,
-                  box(
-                    width = NULL,
+                  box(width = NULL,
                     status = "warning",
                     h4("Ensemble"),
                     htmlOutput("uiarquivosensemble")
                   )),
                 column(width = 2,
-                  box(
-                    width = NULL,
+                  box(width = NULL,
                     status = "warning",
                     h4("Projection"),
                     htmlOutput("uiarquivosprojecao")
                   )),
                 column(width = 2,
-                  box(
-                    width = NULL,
+                  box(width = NULL,
                     status = "warning",
                     h4("Projection future"),
                     htmlOutput("uiarquivosprojecaofuturo")
@@ -939,39 +871,28 @@ body <- dashboardBody(fluidRow(
           )
         )),
       ########################################################################
-      tabPanel(
-        "About",
+      tabPanel("About",
         column(width = 2,
-          img(src = "Logoenbtpequeno.gif")),
-        column(
-          width = 10,
+          img(src = "Logoenbtpequeno.gif")
+        ),
+        column(width = 10,
           h4('Instituto de Pesquisas Jardim Bot??nico do Rio de Janeiro'),
           h4('Escola Nacional de Bot??nica Tropical'),
-          h4(
-            'Model-R: A Framework for Scalable and Reproducible Ecological Niche Modeling'
-          ),
+          h4('Model-R: A Framework for Scalable and Reproducible Ecological Niche Modeling'),
           h4('https://github.com/Model-R/Model-R'),
           h5('The shiny app was written as Rafael Oliveira Lima dissertation: '),
-          h5(
-            'Programa de Mestrado Profissional: Biodiversidade em Unidades de Conserva????o'
-          ),
+          h5('Programa de Mestrado Profissional: Biodiversidade em Unidades de Conserva????o'),
           h5(
             'Projeto de Trabalho de Conclus??o de Curso de Mestrado Profissional - 2015'
           ),
-          h5(
-            'T??tulo: Desenvolvimento de programas para automatiza????o de processos em an??lises espaciais e ecol??gicas no ambiente R.'
+          h5('T??tulo: Desenvolvimento de programas para automatiza????o de processos em an??lises espaciais e ecol??gicas no ambiente R.'
           ),
           h5('Aluno: Rafael Oliveira Lima'),
           h5('Orientador: Marinez Ferreira de Siqueira'),
           h5('Coorientador: Luis Alexandre da Silva Estev??o'),
-          h5(
-            'The backend code was written by: Andrea S??nchez Tapia, Felipe Sodr?? Barros, Guilherme Gall'
-          ),
-          h5(
-            'Please cite `dismo()` package: Robert J. Hijmans, Steven Phillips, John Leathwick and Jane Elith (2017). dismo: Species Distribution Modeling. R package version 1.1-4. http://CRAN.R-project.org/package=dismo'
-          ),
-          h5(
-            'Cite also randomForest() if you fit random forests, and `kernlab() if you fit SVM'
+          h5('The backend code was written by: Andrea S??nchez Tapia, Felipe Sodr?? Barros, Guilherme Gall'),
+          h5('Please cite `dismo()` package: Robert J. Hijmans, Steven Phillips, John Leathwick and Jane Elith (2017). dismo: Species Distribution Modeling. R package version 1.1-4. http://CRAN.R-project.org/package=dismo'),
+          h5('Cite also randomForest() if you fit random forests, and `kernlab() if you fit SVM'
           )
         )
       ),
@@ -982,7 +903,8 @@ body <- dashboardBody(fluidRow(
       ########################################################################
     ) # tabBox
   ) # column
-  ) # fluidrow)#Body
-  dashboardPage(header,
-    dashboardSidebar(disable = TRUE),
-    body)
+) # fluidrow
+)#Body
+dashboardPage(header,
+  dashboardSidebar(disable = TRUE),
+  body)
