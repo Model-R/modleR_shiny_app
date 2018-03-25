@@ -97,6 +97,8 @@ scenario_bo_2200 <- c("A1B" = "A1B",
 #   "Geographic" = "geo_projection",
 #   "Time" = "time_projection",
 #   "Geographic + time" = "geotime_projection")
+
+
 ################################################################################
 header <- dashboardHeader(title = "Model-R v1.25")
 body <- dashboardBody(fluidRow(
@@ -112,6 +114,7 @@ body <- dashboardBody(fluidRow(
       width = NULL,
       height = "1000px",
       id = "tabset1",
+
       ########################################################################
       tabPanel("Welcome",
         column(width = 12,
@@ -310,6 +313,7 @@ body <- dashboardBody(fluidRow(
           )
         )
       ),
+
       ########################################################################
       tabPanel("Environmental data",
         column(width = 12,
@@ -369,6 +373,8 @@ body <- dashboardBody(fluidRow(
                 status = "warning",
                 height = NULL,
                 actionButton("btnAtualizaSelecaoVariaveis", "Update selected"),
+
+
                 selectInput("tipodadoabiotico", "Variables dataset:", env_datasource),
                 conditionalPanel("input.tipodadoabiotico == 'BIOORACLE' ",
                   checkboxGroupInput(
@@ -378,7 +384,7 @@ body <- dashboardBody(fluidRow(
                   ),
                   conditionalPanel("input.forecasting_bo.includes('future_bo') ",
                     checkboxGroupInput(
-                      "pred_vars",
+                      "pred_vars_bo_fut",
                       label = "Select variables: ",
                       choices = c(
                         'Temperature (Max) ' = 'sstmax',
@@ -391,7 +397,7 @@ body <- dashboardBody(fluidRow(
                   ),
                   conditionalPanel("input.forecasting_bo != 'future_bo' ",
                     checkboxGroupInput(
-                      "pred_vars",
+                      "pred_vars_bo",
                       label = "Select variables: ",
                       choices = c(
                         'Temperature (Max) ' = 'sstmax',
@@ -430,28 +436,28 @@ body <- dashboardBody(fluidRow(
                       'Past conditions' = 'past_wc')
                   ),
                   checkboxGroupInput(
-                    "pred_vars",
+                    "pred_vars_wc",
                     label = "Select variables: ",
                     choices = c(
-                      '(Bio1) Annual Mean Temperature' = 'Bio1',
-                      '(Bio2) Mean Diurnal Range' = 'Bio2',
-                      '(Bio3) Isothermality' = 'Bio3',
-                      '(Bio4) Temperature Seasonality' = 'Bio4',
-                      '(Bio5) Max Temperature of Warmest Month' = 'Bio5',
-                      '(Bio6) Min Temperature of Coldest Month' = 'Bio6',
-                      '(Bio7) Temperature Annual Range' = 'Bio7',
-                      '(Bio8) Mean Temperature of Wettest Quarter' = 'Bio8',
-                      '(Bio9) Mean Temperature of Driest Quarter' = 'Bio9',
-                      '(Bio10) Mean Temperature of Warmest Quarter' = 'Bio10',
-                      '(Bio11) Mean Temperature of Coldest Quarter' = 'Bio11',
-                      '(Bio12) Annual Precipitation' = 'Bio12',
-                      '(Bio13) Precipitation of Wettest Month' = 'Bio13',
-                      '(Bio14) Precipitation of Driest Month' = 'Bio14',
-                      '(Bio15) Precipitation Seasonality' = 'Bio15',
-                      '(Bio16) Precipitation of Wettest Quarter' = 'Bio16',
-                      '(Bio17) Precipitation of Driest Quarter' = 'Bio17',
-                      '(Bio18) Precipitation of Warmest Quarter' = 'Bio18',
-                      '(Bio19) Precipitation of Coldest Quarter' = 'Bio19'
+                      '(Bio1) Annual Mean Temperature' = 'bio1',
+                      '(Bio2) Mean Diurnal Range' = 'bio2',
+                      '(Bio3) Isothermality' = 'bio3',
+                      '(Bio4) Temperature Seasonality' = 'bio4',
+                      '(Bio5) Max Temperature of Warmest Month' = 'bio5',
+                      '(Bio6) Min Temperature of Coldest Month' = 'bio6',
+                      '(Bio7) Temperature Annual Range' = 'bio7',
+                      '(Bio8) Mean Temperature of Wettest Quarter' = 'bio8',
+                      '(Bio9) Mean Temperature of Driest Quarter' = 'bio9',
+                      '(Bio10) Mean Temperature of Warmest Quarter' = 'bio10',
+                      '(Bio11) Mean Temperature of Coldest Quarter' = 'bio11',
+                      '(Bio12) Annual Precipitation' = 'bio12',
+                      '(Bio13) Precipitation of Wettest Month' = 'bio13',
+                      '(Bio14) Precipitation of Driest Month' = 'bio14',
+                      '(Bio15) Precipitation Seasonality' = 'bio15',
+                      '(Bio16) Precipitation of Wettest Quarter' = 'bio16',
+                      '(Bio17) Precipitation of Driest Quarter' = 'bio17',
+                      '(Bio18) Precipitation of Warmest Quarter' = 'bio18',
+                      '(Bio19) Precipitation of Coldest Quarter' = 'bio19'
                     )
                   )
                 ),
@@ -603,15 +609,15 @@ body <- dashboardBody(fluidRow(
                                 )
                               )
                             ),
-                            
+
                             conditionalPanel("input.tipodadoabiotico == 'BIOORACLE' ",
                               checkboxGroupInput("future_bo_dates", label=NULL, future_bo_dates) ,
-                              
+
                               conditionalPanel("input.future_bo_dates.includes('2100')",
-                                box(width = 6, 
+                                box(width = 6,
                                   title = "2100" ,
-                                  
-                                  box(width = NULL , collapsible = TRUE,collapsed = TRUE, 
+
+                                  box(width = NULL , collapsible = TRUE,collapsed = TRUE,
                                     title = "Scenario",
                                     checkboxGroupInput("scenario_bo_2100", label=NULL, scenario_bo_2100, selected = FALSE)
                                   ),
@@ -621,16 +627,16 @@ body <- dashboardBody(fluidRow(
                                   )
                                 )
                               ),
-                              
+
                               conditionalPanel("input.future_bo_dates.includes('2200')",
-                                box(width = 6, 
+                                box(width = 6,
                                   title = "2200" ,
-                                  
-                                  box(width = NULL , collapsible = TRUE,collapsed = TRUE, 
+
+                                  box(width = NULL , collapsible = TRUE,collapsed = TRUE,
                                     title = "Scenario",
-                                    
+
                                     checkboxGroupInput("scenario_bo_2200", label=NULL, scenario_bo_2200, selected = FALSE)
-                                    
+
                                   ),
                                   box(width = NULL , collapsible = TRUE, collapsed = TRUE,
                                     title = "Emission Scenarios (RCP)",
