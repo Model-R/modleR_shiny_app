@@ -90,22 +90,12 @@ scenario_bo_2200 <- c("A1B" = "A1B",
 #   "Bio-ORACLE A2 2100" = "BIOORACLEA22100",
 #   "Bio-ORACLE B1 2100" = "BIOORACLEB12100",
 #   "Bio-ORACLE B1 2200" = "BIOORACLEB12200",
-#   "WorldClim" = "CLIMA")
-# tipomapa <- c("World" = "world",
-#   "South America" = "South America")
-# projections<-c("No projection" = "no_projection",
-#   "Geographic" = "geo_projection",
-#   "Time" = "time_projection",
-#   "Geographic + time" = "geotime_projection")
-
 
 ################################################################################
 header <- dashboardHeader(title = "Model-R v1.25")
 body <- dashboardBody(fluidRow(
-  useShinyjs(),
   tags$head(
     tags$link(rel = "stylesheet", type = "text/css", href = "style.css")
-    #tags$script(type="text/javascript", src = "disable.js")
   ),
   column (width = 12,
     tabBox(
@@ -143,14 +133,9 @@ body <- dashboardBody(fluidRow(
                 if (length(list.files (
                   "./www/projeto/",
                   full.names = F,
-                  pattern = paste0(".")
-                ) > 0)) {
-                  list_projects <-
-                    list.files("./www/projeto/",
-                      full.names = F,
-                      pattern = paste0("."))
-                  box(
-                    title = "Create/Open project",
+                  pattern = paste0(".")) > 0)) {
+                  list_projects <- list.files("./www/projeto/",full.names = F,pattern = paste0("."))
+                  box( title = "Create/Open project",
                     status = "primary",
                     solidHeader = TRUE,
                     width = NULL,
@@ -205,7 +190,7 @@ body <- dashboardBody(fluidRow(
             title = "",
             width = NULL,
             height = "600px",
-            id = "tabset1",
+            id = "tabset_biodata",
             tabPanel("Import occurrence dataset",
               column(width = 12,
                 tabBox(
@@ -322,7 +307,9 @@ body <- dashboardBody(fluidRow(
             title = "",
             width = NULL,
             height = "600px",
-            selected = "Model Extent",
+            selected = "Model Extent", 
+            id = "tabbox_envdata",
+          
             tabPanel("Model Extent",
               box(width = 8,
                 title = "Define modelling area",
@@ -373,8 +360,6 @@ body <- dashboardBody(fluidRow(
                 status = "warning",
                 height = NULL,
                 actionButton("btnAtualizaSelecaoVariaveis", "Update selected"),
-
-
                 selectInput("tipodadoabiotico", "Variables dataset:", env_datasource),
                 conditionalPanel("input.tipodadoabiotico == 'BIOORACLE' ",
                   checkboxGroupInput(
@@ -462,32 +447,27 @@ body <- dashboardBody(fluidRow(
                   )
                 ),
                 conditionalPanel("input.tipodadoabiotico == 'Others' ",
-                  helpText(
-                    'All layers should have the same spatial extent, resolution, origin, and projection'
-                  ),
+                  helpText( 'All layers should have the same spatial extent, resolution, origin, and projection'),
                   helpText(''),
                   helpText('Accepted formats: ".tif";  '),
-                  if (length(list.files(
-                    "ex/outros/",
-                    full.names = T,
-                    pattern = c('.*')
-                  ) > 0))
-                  {
-                    lista_outros <-
-                      list.files("ex/outros/",
-                        full.names = F,
-                        pattern = c('.*'))
-                    lapply(1:length(lista_outros), function(i) {
-                      checkboxInput(paste0('chboxoutro', i), lista_outros[i] , value = TRUE)
-                    })
+                  
+                  if (length(list.files( "ex/outros/", full.names = T, pattern = c('.*')) > 0)) {
+                    lista_outros <-list.files("ex/outros/",full.names = F,pattern = c('.*'))
+                    lista_outros_path <-list.files("ex/outros/",full.names = T,pattern = c('.*'))
+                    checkboxGroupInput("pred_vars_other",  "Select rasters: ",choiceNames = c(lista_outros), choiceValues =c(lista_outros_path))
+                   
                   }
+                  
+                  
+                  
+                  
                 )
               ),
               column(width = 8,
                 tabBox(width = NULL,
                   tabPanel(
                     "Check correlation",
-                    plotOutput(outputId = "grafico_correlacao", width = "500px"),
+                    plotOutput(outputId = "grafico_correlacao", width = "100%", height="400px"),
                     dataTableOutput('dgbriddadoscorrelacao')
                   ),
                   tabPanel(
