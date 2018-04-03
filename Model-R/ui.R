@@ -133,13 +133,13 @@ body <- dashboardBody(fluidRow(
                   "A Framework for Scalable and
                   Reproducible Ecological Niche Modeling"
                 )
-                ),
+              ),
               column (width = 12,
                 br(),
                 p("Please cite..."),
                 br(),
                 p("...ABSTRACT..."))
-              )
+            )
           ),
             column(width = 3,
               box(width = NULL,
@@ -322,7 +322,6 @@ body <- dashboardBody(fluidRow(
             height = "600px",
             selected = "Model Extent", 
             id = "tabbox_envdata",
-            
             tabPanel("Model Extent",
               box(width = 8,
                 title = "Define modelling area",
@@ -368,6 +367,47 @@ body <- dashboardBody(fluidRow(
                 )
               )
             ),
+            tabPanel("Design on another extension",
+              box(width=8,
+                solidHeader = FALSE,
+                leafletOutput('mapapontosextend2', height = 400)
+              ),
+                box(width = 4,
+                  numericInput(
+                    "edtextend12",
+                    "Longitude left:",
+                    min = -180,
+                    max = 180,
+                    value = -90,
+                    step = 1
+                  ),
+                  numericInput(
+                    "edtextend22",
+                    "Longitude right:",
+                    min = -180,
+                    max = 180,
+                    value = -32,
+                    step = 1
+                  ),
+                  numericInput(
+                    "edtextend42",
+                    "Latitude higher:",
+                    min = -90,
+                    max = 90,
+                    value = 23,
+                    step = 1
+                  ),
+                  numericInput(
+                    "edtextend32",
+                    "Latitude lower:",
+                    min = -90,
+                    max = 90,
+                    value = -33,
+                    step = 1
+                  )
+                )
+            ),
+            
             tabPanel("Select Predictors",
               box(width = 4,
                 status = "warning",
@@ -485,200 +525,141 @@ body <- dashboardBody(fluidRow(
                 )
               )
             ),
-            tabPanel("Extrapolation",
+            tabPanel("Forecasting",
               column(width = 12,
-                tabBox(
-                  side = "left",
-                  selected = "Transferability",
-                  title = "",
-                  width = NULL,
-                  height = "600px",
-                  id = "tabset1",
-                  tabPanel("Transfer",
-                    box(width = 12,
-                      collapsible = TRUE,
-                      title = "Define tranferability",
-                      column(width = 8,
-                        box(width = NULL,
-                          solidHeader = FALSE,
-                          leafletOutput('mapapontosextend2', height = 500)
-                        )
-                      ),
-                      column(width = 4,
-                        box(width = NULL,
-                          numericInput(
-                            "edtextend12",
-                            "Longitude left:",
-                            min = -180,
-                            max = 180,
-                            value = -90,
-                            step = 1
-                          ),
-                          numericInput(
-                            "edtextend22",
-                            "Longitude right:",
-                            min = -180,
-                            max = 180,
-                            value = -32,
-                            step = 1
-                          ),
-                          numericInput(
-                            "edtextend42",
-                            "Latitude higher:",
-                            min = -90,
-                            max = 90,
-                            value = 23,
-                            step = 1
-                          ),
-                          numericInput(
-                            "edtextend32",
-                            "Latitude lower:",
-                            min = -90,
-                            max = 90,
-                            value = -33,
-                            step = 1
-                          )
-                        )
-                      )
-                    )),
-                  tabPanel("Forecasting",
-                    column(width = 12,
-                      box(width = NULL,
-                        tabBox(width = 12,
-                          tabPanel("Future",
-                            width = NULL,
-                            conditionalPanel("input.tipodadoabiotico == 'CLIMA' ",
-                              conditionalPanel("input.forecasting_wc.includes('future_wc')",
-                                checkboxGroupInput("future_wc_dates", label = NULL, future_wc_dates),
-                                box( width = 6,
-                                  title="2050",
-                                  conditionalPanel("input.future_wc_dates.includes('2050')",
-                                    box(width = 6 ,
-                                      collapsible = TRUE,
-                                      collapsed = TRUE,
-                                      title = "Emission Scenarios (RCP)",
-                                      checkboxGroupInput("rcp", label = NULL, rcp, selected = "26")
-                                    ),
-                                    box(width = 6 ,
-                                      collapsible = TRUE,
-                                      collapsed = TRUE,
-                                      title = "General Circulation Models (GCM)",
-                                      checkboxGroupInput(
-                                        "gcm_future_wc",
-                                        label = NULL,
-                                        gcm_future_wc,
-                                        selected = "bc"
-                                      )
-                                    )
-                                  )
-                                ),
-                                box(width  =6,
-                                  title = "2070",
-                                  conditionalPanel("input.future_wc_dates.includes('2070')",
-                                    box(width = 6 ,
-                                      collapsible = TRUE,
-                                      collapsed = TRUE,
-                                      title = "Emission Scenarios (RCP)",
-                                      checkboxGroupInput("rcp", label = NULL, rcp, selected = "26")
-                                    ),
-                                    box(width = 6 ,
-                                      collapsible = TRUE,
-                                      collapsed = TRUE,
-                                      title = "General Circulation Models (GCM)",
-                                      checkboxGroupInput(
-                                        "gcm_future_wc",
-                                        label = NULL,
-                                        gcm_future_wc,
-                                        selected = "bc"
-                                      )
-                                    )
-                                  )
-                                )
-                              )
-                            ),
-                            
-                            conditionalPanel("input.tipodadoabiotico == 'BIOORACLE' ",
-                              checkboxGroupInput("future_bo_dates", label=NULL, future_bo_dates) ,
-                              
-                              conditionalPanel("input.future_bo_dates.includes('2100')",
-                                box(width = 6,
-                                  title = "2100" ,
-                                  
-                                  box(width = NULL , collapsible = TRUE,collapsed = TRUE,
-                                    title = "Scenario",
-                                    checkboxGroupInput("scenario_bo_2100", label=NULL, scenario_bo_2100, selected = FALSE)
-                                  ),
-                                  box(width = NULL , collapsible = TRUE, collapsed = TRUE,
-                                    title = "Emission Scenarios (RCP)",
-                                    checkboxGroupInput("rcp",label=NULL, rcp, selected = "26")
-                                  )
-                                )
+                box(width = NULL,
+                  tabBox(width = 12,
+                    tabPanel("Future",
+                      width = NULL,
+                      conditionalPanel("input.tipodadoabiotico == 'CLIMA' ",
+                        conditionalPanel("input.forecasting_wc.includes('future_wc')",
+                          checkboxGroupInput("future_wc_dates", label = NULL, future_wc_dates),
+                          box( width = 6,
+                            title="2050",
+                            conditionalPanel("input.future_wc_dates.includes('2050')",
+                              box(width = 6 ,
+                                collapsible = TRUE,
+                                collapsed = TRUE,
+                                title = "Emission Scenarios (RCP)",
+                                checkboxGroupInput("rcp", label = NULL, rcp, selected = "26")
                               ),
-                              
-                              conditionalPanel("input.future_bo_dates.includes('2200')",
-                                box(width = 6,
-                                  title = "2200" ,
-                                  
-                                  box(width = NULL , collapsible = TRUE,collapsed = TRUE,
-                                    title = "Scenario",
-                                    
-                                    checkboxGroupInput("scenario_bo_2200", label=NULL, scenario_bo_2200, selected = FALSE)
-                                    
-                                  ),
-                                  box(width = NULL , collapsible = TRUE, collapsed = TRUE,
-                                    title = "Emission Scenarios (RCP)",
-                                    checkboxGroupInput("rcp",label=NULL, rcp, selected = "26")
-                                  )
+                              box(width = 6 ,
+                                collapsible = TRUE,
+                                collapsed = TRUE,
+                                title = "General Circulation Models (GCM)",
+                                checkboxGroupInput(
+                                  "gcm_future_wc",
+                                  label = NULL,
+                                  gcm_future_wc,
+                                  selected = "bc"
                                 )
                               )
                             )
                           ),
-                          tabPanel("Past",
-                            width = NULL,
-                            conditionalPanel("input.tipodadoabiotico == 'CLIMA' ",
-                              conditionalPanel("input.forecasting_wc.includes('past_wc')",
-                                checkboxGroupInput("past_wc_dates", label = NULL, past_wc_dates),
-                                box(width = 6,
-                                  title = "Mid Holocene" ,
-                                  conditionalPanel("input.past_wc_dates.includes('mid_holo')",
-                                    box(width = NULL ,
-                                      collapsible = TRUE,
-                                      collapsed = TRUE,
-                                      title = "General Circulation Models (GCM)",
-                                      checkboxGroupInput("gcm_past_wc_mh",
-                                        label = "",
-                                        choices = c(
-                                          "CCSM4" = "cc",
-                                          "MIROC-ESM" = "mr",
-                                          "MPI-ESM-P" = "me",
-                                          "BCC-CSM1-1" = "bc",
-                                          "CNRM-CM5 " = "cn",
-                                          "HadGEM2-CC" = "hg",
-                                          "HadGEM2-ES" = "he",
-                                          "IPSL-CM5A-LR" = "ip",
-                                          "MRI-CGCM3" = "mg"
-                                        ),selected = FALSE
-                                      )
-                                    )
-                                  )
-                                ),
-                                box(width = 6,
-                                  title = "Last Glaciation Maximum" ,
-                                  conditionalPanel("input.past_wc_dates.includes('lgm')",
-                                    box(width = NULL ,
-                                      collapsible = TRUE,
-                                      collapsed = TRUE,
-                                      title = "General Circulation Models (GCM)",
-                                      checkboxGroupInput("gcm_past_wc_lgm",
-                                        label = "",
-                                        choices = c(
-                                          "CCSM4" = "cc",
-                                          "MIROC-ESM" = "mr",
-                                          "MPI-ESM-P" = "me"),
-                                        selected = FALSE)
-                                    )
-                                  )
+                          box(width  =6,
+                            title = "2070",
+                            conditionalPanel("input.future_wc_dates.includes('2070')",
+                              box(width = 6 ,
+                                collapsible = TRUE,
+                                collapsed = TRUE,
+                                title = "Emission Scenarios (RCP)",
+                                checkboxGroupInput("rcp", label = NULL, rcp, selected = "26")
+                              ),
+                              box(width = 6 ,
+                                collapsible = TRUE,
+                                collapsed = TRUE,
+                                title = "General Circulation Models (GCM)",
+                                checkboxGroupInput(
+                                  "gcm_future_wc",
+                                  label = NULL,
+                                  gcm_future_wc,
+                                  selected = "bc"
                                 )
+                              )
+                            )
+                          )
+                        )
+                      ),
+                      
+                      conditionalPanel("input.tipodadoabiotico == 'BIOORACLE' ",
+                        checkboxGroupInput("future_bo_dates", label=NULL, future_bo_dates) ,
+                        
+                        conditionalPanel("input.future_bo_dates.includes('2100')",
+                          box(width = 6,
+                            title = "2100" ,
+                            
+                            box(width = NULL , collapsible = TRUE,collapsed = TRUE,
+                              title = "Scenario",
+                              checkboxGroupInput("scenario_bo_2100", label=NULL, scenario_bo_2100, selected = FALSE)
+                            ),
+                            box(width = NULL , collapsible = TRUE, collapsed = TRUE,
+                              title = "Emission Scenarios (RCP)",
+                              checkboxGroupInput("rcp",label=NULL, rcp, selected = "26")
+                            )
+                          )
+                        ),
+                        
+                        conditionalPanel("input.future_bo_dates.includes('2200')",
+                          box(width = 6,
+                            title = "2200" ,
+                            
+                            box(width = NULL , collapsible = TRUE,collapsed = TRUE,
+                              title = "Scenario",
+                              
+                              checkboxGroupInput("scenario_bo_2200", label=NULL, scenario_bo_2200, selected = FALSE)
+                              
+                            ),
+                            box(width = NULL , collapsible = TRUE, collapsed = TRUE,
+                              title = "Emission Scenarios (RCP)",
+                              checkboxGroupInput("rcp",label=NULL, rcp, selected = "26")
+                            )
+                          )
+                        )
+                      )
+                    ),
+                    tabPanel("Past",
+                      width = NULL,
+                      conditionalPanel("input.tipodadoabiotico == 'CLIMA' ",
+                        conditionalPanel("input.forecasting_wc.includes('past_wc')",
+                          checkboxGroupInput("past_wc_dates", label = NULL, past_wc_dates),
+                          box(width = 6,
+                            title = "Mid Holocene" ,
+                            conditionalPanel("input.past_wc_dates.includes('mid_holo')",
+                              box(width = NULL ,
+                                collapsible = TRUE,
+                                collapsed = TRUE,
+                                title = "General Circulation Models (GCM)",
+                                checkboxGroupInput("gcm_past_wc_mh",
+                                  label = "",
+                                  choices = c(
+                                    "CCSM4" = "cc",
+                                    "MIROC-ESM" = "mr",
+                                    "MPI-ESM-P" = "me",
+                                    "BCC-CSM1-1" = "bc",
+                                    "CNRM-CM5 " = "cn",
+                                    "HadGEM2-CC" = "hg",
+                                    "HadGEM2-ES" = "he",
+                                    "IPSL-CM5A-LR" = "ip",
+                                    "MRI-CGCM3" = "mg"
+                                  ),selected = FALSE
+                                )
+                              )
+                            )
+                          ),
+                          box(width = 6,
+                            title = "Last Glaciation Maximum" ,
+                            conditionalPanel("input.past_wc_dates.includes('lgm')",
+                              box(width = NULL ,
+                                collapsible = TRUE,
+                                collapsed = TRUE,
+                                title = "General Circulation Models (GCM)",
+                                checkboxGroupInput("gcm_past_wc_lgm",
+                                  label = "",
+                                  choices = c(
+                                    "CCSM4" = "cc",
+                                    "MIROC-ESM" = "mr",
+                                    "MPI-ESM-P" = "me"),
+                                  selected = FALSE)
                               )
                             )
                           )
@@ -699,45 +680,44 @@ body <- dashboardBody(fluidRow(
             side = "left",
             title = "",
             width = NULL,
-            height = 500,
             id = "tabset2",
+            height = 500,
             tabPanel("BC",
               column(width = 12,
-                leafletOutput('maparesultadobc', height = 500)
+                leafletOutput('maparesultadobc')
               )),
             tabPanel("MH",
               column(width = 12,
-                leafletOutput('maparesultadomh', height = 500)
+                leafletOutput('maparesultadomh')
               ))
             ,
             tabPanel("MX",
               column(width = 12,
-                leafletOutput('maparesultadomax', height = 500)
+                leafletOutput('maparesultadomax')
               ))
             ,
             tabPanel("GLM",
               column(width = 12,
-                leafletOutput('maparesultadoglm', height = 500)
+                leafletOutput('maparesultadoglm')
               ))
             ,
             tabPanel("RF",
               column(width = 12,
-                leafletOutput('maparesultadorf', height = 500)
+                leafletOutput('maparesultadorf')
               ))
             ,
             tabPanel("SVM",
               column(width = 12,
-                leafletOutput('maparesultadosvm', height = 500)
+                leafletOutput('maparesultadosvm')
               ))
             ,
             tabPanel("Domain",
               column(width = 12,
-                leafletOutput('maparesultadodo', height = 500)
+                leafletOutput('maparesultadodo')
               ))
           ),
           plotOutput(
             outputId = "plotmodelagem",
-            height = "500px",
             width = "500px"
           )
         ),
@@ -781,6 +761,7 @@ body <- dashboardBody(fluidRow(
         column(width = 3,
           box(width = NULL,
             status = "warning",
+            actionButton("btnModelar", "Run", icon = icon("cogs")),
             h4("Algorithms"),
             checkboxInput('BIOCLIM', 'Bioclim', value = FALSE),
             checkboxInput('MAHALANOBIS', 'Mahalanobis', value = FALSE),
@@ -789,14 +770,11 @@ body <- dashboardBody(fluidRow(
             checkboxInput('RF', 'RandomForest', value = FALSE),
             checkboxInput('SVM', 'SVM', value = FALSE),
             checkboxInput('DOMAIN', 'Domain', value = FALSE),
-            tags$hr(),
-            checkboxInput('PROJETAR', 'Design on another extension', value = FALSE)
-          ),
-          box(width = NULL,
-            status = "warning",
-            actionButton("btnModelar", "Run", icon = icon("cogs"))
+            checkboxInput('project_ext', 'Design on another extension', value = FALSE)
+            
           )
         )
+        
       ),
       ########################################################################
       tabPanel("Outputs",
@@ -894,10 +872,11 @@ body <- dashboardBody(fluidRow(
         column(width = 12,
           h4('User manual')))
       ########################################################################
-      ) # tabBox
-    ) # column
-  ) # fluidrow
-  )#Body
+    ) # tabBox
+  ) # column
+) # fluidrow
+)#Body
+
 dashboardPage(header,
   dashboardSidebar(disable = TRUE),
   body)

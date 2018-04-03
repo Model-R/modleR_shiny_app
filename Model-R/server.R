@@ -1,4 +1,3 @@
-
 #############################
 ## ----   MODEL-R    ----  ##
 ##                         ##
@@ -193,7 +192,7 @@ function(input, output, session) {
     Domain = F,
     SVM2 = F,
     part = 3,
-    numpontos  =  500,
+    numpontos  = 500,
     seed = 123,
     write.cont = T,
     bin = T,
@@ -1303,205 +1302,98 @@ function(input, output, session) {
   
   
   # MODELING FUNCTION ----------------------------------------------------------
-  modelagem <- function() ({
+ 
+   modelagem <- function() ({
     limparResultadosAnteriores()
     library(raster)
     
-    numpontos <- input$edtnumpontos
-    numparticoes <- input$edtnumgrupo
-    
-    futuro = FALSE
+   # numpontos <- input$edtnumpontos
+    #numparticoes <- input$edtnumgrupo
+    write.future = FALSE
     write.projecao = FALSE
     
-    # if (input$periodo != "current") {
-    #   futuro = T
-    # }
-    # if (input$periodobiooracle != "current") {
-    #   futuro = T
-    # }
+    if ('future_wc' %in% input$forecasting_wc) {
+      write.future = T
+    }
+    if ('future_bo' %in% input$forecasting_bo) {
+      write.future = T
+    }
     
-    # if (input$PROJETAR == T) {
-    #   write.projecao = T
-    # }
+    if (input$project_ext == T) {
+      write.projecao = T
+    }
     
     dismo.mod("", occur.data.coord, pred_nf, pred_nf2, input$MAXENT, input$BIOCLIM, input$GLM,
-      input$RF, input$SVM, input$MAHALANOBIS, input$DOMAIN, input$SVM2, numparticoes,
-      numpontos, 123, T, T, T, F, F, input$edtTSS, F, pred_nf,F,F)
+      input$RF, input$SVM, input$MAHALANOBIS, input$DOMAIN, input$SVM2, input$edtnumgrupo,
+      input$edtnumpontos, 123, T, T, T, F, F, input$edtTSS, F, future.raster, write.future, write.projecao)
     
     progress$set(message = "Saving data...", value = 0)
-    
     write.csv(occur.data.coord, file = paste0("www/", projeto, "/csv/Occurence_data.csv"))
     
-    # Verifying whether the final ensemble projection file was generated
+    # Checking whether the final ensemble file was generated for a projected extent
     if (file.exists(paste0("www/", projeto, "/final/proj_ensemble.tif"))) {
       # Creating the raster file to be placed on the map
       rproj <- raster::raster(paste0("www/", projeto, "/final/proj_ensemble.tif"))
     }
     
     # For each selected algorithm create a map with the corresponding raster
+    maparesultado_model <- function (
+      model_ensemble = model_ensemble,
+      model_title = model_title) {
+      if (file.exists(paste0("www/", projeto, "/final/", model_ensemble, ".tif"))) {
+        r <- raster::raster(paste0("www/", projeto, "/final/", model_ensemble, ".tif"))
+        pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(r), na.color = "transparent")
+       
+         if (file.exists(paste0("www/", projeto, "/final/proj_ensemble.tif")) && input$project_ext == TRUE) {
+          map = leaflet() %>% addTiles %>% 
+              addRasterImage(r, colors = pal, opacity = 0.6) %>% 
+              addRasterImage(rproj, colors = pal, opacity = 0.6) %>%
+              addLegend(pal = pal, values = values(r), title = model_title) %>%
+              addCircles(color = "red", lat = occur.data.coord[, 2], lng = occur.data.coord[, 1]) %>%
+              addRectangles(ext1, ext3, ext2, ext4, color = "green", fill = FALSE, dashArray = "5,5", weight = 3)
+        } else {
+          map = leaflet() %>% addTiles %>% 
+            addRasterImage(r, colors = pal,opacity = 0.6) %>%
+            addLegend(pal = pal, values = values(r), title = model_title) %>%
+            addCircles(color = "red", lat = occur.data.coord[, 2], lng = occur.data.coord[, 1]) %>%
+            addRectangles(ext1, ext3, ext2, ext4, color = "red", fill = FALSE,dashArray = "5,5", weight = 3)
+        }
+      }
+    }
+    
     output$maparesultadomax <- renderLeaflet({
       input$btnModelar
-      if (file.exists(paste0("www/", projeto, "/final/mx_ensemble.tif"))) {
-        r <- raster::raster(paste0("www/", projeto, "/final/mx_ensemble.tif"))
-        pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(r), na.color = "transparent")
-        if (file.exists(paste0("www/", projeto, "/final/proj_ensemble.tif"))) {
-          map = leaflet() %>% addTiles %>% addRasterImage(r, colors = pal,
-            opacity = 0.8) %>% addRasterImage(rproj, colors = pal, opacity = 0.8) %>%
-            addLegend(pal = pal, values = values(r), title = "Maxent") %>%
-            addCircles(color = "red", lat = occur.data.coord[, 2], lng = occur.data.coord[, 1]) %>%
-            addRectangles(ext1, ext3, ext2, ext4, color = "green", fill = FALSE,
-              dashArray = "5,5", weight = 3)
-        } else {
-          map = leaflet() %>% addTiles %>% addRasterImage(r, colors = pal,
-            opacity = 0.8) %>% addLegend(pal = pal, values = values(r), title = "Maxent") %>%
-            addCircles(color = "red", lat = occur.data.coord[, 2], lng = occur.data.coord[, 1]) %>%
-            addRectangles(ext1, ext3, ext2, ext4, color = "green", fill = FALSE,
-              dashArray = "5,5", weight = 3)
-        }
-        map
-      }
+      maparesultado_model(model_ensemble = "mx_ensemble", model_title = "Maxent")
     })
+    
     output$maparesultadosvm <- renderLeaflet({
       input$btnModelar
-      if (file.exists(paste0("www/", projeto, "/final/svm_ensemble.tif"))) {
-        r <- raster::raster(paste0("www/", projeto, "/final/svm_ensemble.tif"))
-        pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(r), na.color = "transparent")
-        if (file.exists(paste0("www/", projeto, "/final/proj_ensemble.tif"))) {
-          map = leaflet() %>% addTiles %>% addRasterImage(r, colors = pal,
-            opacity = 0.8) %>% addRasterImage(rproj, colors = pal, opacity = 0.8) %>%
-            addLegend(pal = pal, values = values(r), title = "SVM") %>% addCircles(color = "red",
-              lat = occur.data.coord[, 2], lng = occur.data.coord[, 1]) %>% 
-            addRectangles(ext1, ext3, ext2, ext4, color = "green", fill = FALSE,
-              dashArray = "5,5", weight = 3)
-        } else {
-          map = leaflet() %>% addTiles %>% addRasterImage(r, colors = pal,
-            opacity = 0.8) %>% addLegend(pal = pal, values = values(r), title = "SVM") %>%
-            addCircles(color = "red", lat = occur.data.coord[, 2], lng = occur.data.coord[, 1]) %>%
-            addRectangles(ext1, ext3, ext2, ext4, color = "green", fill = FALSE,
-              dashArray = "5,5", weight = 3)
-        }
-        map
-      }
+      maparesultado_model(model_ensemble = "svm_ensemble", model_title = "SVM")
     })
+    
     output$maparesultadomh <- renderLeaflet({
       input$btnModelar
-      if (file.exists(paste0("www/", projeto, "/final/ma_ensemble.tif"))) {
-        r <- raster::raster(paste0("www/", projeto, "/final/ma_ensemble.tif"))
-        pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(r), na.color = "transparent")
-        if (file.exists(paste0("www/", projeto, "/final/proj_ensemble.tif"))) {
-          map = leaflet() %>% addTiles %>% addRasterImage(r, colors = pal,
-            opacity = 0.8) %>% addRasterImage(rproj, colors = pal, opacity = 0.8) %>%
-            addLegend(pal = pal, values = values(r), title = "Maha") %>% addCircles(color = "red",
-              lat = occur.data.coord[, 2], lng = occur.data.coord[, 1]) %>% # addMarkers(occur.data.coord[,1], occur.data.coord[,2]) %>%
-            addRectangles(ext1, ext3, ext2, ext4, color = "green", fill = FALSE,
-              dashArray = "5,5", weight = 3)
-        } else {
-          map = leaflet() %>% addTiles %>% addRasterImage(r, colors = pal,
-            opacity = 0.8) %>% addLegend(pal = pal, values = values(r), title = "Maha") %>%
-            addCircles(color = "red", lat = occur.data.coord[, 2], lng = occur.data.coord[, 1]) %>%
-            addRectangles(ext1, ext3, ext2, ext4, color = "green", fill = FALSE,
-              dashArray = "5,5", weight = 3)
-          
-        }
-        map
-      }
+      maparesultado_model(model_ensemble = "ma_ensemble", model_title = "Mahal")
     })
+    
     output$maparesultadorf <- renderLeaflet({
       input$btnModelar
-      if (file.exists(paste0("www/", projeto, "/final/rf_ensemble.tif"))) {
-        r <- raster::raster(paste0("www/", projeto, "/final/rf_ensemble.tif"))
-        pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(r), na.color = "transparent")
-        if (file.exists(paste0("www/", projeto, "/final/proj_ensemble.tif"))) {
-          map = leaflet() %>% addTiles %>% addRasterImage(r, colors = pal,
-            opacity = 0.8) %>% addRasterImage(rproj, colors = pal, opacity = 0.8) %>%
-            addLegend(pal = pal, values = values(r), title = "RF") %>% addCircles(color = "red",
-              lat = occur.data.coord[, 2], lng = occur.data.coord[, 1]) %>% # addMarkers(occur.data.coord[,1], occur.data.coord[,2]) %>%
-            addRectangles(ext1, ext3, ext2, ext4, color = "green", fill = FALSE,
-              dashArray = "5,5", weight = 3)
-        } else {
-          map = leaflet() %>% addTiles %>% addRasterImage(r, colors = pal,
-            opacity = 0.8) %>% addLegend(pal = pal, values = values(r), title = "RF") %>%
-            addCircles(color = "red", lat = occur.data.coord[, 2], lng = occur.data.coord[, 1]) %>%
-            # addMarkers(occur.data.coord[,1], occur.data.coord[,2]) %>%
-            addRectangles(ext1, ext3, ext2, ext4, color = "green", fill = FALSE,
-              dashArray = "5,5", weight = 3)
-        }
-        map
-      }
+      maparesultado_model(model_ensemble = "rf_ensemble", model_title = "RF")
     })
+    
     output$maparesultadoglm <- renderLeaflet({
       input$btnModelar
-      if (file.exists(paste0("www/", projeto, "/final/glm_ensemble.tif"))) {
-        r <- raster::raster(paste0("www/", projeto, "/final/glm_ensemble.tif"))
-        pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(r), na.color = "transparent")
-        if (file.exists(paste0("www/", projeto, "/final/proj_ensemble.tif"))) {
-          map = leaflet() %>% addTiles %>% addRasterImage(r, colors = pal,
-            opacity = 0.8) %>% addRasterImage(rproj, colors = pal, opacity = 0.8) %>%
-            addLegend(pal = pal, values = values(r), title = "GLM") %>% addCircles(color = "red",
-              lat = occur.data.coord[, 2], lng = occur.data.coord[, 1]) %>% # addMarkers(occur.data.coord[,1], occur.data.coord[,2]) %>%
-            addRectangles(ext1, ext3, ext2, ext4, color = "green", fill = FALSE,
-              dashArray = "5,5", weight = 3)
-        } else {
-          map = leaflet() %>% addTiles %>% addRasterImage(r, colors = pal,
-            opacity = 0.8) %>% addLegend(pal = pal, values = values(r), title = "GLM") %>%
-            addCircles(color = "red", lat = occur.data.coord[, 2], lng = occur.data.coord[, 1]) %>%
-            # addMarkers(occur.data.coord[,1], occur.data.coord[,2]) %>%
-            addRectangles(ext1, ext3, ext2, ext4, color = "green", fill = FALSE,
-              dashArray = "5,5", weight = 3)
-        }
-        map
-      }
+      maparesultado_model(model_ensemble = "glm_ensemble", model_title = "GLM")
     })
+    
     output$maparesultadobc <- renderLeaflet({
       input$btnModelar
-      
-      if (file.exists(paste0("www/", projeto, "/final/bc_ensemble.tif"))) {
-        r <- raster::raster(paste0("www/", projeto, "/final/bc_ensemble.tif"))
-        crs(r) <- sp::CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
-        pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(r), na.color = "transparent")
-        
-        if (file.exists(paste0("www/", projeto, "/final/proj_ensemble.tif"))) {
-          map = leaflet() %>% addTiles %>% 
-            addRasterImage(r, colors = pal,
-              opacity = 0.8) %>% 
-            addRasterImage(rproj, colors = pal, opacity = 0.8) %>%
-            addLegend(pal = pal, values = values(r), title = "BioClim") %>%
-            addCircles(color = "red", lat = occur.data.coord[, 2], lng = occur.data.coord[, 1]) %>%
-            addRectangles(ext1, ext3, ext2, ext4, color = "green", fill = FALSE,
-              dashArray = "5,5", weight = 3)
-        } else {
-          map = leaflet() %>% addTiles %>% addRasterImage(r, colors = pal,
-            opacity = 0.3) %>% addLegend(pal = pal, values = values(r), title = "BioClim") %>%
-            addCircles(color = "red", lat = occur.data.coord[, 2], lng = occur.data.coord[, 1]) %>%
-            addRectangles(ext1, ext3, ext2, ext4, color = "green", fill = FALSE,
-              dashArray = "5,5", weight = 3)
-        }
-        map
-      }
+      maparesultado_model(model_ensemble = "bc_ensemble", model_title = "BioClim")
     })
+    
     output$maparesultadodo <- renderLeaflet({
       input$btnModelar
-      if (file.exists(paste0("www/", projeto, "/final/do_ensemble.tif"))) {
-        r <- raster::raster(paste0("www/", projeto, "/final/do_ensemble.tif"))
-        pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(r), na.color = "transparent")
-        if (file.exists(paste0("www/", projeto, "/final/proj_ensemble.tif"))) {
-          map = leaflet() %>% addTiles %>% addRasterImage(r, colors = pal,
-            opacity = 0.8) %>% addRasterImage(rproj, colors = pal, opacity = 0.8) %>%
-            addLegend(pal = pal, values = values(r), title = "BioClim") %>%
-            addCircles(color = "red", lat = occur.data.coord[, 2], lng = occur.data.coord[, 1]) %>%
-            # addMarkers(occur.data.coord[,1], occur.data.coord[,2]) %>%
-            addRectangles(ext1, ext3, ext2, ext4, color = "green", fill = FALSE,
-              dashArray = "5,5", weight = 3)
-        } else {
-          map = leaflet() %>% addTiles %>% addRasterImage(r, colors = pal,
-            opacity = 0.8) %>% addLegend(pal = pal, values = values(r), title = "BioClim") %>%
-            addCircles(color = "red", lat = occur.data.coord[, 2], lng = occur.data.coord[, 1]) %>%
-            # addMarkers(occur.data.coord[,1], occur.data.coord[,2]) %>%
-            addRectangles(ext1, ext3, ext2, ext4, color = "green", fill = FALSE,
-              dashArray = "5,5", weight = 3)
-        }
-        map
-      }
+      maparesultado_model(model_ensemble = "do_ensemble", model_title = "Domain")
     })
     
     # Display results at the Outputs tab ---------------------------
@@ -1595,6 +1487,7 @@ function(input, output, session) {
         }
       }
     })
+    plot()
   })
   
   # INFORM EXTENT --------------------------------------------------------------
@@ -1776,17 +1669,17 @@ function(input, output, session) {
           np <- 6
           
           incProgress(1/np, detail = paste0("Stacking rasters.."))
-          predictors <- stack(envir_data)
-          predictors3 <- predictors
-          ext <<- extent(ext1, ext2, ext3, ext4)
+          predictors <<- stack(envir_data)
+          ext <- extent(ext1, ext2, ext3, ext4)
           ext2 <- extent(ext12, ext22, ext32, ext42)
           
           incProgress(2/np, detail = paste0("Croping layers..."))
           pred_nf <<- crop(predictors, ext)
-          pred_nf2 <<- pred_nf
+          pred_nf2 <<- crop(predictors, ext2)
           
           incProgress(3/np, detail = paste0("Extracting variables at occurence points..."))
-          presvals <<- raster::extract(pred_nf, occur.data.coord)
+         
+           presvals <<- raster::extract(pred_nf, occur.data.coord)
           
           incProgress(4/np, detail = paste0("Extracting variables at background points..."))
           backgr <- randomPoints(pred_nf, 300)
