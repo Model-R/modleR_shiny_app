@@ -1,12 +1,20 @@
-############################
-## MODEL-R                ##
-## RAFAEL OLIVEIRA LIMA   ##
-## ANDREA SANCHEZ TAPIA   ##
-## FELIPE SODR?? BARROS    ##
-## 5 DE JULHO DE 2017     ##
-############################
+#############################
+## ----   MODEL-R    ----  ##
+##                         ##
+## ANDREA SÁNCHEZ TAPIA    ##
+## FELIPE SODRÉ BARROS     ##
+## GUILHERME GALL          ##
+## DIOGO SOUZA B. ROCHA    ##
+## RAFAEL OLIVEIRA LIMA    ##
+## RENATA DE T. CAPELLÃO   ##
+##                         ##
+## 08 DE FEVEREIRO DE 2018 ##
+#############################
+
 # Thanks to Steven Worthington for function ipak https://gist.github.com/stevenworthington/3178163 (HT Karlo Guidoni Martins)
+
 ###############################################################################
+
 ipak <- function(pkg) {
   new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
   if (length(new.pkg))
@@ -14,33 +22,33 @@ ipak <- function(pkg) {
   sapply(pkg, require, character.only = TRUE)
 }
 ipak(c("shinydashboard", "leaflet"))
-#vars <- c(	"GBif - The Global Biodiversity Information Facility" = "gbif",
-bio_datasource <-
-  c(
+
+bio_datasource <- c(
     "GBif - The Global Biodiversity Information Facility" = "gbif",
     "Jabot - JBRJ Database" = "jabot",
     "CSV - Comma Separated Values" = "csv"
   )
-#varabiotico <- c(	"WorldClim v.1.4" = "CLIMA",
+
 env_datasource <- c(
   "WorldClim v.1.4" = "CLIMA",
   "Bio-ORACLE v.1" = "BIOORACLE",
   "Upload Dataset" = "Others"
 )
-# varabioticopassado <- c("WorldClim" = "CLIMA",
-#   "Bio-ORACLE" = "BIOORACLE")
+
 time_scale <- c("current" = "current",
   "future" = "future",
   "past" = "past")
-#resolucao <- c("10 arc-minutes" = "10m",
+
 resolution <- c(
   "10 arc-minutes" = "10m",
   "5 arc-minutes" = "5m",
   "2.5 arc-minutes" = "2-5m",
   "30 arc-seconds" = "30s"
 )
+
 future_wc_dates <- c("2050" = "2050",
   "2070" = "2070")
+
 gcm_future_wc <- c(
   "BCC-CSM1-1" = "bc",
   "CCSM4" = "cc",
@@ -62,6 +70,7 @@ rcp <- c(
 )
 past_wc_dates <- c("Mid Holocene" = "mid_holo",
   "Last Glacial Maximum" = "lgm")
+
 # gcm_past_wc_midholo <- c(	"BCC-CSM1-1" = "bc",
 #   "CCSM4" = "cc",
 #   "CNRM-CM5 " = "cn",
@@ -74,13 +83,17 @@ past_wc_dates <- c("Mid Holocene" = "mid_holo",
 # gcm_past_wc_lgm <- c(	"CCSM4" = "cc",
 #   "MIROC-ESM" = "mr",
 #   "MPI-ESM-P" = "me")
+
 future_bo_dates <- c("2100" = "2100",
   "2200" = "2200")
+
 scenario_bo_2100 <- c("A1B" = "A1B",
   "A2" = "A2",
   "B1" = "B1")
+
 scenario_bo_2200 <- c("A1B" = "A1B",
   "B1" = "B1")
+
 # rcp_biooracle <- c(	"rcp26" = "26",
 #   "rcp45" = "45",
 #   "rcp60" = "60",
@@ -449,18 +462,13 @@ body <- dashboardBody(fluidRow(
                 conditionalPanel("input.tipodadoabiotico == 'Others' ",
                   helpText( 'All layers should have the same spatial extent, resolution, origin, and projection'),
                   helpText(''),
-                  helpText('Accepted formats: ".tif";  '),
+                  helpText('Accepted extentions: Tagged Image File Format(.tif); Golden Software Grid (.grd); Band interleaved by line (.bil)'),
+                  helpText('Before loading .bil files, make sure that the corresponding .hdr files are placed in the same directory.'),
                   
-                  if (length(list.files( "ex/outros/", full.names = T, pattern = c('.*')) > 0)) {
-                    lista_outros <-list.files("ex/outros/",full.names = F,pattern = c('.*'))
-                    lista_outros_path <-list.files("ex/outros/",full.names = T,pattern = c('.*'))
-                    checkboxGroupInput("pred_vars_other",  "Select rasters: ",choiceNames = c(lista_outros), choiceValues =c(lista_outros_path))
-                   
+                  if (length(list.files( "ex/outros/", full.names = T) > 0)) {
+                    lista_outros <-list.files("ex/outros/",full.names = F, pattern = ".tif|.bil|.grd")
+                    checkboxGroupInput("pred_vars_other",  "Select rasters: ", choiceNames = c(lista_outros), choiceValues=c(lista_outros))
                   }
-                  
-                  
-                  
-                  
                 )
               ),
               column(width = 8,
@@ -489,7 +497,6 @@ body <- dashboardBody(fluidRow(
                   tabPanel("Transfer",
                     box(width = 12,
                       collapsible = TRUE,
-                      collapsed = TRUE,
                       title = "Define tranferability",
                       column(width = 8,
                         box(width = NULL,

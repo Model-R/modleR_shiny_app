@@ -1703,10 +1703,12 @@ function(input, output, session) {
     
     if (input$tipodadoabiotico == "Others") {
       path <- paste(getwd(), "/ex/outros/", sep = "")
-      cat(paste("presente: ", path, "\n"))
-      if(length(input$pred_vars_other)>0){
+     
+      if(length(input$pred_vars_other) > 0) {
+        
         for(i in c(1:length(input$pred_vars_other))){
-          arquivo <- c(arquivo, input$pred_vars_other[i])
+          file.path<-paste0(path, input$pred_vars_other[i])
+          arquivo <- c(arquivo, file.path)
         }
         group_predvars$selecionado <- TRUE
       }
@@ -1718,7 +1720,7 @@ function(input, output, session) {
     write_future <<- group_predvars$future
     write_past <<- group_predvars$past
     
-    if (!is.null(envir_data) && (exists("occur.data.coord")) && check_null == TRUE) {
+    if (!is.null(envir_data) && exists("occur.data.coord") && check_null == TRUE) {
       predictors <- stack(envir_data)
       predictors3 <- stack(envir_data)
       
