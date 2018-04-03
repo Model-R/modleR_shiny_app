@@ -24,10 +24,10 @@ ipak <- function(pkg) {
 ipak(c("shinydashboard", "leaflet"))
 
 bio_datasource <- c(
-    "GBif - The Global Biodiversity Information Facility" = "gbif",
-    "Jabot - JBRJ Database" = "jabot",
-    "CSV - Comma Separated Values" = "csv"
-  )
+  "GBif - The Global Biodiversity Information Facility" = "gbif",
+  "Jabot - JBRJ Database" = "jabot",
+  "CSV - Comma Separated Values" = "csv"
+)
 
 env_datasource <- c(
   "WorldClim v.1.4" = "CLIMA",
@@ -117,7 +117,7 @@ body <- dashboardBody(fluidRow(
       width = NULL,
       height = "1000px",
       id = "tabset1",
-
+      
       ########################################################################
       tabPanel("Welcome",
         column(width = 12,
@@ -133,13 +133,13 @@ body <- dashboardBody(fluidRow(
                   "A Framework for Scalable and
                   Reproducible Ecological Niche Modeling"
                 )
-              ),
+                ),
               column (width = 12,
                 br(),
                 p("Please cite..."),
                 br(),
                 p("...ABSTRACT..."))
-            )
+              )
           ),
             column(width = 3,
               box(width = NULL,
@@ -311,7 +311,7 @@ body <- dashboardBody(fluidRow(
           )
         )
       ),
-
+      
       ########################################################################
       tabPanel("Environmental data",
         column(width = 12,
@@ -322,7 +322,7 @@ body <- dashboardBody(fluidRow(
             height = "600px",
             selected = "Model Extent", 
             id = "tabbox_envdata",
-          
+            
             tabPanel("Model Extent",
               box(width = 8,
                 title = "Define modelling area",
@@ -596,14 +596,14 @@ body <- dashboardBody(fluidRow(
                                 )
                               )
                             ),
-
+                            
                             conditionalPanel("input.tipodadoabiotico == 'BIOORACLE' ",
                               checkboxGroupInput("future_bo_dates", label=NULL, future_bo_dates) ,
-
+                              
                               conditionalPanel("input.future_bo_dates.includes('2100')",
                                 box(width = 6,
                                   title = "2100" ,
-
+                                  
                                   box(width = NULL , collapsible = TRUE,collapsed = TRUE,
                                     title = "Scenario",
                                     checkboxGroupInput("scenario_bo_2100", label=NULL, scenario_bo_2100, selected = FALSE)
@@ -614,16 +614,16 @@ body <- dashboardBody(fluidRow(
                                   )
                                 )
                               ),
-
+                              
                               conditionalPanel("input.future_bo_dates.includes('2200')",
                                 box(width = 6,
                                   title = "2200" ,
-
+                                  
                                   box(width = NULL , collapsible = TRUE,collapsed = TRUE,
                                     title = "Scenario",
-
+                                    
                                     checkboxGroupInput("scenario_bo_2200", label=NULL, scenario_bo_2200, selected = FALSE)
-
+                                    
                                   ),
                                   box(width = NULL , collapsible = TRUE, collapsed = TRUE,
                                     title = "Emission Scenarios (RCP)",
@@ -894,10 +894,10 @@ body <- dashboardBody(fluidRow(
         column(width = 12,
           h4('User manual')))
       ########################################################################
-    ) # tabBox
-  ) # column
-) # fluidrow
-)#Body
+      ) # tabBox
+    ) # column
+  ) # fluidrow
+  )#Body
 dashboardPage(header,
   dashboardSidebar(disable = TRUE),
   body)
