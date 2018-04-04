@@ -320,96 +320,110 @@ body <- dashboardBody(fluidRow(
             title = "",
             width = NULL,
             height = "600px",
-            selected = "Model Extent", 
-            id = "tabbox_envdata",
-            tabPanel("Model Extent",
-              box(width = 8,
-                title = "Define modelling area",
-                solidHeader = TRUE,
-                leafletOutput('mapapontosextend', height = 500)
-              ),
-              box(width = 4,
-                solidHeader = TRUE,
-                box(width = NULL,
-                  status = "warning",
-                  numericInput(
-                    "edtextend1",
-                    "Longitude left:",
-                    min = -180,
-                    max = 180,
-                    value = -90,
-                    step = 1
+            selected = "Modeling extent", 
+         
+            tabPanel("Modeling extent",
+              tabBox(side = "right",
+                title = "" ,
+                width = NULL,
+                height = "600px",
+                selected = "Study area extent", 
+                tabPanel("Study area extent",
+                  box(width = 8,
+                    solidHeader = TRUE,
+                    leafletOutput('mapapontosextend', height = 500)
                   ),
-                  numericInput(
-                    "edtextend2",
-                    "Longitude right:",
-                    min = -180,
-                    max = 180,
-                    value = -32,
-                    step = 1
+                  box(width = 4,
+                    solidHeader = TRUE,
+                    box(width = NULL,
+                      status = "warning",
+                      numericInput(
+                        "edtextend1",
+                        "Longitude left:",
+                        min = -180,
+                        max = 180,
+                        value = -90,
+                        step = 1
+                      ),
+                      numericInput(
+                        "edtextend2",
+                        "Longitude right:",
+                        min = -180,
+                        max = 180,
+                        value = -32,
+                        step = 1
+                      ),
+                      numericInput(
+                        "edtextend4",
+                        "Latitude higher:",
+                        min = -90,
+                        max = 90,
+                        value = 23,
+                        step = 1
+                      ),
+                      numericInput(
+                        "edtextend3",
+                        "Latitude lower:",
+                        min = -90,
+                        max = 90,
+                        value = -33,
+                        step = 1
+                      )
+                    )
+                  )
+                ),
+                
+                tabPanel("Projection extent",
+                  box(width=12,
+                    status = "warning",
+                    checkboxInput('project_ext', 'Design on another extension', value = FALSE)
                   ),
-                  numericInput(
-                    "edtextend4",
-                    "Latitude higher:",
-                    min = -90,
-                    max = 90,
-                    value = 23,
-                    step = 1
-                  ),
-                  numericInput(
-                    "edtextend3",
-                    "Latitude lower:",
-                    min = -90,
-                    max = 90,
-                    value = -33,
-                    step = 1
+                  conditionalPanel("input.project_ext", 
+                    box(width=8,
+                      solidHeader = FALSE,
+                      leafletOutput('mapapontosextend2', height = 400)
+                    ),
+                    box(width = 4,
+                      numericInput(
+                        "edtextend12",
+                        "Longitude left:",
+                        min = -180,
+                        max = 180,
+                        value = -90,
+                        step = 1
+                      ),
+                      numericInput(
+                        "edtextend22",
+                        "Longitude right:",
+                        min = -180,
+                        max = 180,
+                        value = -32,
+                        step = 1
+                      ),
+                      numericInput(
+                        "edtextend42",
+                        "Latitude higher:",
+                        min = -90,
+                        max = 90,
+                        value = 23,
+                        step = 1
+                      ),
+                      numericInput(
+                        "edtextend32",
+                        "Latitude lower:",
+                        min = -90,
+                        max = 90,
+                        value = -33,
+                        step = 1
+                      )
+                    )
                   )
                 )
               )
             ),
-            tabPanel("Design on another extension",
-              box(width=8,
-                solidHeader = FALSE,
-                leafletOutput('mapapontosextend2', height = 400)
-              ),
-                box(width = 4,
-                  numericInput(
-                    "edtextend12",
-                    "Longitude left:",
-                    min = -180,
-                    max = 180,
-                    value = -90,
-                    step = 1
-                  ),
-                  numericInput(
-                    "edtextend22",
-                    "Longitude right:",
-                    min = -180,
-                    max = 180,
-                    value = -32,
-                    step = 1
-                  ),
-                  numericInput(
-                    "edtextend42",
-                    "Latitude higher:",
-                    min = -90,
-                    max = 90,
-                    value = 23,
-                    step = 1
-                  ),
-                  numericInput(
-                    "edtextend32",
-                    "Latitude lower:",
-                    min = -90,
-                    max = 90,
-                    value = -33,
-                    step = 1
-                  )
-                )
-            ),
             
             tabPanel("Select Predictors",
-              box(width = 4,
+              box(width = 5,
                 status = "warning",
                 height = NULL,
                 actionButton("btnAtualizaSelecaoVariaveis", "Update selected"),
@@ -511,7 +525,7 @@ body <- dashboardBody(fluidRow(
                   }
                 )
               ),
-              column(width = 8,
+              column(width = 7,
                 tabBox(width = NULL,
                   tabPanel(
                     "Check correlation",
@@ -681,11 +695,11 @@ body <- dashboardBody(fluidRow(
             title = "",
             width = NULL,
             id = "tabset2",
-            height = 500,
             tabPanel("BC",
               column(width = 12,
                 leafletOutput('maparesultadobc')
-              )),
+              )
+            ),
             tabPanel("MH",
               column(width = 12,
                 leafletOutput('maparesultadomh')
@@ -715,66 +729,70 @@ body <- dashboardBody(fluidRow(
               column(width = 12,
                 leafletOutput('maparesultadodo')
               ))
-          ),
-          plotOutput(
-            outputId = "plotmodelagem",
-            width = "500px"
           )
+          #plotOutput(outputId = "plotmodelagem")
         ),
-        column(width = 3,
+        column(width = 6,
           box(width = NULL,
-            status = "warning",
-            selectInput("dataset", "Partitioning type",
-              choices = c("KFold")),
-            # choices = c("KFold", "Bootstrap")),
-            sliderInput(
-              "edtnumgrupo",
-              "No. of partitions:",
-              min = 1,
-              max = 50,
-              value = 3,
-              step = 1
+            height=700,
+            box(width = 6,
+              height=400,
+              status = "warning",
+              selectInput("dataset", "Partitioning type",
+                choices = c("KFold")),
+              # choices = c("KFold", "Bootstrap")),
+              sliderInput(
+                "edtnumgrupo",
+                "No. of partitions:",
+                min = 1,
+                max = 50,
+                value = 3,
+                step = 1
+              ),
+              sliderInput(
+                "edtnumpontos",
+                "Pseudo-absences:",
+                min = 100,
+                max = 2000,
+                value = 300,
+                step = 100
+              ),
+              sliderInput(
+                "edtTSS",
+                "TSS score cutoff:",
+                min = 0,
+                max = 1,
+                value = 0.7,
+                step = 0.05
+              )
+              # radioButtons("edtBuffer", "Buffer:",
+              #   c("Median" = "MEDIAN",
+              #     "Maximum" = "MAX",
+              #     "Minimum" = "MIN",
+              #     "False" = "FALSE"))
+              
             ),
-            sliderInput(
-              "edtnumpontos",
-              "Pseudo-absences:",
-              min = 100,
-              max = 2000,
-              value = 300,
-              step = 100
+            box(width = 6,
+              height=400,
+              status = "warning",
+              actionButton("btnModelar", "Run", icon = icon("cogs")),
+              h4("Algorithms"),
+              checkboxInput('BIOCLIM', 'Bioclim', value = FALSE),
+              checkboxInput('MAHALANOBIS', 'Mahalanobis', value = FALSE),
+              checkboxInput('MAXENT', 'Maxent', value = FALSE),
+              checkboxInput('GLM', 'GLM', value = FALSE),
+              checkboxInput('RF', 'RandomForest', value = FALSE),
+              checkboxInput('SVM', 'SVM', value = FALSE),
+              checkboxInput('DOMAIN', 'Domain', value = FALSE)
             ),
-            sliderInput(
-              "edtTSS",
-              "TSS score cutoff:",
-              min = 0,
-              max = 1,
-              value = 0.7,
-              step = 0.05
+            conditionalPanel("input.project_ext",
+              box(width = 12,
+                height = 250,
+                leafletOutput('maparesultadobc_proj',  width = "100%", height = 250)
+              )
             )
-            # radioButtons("edtBuffer", "Buffer:",
-            #   c("Median" = "MEDIAN",
-            #     "Maximum" = "MAX",
-            #     "Minimum" = "MIN",
-            #     "False" = "FALSE"))
-          )
-        ),
-        column(width = 3,
-          box(width = NULL,
-            status = "warning",
-            actionButton("btnModelar", "Run", icon = icon("cogs")),
-            h4("Algorithms"),
-            checkboxInput('BIOCLIM', 'Bioclim', value = FALSE),
-            checkboxInput('MAHALANOBIS', 'Mahalanobis', value = FALSE),
-            checkboxInput('MAXENT', 'Maxent', value = FALSE),
-            checkboxInput('GLM', 'GLM', value = FALSE),
-            checkboxInput('RF', 'RandomForest', value = FALSE),
-            checkboxInput('SVM', 'SVM', value = FALSE),
-            checkboxInput('DOMAIN', 'Domain', value = FALSE),
-            checkboxInput('project_ext', 'Design on another extension', value = FALSE)
-            
           )
         )
-        
       ),
       ########################################################################
       tabPanel("Outputs",
@@ -866,11 +884,9 @@ body <- dashboardBody(fluidRow(
           h5('Cite also randomForest() if you fit random forests, and `kernlab() if you fit SVM'
           )
         )
-      ),
+      )
       ########################################################################
-      tabPanel("Help",
-        column(width = 12,
-          h4('User manual')))
+
       ########################################################################
     ) # tabBox
   ) # column

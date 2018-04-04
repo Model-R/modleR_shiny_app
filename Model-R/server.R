@@ -1306,9 +1306,7 @@ function(input, output, session) {
    modelagem <- function() ({
     limparResultadosAnteriores()
     library(raster)
-    
-   # numpontos <- input$edtnumpontos
-    #numparticoes <- input$edtnumgrupo
+
     write.future = FALSE
     write.projecao = FALSE
     
@@ -1330,36 +1328,36 @@ function(input, output, session) {
     progress$set(message = "Saving data...", value = 0)
     write.csv(occur.data.coord, file = paste0("www/", projeto, "/csv/Occurence_data.csv"))
     
-    # Checking whether the final ensemble file was generated for a projected extent
-    if (file.exists(paste0("www/", projeto, "/final/proj_ensemble.tif"))) {
-      # Creating the raster file to be placed on the map
-      rproj <- raster::raster(paste0("www/", projeto, "/final/proj_ensemble.tif"))
-    }
-    
-    # For each selected algorithm create a map with the corresponding raster
-    maparesultado_model <- function (
+    maparesultado_model <- function(
       model_ensemble = model_ensemble,
       model_title = model_title) {
+      
       if (file.exists(paste0("www/", projeto, "/final/", model_ensemble, ".tif"))) {
         r <- raster::raster(paste0("www/", projeto, "/final/", model_ensemble, ".tif"))
         pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(r), na.color = "transparent")
-       
-         if (file.exists(paste0("www/", projeto, "/final/proj_ensemble.tif")) && input$project_ext == TRUE) {
-          map = leaflet() %>% addTiles %>% 
-              addRasterImage(r, colors = pal, opacity = 0.6) %>% 
-              addRasterImage(rproj, colors = pal, opacity = 0.6) %>%
-              addLegend(pal = pal, values = values(r), title = model_title) %>%
-              addCircles(color = "red", lat = occur.data.coord[, 2], lng = occur.data.coord[, 1]) %>%
-              addRectangles(ext1, ext3, ext2, ext4, color = "green", fill = FALSE, dashArray = "5,5", weight = 3)
-        } else {
-          map = leaflet() %>% addTiles %>% 
-            addRasterImage(r, colors = pal,opacity = 0.6) %>%
-            addLegend(pal = pal, values = values(r), title = model_title) %>%
-            addCircles(color = "red", lat = occur.data.coord[, 2], lng = occur.data.coord[, 1]) %>%
-            addRectangles(ext1, ext3, ext2, ext4, color = "red", fill = FALSE,dashArray = "5,5", weight = 3)
-        }
+        map <- leaflet() %>% addTiles %>% 
+          addRasterImage(r, colors = pal, opacity = 0.8) %>% 
+          addLegend(pal = pal, values = values(r), title = model_title) %>%
+          addCircles(color = "red", lat = occur.data.coord[, 2], lng = occur.data.coord[, 1]) %>%
+          addRectangles(ext1, ext3, ext2, ext4, color = "red", fill = FALSE, dashArray = "5,5", weight = 2)
       }
     }
+    
+    maparesultado_model_proj <- function(
+      model_title = model_title) {
+      
+      if (file.exists(paste0("www/", projeto, "/final/proj_ensemble.tif")) && input$project_ext == TRUE) {
+        rproj <- raster::raster(paste0("www/", projeto, "/final/proj_ensemble.tif"))
+        palproj <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(rproj), na.color = "transparent")
+        map_proj <- leaflet() %>% addTiles %>% 
+          addRasterImage(rproj, colors = palproj, opacity = 0.8) %>%
+          addLegend(pal = palproj, values = values(rproj), title = model_title) %>%
+          addCircles(color = "red", lat = occur.data.coord[, 2], lng = occur.data.coord[, 1]) %>%
+          addRectangles(ext12, ext32, ext22, ext42, color = "green", fill = FALSE, dashArray = "5,5", weight = 2)
+      } 
+    }
+   
+    
     
     output$maparesultadomax <- renderLeaflet({
       input$btnModelar
@@ -1389,6 +1387,10 @@ function(input, output, session) {
     output$maparesultadobc <- renderLeaflet({
       input$btnModelar
       maparesultado_model(model_ensemble = "bc_ensemble", model_title = "BioClim")
+    })
+    output$maparesultadobc_proj <- renderLeaflet({
+      input$btnModelar
+      maparesultado_model_proj(model_title = "BioClim")
     })
     
     output$maparesultadodo <- renderLeaflet({
@@ -1470,25 +1472,22 @@ function(input, output, session) {
   }) # Closing modelagem
   
   # GROUPING ALL MODELING PROCESSES BY CLICKING THE EXECUTE BUTTON ----------------
-  output$plotmodelagem <- renderPlot({
-    input$btnModelar
-    isolate({
-      if ((input$DOMAIN == "TRUE") || (input$MAXENT == "TRUE") || (input$BIOCLIM ==
-          "TRUE") || (input$GLM == "TRUE") || (input$RF == "TRUE") || (input$SVM ==
-              "TRUE") || (input$GLM == "TRUE")) {
-        
-        if (ETAPA > 1) {
-          if (exists("occur.data.coord")) {
-            progress <<- shiny::Progress$new()
-            progress$set(message = "Processing...", value = 0)
-            on.exit(progress$close())
-            modelagem()
-          }
-        }
-      }
-    })
-    plot()
-  })
+   observeEvent(input$btnModelar,{
+     if ((input$DOMAIN == "TRUE") || (input$MAXENT == "TRUE") || (input$BIOCLIM ==
+         "TRUE") || (input$GLM == "TRUE") || (input$RF == "TRUE") || (input$SVM ==
+             "TRUE") || (input$GLM == "TRUE")) {
+       
+       if (ETAPA > 1) {
+         if (exists("occur.data.coord")) {
+           progress <<- shiny::Progress$new()
+           progress$set(message = "Processing...", value = 0)
+           on.exit(progress$close())
+           modelagem()
+         }
+       }
+     }
+   })
+  
   
   # INFORM EXTENT --------------------------------------------------------------
   ## Model Extent
@@ -1556,7 +1555,6 @@ function(input, output, session) {
       group_predvars <- reactiveValues(data = NULL, selecionado= FALSE, future = FALSE, past = FALSE)
       
       if (input$tipodadoabiotico == "CLIMA") {
-        
         arquivo <- list()
         check.files<- list()
         path <- paste0(getwd(), "/ex/clima/current/", input$resolution)
@@ -1692,7 +1690,7 @@ function(input, output, session) {
             sdmdata <<- sdmdata
             
             output$grafico_correlacao <- renderPlot({
-              if (is.null(envir_data) | length(envir_data) <= 1 ) 
+              if (is.null(envir_data) | length(envir_data) <= 1) 
                 return (NULL) 
               else{
                 
