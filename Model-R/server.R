@@ -39,7 +39,7 @@ ipak(c("shinydashboard",
   "sdmpredictors"))
 
 jdk_version <- list.files("/Library/Java/JavaVirtualMachines/")
-if(length(jdk_version)!=0){
+if (length(jdk_version) !=0) {
   dyn.load(paste0("/Library/Java/JavaVirtualMachines/", jdk_version, "/Contents/Home/lib/server/libjvm.dylib"))
 } else {
   library("rJava")
@@ -1017,7 +1017,6 @@ function(input, output, session) {
       cat(c(date(), " == ==  FIM == ==  ", "\n", "\n"))
       
       # Writing ENSEMBLE FILES -------------------------------------------------
-      
       # Model Ensemble
       conta_alg = 0
       algoritmos = ""
@@ -1030,7 +1029,6 @@ function(input, output, session) {
         ensemble.glm <- mean(glm_raster, glm_raster)
         writeRaster(ensemble.glm, filename = paste0("www/", projeto, "/final/",
           "glm_ensemble.tif"), format = "GTiff", overwrite = T)
-        # plot( ensemble.glm, main=paste('(GLM - Ensemble)'))
         png(filename = paste0("./www/", projeto, "/jpg/glm_ensemble", ".jpg"))
         plot(ensemble.glm, main = paste("GLM - Ensemble "))
         points(occur.data.coord, bg = "red", cex = 1, pch = 21)
@@ -1045,7 +1043,6 @@ function(input, output, session) {
         ensemble.rf <- mean(rf_raster, rf_raster)
         writeRaster(ensemble.rf, filename = paste0("www/", projeto, "/final/",
           "rf_ensemble.tif"), format = "GTiff", overwrite = T)
-        # plot( ensemble.rf, main=paste('(RF - Ensemble)'))
         png(filename = paste0("./www/", projeto, "/jpg/rf_ensemble", ".jpg"))
         plot(ensemble.rf, main = paste("RF - Ensemble"))
         points(occur.data.coord, bg = "red", cex = 1, pch = 21)
@@ -1060,7 +1057,6 @@ function(input, output, session) {
         ensemble.bc <- mean(bc_raster, bc_raster)
         writeRaster(ensemble.bc, filename = paste0("www/", projeto, "/final/",
           "bc_ensemble.tif"), format = "GTiff", overwrite = T)
-        # plot( ensemble.bc, main=paste('BIOCLIM - Ensemble'))
         png(filename = paste0("./www/", projeto, "/jpg/bc_ensemble", ".jpg"))
         plot(ensemble.bc, main = paste("BIOCLIM - Ensemble"))
         points(occur.data.coord, bg = "red", cex = 1, pch = 21)
@@ -1075,7 +1071,6 @@ function(input, output, session) {
         ensemble.do <- mean(do_raster, do_raster)
         writeRaster(ensemble.do, filename = paste0("www/", projeto, "/final/",
           "do_ensemble.tif"), format = "GTiff", overwrite = T)
-        # plot( ensemble.bc, main=paste('BIOCLIM - Ensemble'))
         png(filename = paste0("./www/", projeto, "/jpg/do_ensemble", ".jpg"))
         plot(ensemble.do, main = paste("Domain - Ensemble"))
         points(occur.data.coord, bg = "red", cex = 1, pch = 21)
@@ -1090,7 +1085,6 @@ function(input, output, session) {
         ensemble.ma <- mean(ma_raster, ma_raster)
         writeRaster(ensemble.ma, filename = paste0("www/", projeto, "/final/",
           "ma_ensemble.tif"), format = "GTiff", overwrite = T)
-        # plot( ensemble.ma, main=paste('(MAHALANOBIS - Ensemble)'))
         png(filename = paste0("./www/", projeto, "/jpg/ma_ensemble", ".jpg"))
         plot(ensemble.ma, main = paste("MAHALANOBIS - Ensemble"))
         points(occur.data.coord, bg = "red", cex = 1, pch = 21)
@@ -1105,7 +1099,6 @@ function(input, output, session) {
         ensemble.svm <- mean(svm_raster, svm_raster)
         writeRaster(ensemble.svm, filename = paste0("www/", projeto, "/final/",
           "svm_ensemble.tif"), format = "GTiff", overwrite = T)
-        # plot( ensemble.svm, main=paste('(SVM - Ensemble)'))
         png(filename = paste0("./www/", projeto, "/jpg/svm_ensemble", ".jpg"))
         plot(ensemble.svm, main = paste("SVM - Ensemble"))
         points(occur.data.coord, bg = "red", cex = 1, pch = 21)
@@ -1120,7 +1113,6 @@ function(input, output, session) {
         ensemble.mx <- mean(mx_raster, mx_raster)
         writeRaster(ensemble.mx, filename = paste0("www/", projeto, "/final/",
           "mx_ensemble.tif"), format = "GTiff", overwrite = T)
-        # plot (ensemble.mx, main=paste('(MAXENT - Ensemble)'))
         png(filename = paste0("./www/", projeto, "/jpg/mx_ensemble", ".jpg"))
         plot(ensemble.mx, main = paste("MAXENT - Ensemble"))
         points(occur.data.coord, bg = "red", cex = 1, pch = 21)
@@ -1288,7 +1280,6 @@ function(input, output, session) {
       
       if (exists("final")) {
         # Writes mean binary of the selected partitions
-        #writeRaster(x=final,filename=paste0('./www/',projeto,'/final','/',names(final),algo),bylayer=T,overwrite=T,format='GTiff')
         for (i in 1:dim(final)[[3]]) {
           png(filename = paste0("./www/", projeto, "/final", "/", names(final)[i],
             algo, ".png"))
@@ -1302,11 +1293,10 @@ function(input, output, session) {
   
   
   # MODELING FUNCTION ----------------------------------------------------------
- 
-   modelagem <- function() ({
+  modelagem <- function() ({
     limparResultadosAnteriores()
     library(raster)
-
+    
     write.future = FALSE
     write.projecao = FALSE
     
@@ -1316,7 +1306,6 @@ function(input, output, session) {
     if ('future_bo' %in% input$forecasting_bo) {
       write.future = T
     }
-    
     if (input$project_ext == T) {
       write.projecao = T
     }
@@ -1331,33 +1320,29 @@ function(input, output, session) {
     maparesultado_model <- function(
       model_ensemble = model_ensemble,
       model_title = model_title) {
-      
       if (file.exists(paste0("www/", projeto, "/final/", model_ensemble, ".tif"))) {
         r <- raster::raster(paste0("www/", projeto, "/final/", model_ensemble, ".tif"))
         pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(r), na.color = "transparent")
         map <- leaflet() %>% addTiles %>% 
-          addRasterImage(r, colors = pal, opacity = 0.8) %>% 
+          addRasterImage(r, colors = pal, opacity = 0.7) %>% 
           addLegend(pal = pal, values = values(r), title = model_title) %>%
           addCircles(color = "red", lat = occur.data.coord[, 2], lng = occur.data.coord[, 1]) %>%
           addRectangles(ext1, ext3, ext2, ext4, color = "red", fill = FALSE, dashArray = "5,5", weight = 2)
       }
     }
     
-    maparesultado_model_proj <- function(
-      model_title = model_title) {
+    maparesultado_model_proj <- function() {
       
       if (file.exists(paste0("www/", projeto, "/final/proj_ensemble.tif")) && input$project_ext == TRUE) {
         rproj <- raster::raster(paste0("www/", projeto, "/final/proj_ensemble.tif"))
         palproj <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(rproj), na.color = "transparent")
         map_proj <- leaflet() %>% addTiles %>% 
-          addRasterImage(rproj, colors = palproj, opacity = 0.8) %>%
-          addLegend(pal = palproj, values = values(rproj), title = model_title) %>%
+          addRasterImage(rproj, colors = palproj, opacity = 0.7) %>%
+          addLegend(pal = palproj, values = values(rproj), title = "") %>%
           addCircles(color = "red", lat = occur.data.coord[, 2], lng = occur.data.coord[, 1]) %>%
           addRectangles(ext12, ext32, ext22, ext42, color = "green", fill = FALSE, dashArray = "5,5", weight = 2)
       } 
     }
-   
-    
     
     output$maparesultadomax <- renderLeaflet({
       input$btnModelar
@@ -1388,20 +1373,21 @@ function(input, output, session) {
       input$btnModelar
       maparesultado_model(model_ensemble = "bc_ensemble", model_title = "BioClim")
     })
-    output$maparesultadobc_proj <- renderLeaflet({
-      input$btnModelar
-      maparesultado_model_proj(model_title = "BioClim")
-    })
     
     output$maparesultadodo <- renderLeaflet({
       input$btnModelar
       maparesultado_model(model_ensemble = "do_ensemble", model_title = "Domain")
     })
     
+    # Display projection  ---------------------------
+    output$maparesultado_proj <- renderLeaflet({
+      input$btnModelar
+      maparesultado_model_proj()
+    })
+    
     # Display results at the Outputs tab ---------------------------
     output$uiarquivosmodelos <- renderUI({
-      lista_models <- list.files(paste0("www/", projeto, "/models"), full.names = F,
-        pattern = paste0("pre_"))
+      lista_models <- list.files(paste0("www/", projeto, "/models"), full.names = F, pattern = paste0("pre_"))
       lapply(1:length(sort(lista_models)), function(i) {
         tags$div(tags$a(href = paste0(home, projeto, "/models/", lista_models[i]),
           paste0(lista_models[i])))
@@ -1469,24 +1455,24 @@ function(input, output, session) {
           paste0(lista_futuro[i]), target = "_blank"))
       })
     })
-  }) # Closing modelagem
+  }) 
   
   # GROUPING ALL MODELING PROCESSES BY CLICKING THE EXECUTE BUTTON ----------------
-   observeEvent(input$btnModelar,{
-     if ((input$DOMAIN == "TRUE") || (input$MAXENT == "TRUE") || (input$BIOCLIM ==
-         "TRUE") || (input$GLM == "TRUE") || (input$RF == "TRUE") || (input$SVM ==
-             "TRUE") || (input$GLM == "TRUE")) {
-       
-       if (ETAPA > 1) {
-         if (exists("occur.data.coord")) {
-           progress <<- shiny::Progress$new()
-           progress$set(message = "Processing...", value = 0)
-           on.exit(progress$close())
-           modelagem()
-         }
-       }
-     }
-   })
+  observeEvent(input$btnModelar,{
+    if ((input$DOMAIN == "TRUE") || (input$MAXENT == "TRUE") || (input$BIOCLIM ==
+        "TRUE") || (input$GLM == "TRUE") || (input$RF == "TRUE") || (input$SVM ==
+            "TRUE") || (input$GLM == "TRUE")) {
+      
+      if (ETAPA > 1) {
+        if (exists("occur.data.coord")) {
+          progress <<- shiny::Progress$new()
+          progress$set(message = "Processing...", value = 0)
+          on.exit(progress$close())
+          modelagem()
+        }
+      }
+    }
+  })
   
   
   # INFORM EXTENT --------------------------------------------------------------
@@ -1546,17 +1532,16 @@ function(input, output, session) {
   
   # EVIRONMENTAL VARIABLES -----------------------------------------------------
   observeEvent(input$btnAtualizaSelecaoVariaveis,{
-    
     withProgress(message = '', value = 0, {
       n <- 3
       incProgress(1/n, detail = paste0("Loading variables..."))
       ETAPA <<- 3
       
-      group_predvars <- reactiveValues(data = NULL, selecionado= FALSE, future = FALSE, past = FALSE)
+      group_predvars <- reactiveValues(data = NULL, data_future = NULL, selecionado = FALSE, future = FALSE, past = FALSE)
       
       if (input$tipodadoabiotico == "CLIMA") {
         arquivo <- list()
-        check.files<- list()
+        check.files <- list()
         path <- paste0(getwd(), "/ex/clima/current/", input$resolution)
         pred_lay_wc <- paste(input$pred_vars_wc)
         
@@ -1581,13 +1566,12 @@ function(input, output, session) {
             }
             
             if (input$resolution == "30s") {
-              url1 <- "http://biogeo.ucdavis.edu/data/climate/worldclim/1_4/grid/cur/bio1-9_30s_bil.zip"
-              url2 <- "http://biogeo.ucdavis.edu/data/climate/worldclim/1_4/grid/cur/bio10-19_30s_bil.zip"
-              group1<-c('bio1', 'bio2', 'bio3','bio4','bio5','bio6','bio7', 'bio8','bio9')
-              group2<-c('bio10', 'bio11', 'bio12','bio13','bio14','bio15','bio16','bio17', 'bio18','bio19')
+              group1 <- c('bio1', 'bio2', 'bio3','bio4','bio5','bio6','bio7', 'bio8','bio9')
+              group2 <- c('bio10', 'bio11', 'bio12','bio13','bio14','bio15','bio16','bio17', 'bio18','bio19')
               
-              if (any(group1 %in% input$pred_vars_wc)){
-                download.file(url1, "bio_30s1.zip", mode = "wb")
+              if (any(group1 %in% input$pred_vars_wc)) {
+                download.file("http://biogeo.ucdavis.edu/data/climate/worldclim/1_4/grid/cur/bio1-9_30s_bil.zip", 
+                  "bio_30s1.zip", mode = "wb")
                 unzip("bio_30s1.zip", exdir = path)
                 unlink("bio_30s1.zip")
                 files <- paste0(path, "/", list.files(path))
@@ -1597,8 +1581,9 @@ function(input, output, session) {
                 ))
               }
               
-              if (any(group2 %in% input$pred_vars_wc)){
-                download.file(url2, "bio_30s2.zip", mode = "wb")
+              if (any(group2 %in% input$pred_vars_wc)) {
+                download.file("http://biogeo.ucdavis.edu/data/climate/worldclim/1_4/grid/cur/bio10-19_30s_bil.zip", 
+                  "bio_30s2.zip", mode = "wb")
                 unzip("bio_30s2.zip", exdir = path)
                 unlink("bio_30s2.zip")
                 files <- paste0(path, "/", list.files(path))
@@ -1610,11 +1595,18 @@ function(input, output, session) {
             }
           }
           
-          if (!is.null(input$forecasting_wc) ){
-            if('future_wc' %in%input$forecasting_wc){
+          if (!is.null(input$forecasting_wc) ) {
+            if ('future_wc' %in% input$forecasting_wc) {
               group_predvars$future <- TRUE
+              
+              
+              
+              
+              
+              
+              
             }
-            if('past_wc' %in%input$forecasting_wc){
+            if ('past_wc' %in% input$forecasting_wc) {
               group_predvars$past <- TRUE
             }
           }
@@ -1625,16 +1617,17 @@ function(input, output, session) {
       if (input$tipodadoabiotico == "BIOORACLE") {
         path <- paste0(getwd(), "/ex/biooracle/current")
         pred_lay_bo <- paste(input$pred_vars_bo)
-        if(length(input$pred_vars_bo)>0){
-          for(i in c(1:length(input$pred_vars_bo))){
-            layer_code <-paste0("BO_",input$pred_vars_bo[i])
-            arquivo <- c(arquivo, load_layers(layer_code, rasterstack = FALSE, datadir=path))
+        
+        if (length(input$pred_vars_bo) > 0) {
+          for (i in c(1:length(input$pred_vars_bo))) {
+            layer_code <- paste0("BO_",input$pred_vars_bo[i])
+            arquivo <- c(arquivo, load_layers(layer_code, rasterstack = FALSE, datadir = path))
           }
           group_predvars$selecionado <- TRUE
           
-          if (!is.null(input$forecasting_bo) ){
+          if (!is.null(input$forecasting_bo) ) {
             
-            if('future_bo' %in%input$forecasting_bo){
+            if('future_bo' %in% input$forecasting_bo){
               group_predvars$future <- TRUE
             }
           }
@@ -1644,7 +1637,6 @@ function(input, output, session) {
       
       if (input$tipodadoabiotico == "Others") {
         path <- paste(getwd(), "/ex/outros/", sep = "")
-        
         if(length(input$pred_vars_other) > 0) {
           for(i in c(1:length(input$pred_vars_other))){
             file.path<-paste0(path, input$pred_vars_other[i])
@@ -1660,49 +1652,36 @@ function(input, output, session) {
       write_future <<- group_predvars$future
       write_past <<- group_predvars$past
       
-      incProgress(2/n, detail = paste0("Calculating coorelation..."))
+      incProgress(2/n, detail = paste0("Calculating corelation..."))
       
       if (!is.null(envir_data) && exists("occur.data.coord") && check_null == TRUE) {
-        withProgress(message = '', value = 0, {
-          np <- 6
-          
-          incProgress(1/np, detail = paste0("Stacking rasters.."))
           predictors <<- stack(envir_data)
           ext <- extent(ext1, ext2, ext3, ext4)
           ext2 <- extent(ext12, ext22, ext32, ext42)
-          
-          incProgress(2/np, detail = paste0("Croping layers..."))
           pred_nf <<- crop(predictors, ext)
           pred_nf2 <<- crop(predictors, ext2)
+          presvals <<- raster::extract(pred_nf, occur.data.coord)
           
-          incProgress(3/np, detail = paste0("Extracting variables at occurence points..."))
-         
-           presvals <<- raster::extract(pred_nf, occur.data.coord)
-          
-          incProgress(4/np, detail = paste0("Extracting variables at background points..."))
           backgr <- randomPoints(pred_nf, 300)
           colnames(backgr) <- c("Longitude", "Latitude")
           absvals <- raster::extract(pred_nf, backgr)
           
-          incProgress(5/np, detail = paste0("Grouping SDM data..."))
           if (length(envir_data) > 1) {
             sdmdata <- data.frame(cbind(absvals))
             sdmdata <<- sdmdata
             
             output$grafico_correlacao <- renderPlot({
               if (is.null(envir_data) | length(envir_data) <= 1) 
-                return (NULL) 
+                return(NULL) 
               else{
-                
                 pairs(sdmdata, cex = 0.1, fig = TRUE, lower.panel = panel.reg, diag.panel = panel.hist, upper.panel = panel.cor)
                 
-                output$dgbriddadoscorrelacao <- renderDataTable({
+                output$dgbriddadoscorrelacao <- renderDataTable ({
                   round(cor(sdmdata), 2)
-                },options = list(searching = FALSE), rownames= TRUE, colnames = c('Variable'= 1)) 
+                }, options = list(searching = FALSE), rownames= TRUE, colnames = c('Variable'= 1)) 
               }
             })
           }
-        })
       }
       incProgress(3/n, detail = paste0("Ploting..."))
     })
@@ -1710,12 +1689,12 @@ function(input, output, session) {
   
   output$mapaabiotico <- renderPlot({
     input$btnAtualizaSelecaoVariaveis
+    
     if (is.null(envir_data)) 
-      return (NULL) else {
+      return(NULL) else {
         plot(pred_nf)
       }
   })
-  
   
   # UPDATE SPECIES OCCURENCE DATA --------------------------------------------------------
   datasetInput <- reactive({
@@ -1736,6 +1715,7 @@ function(input, output, session) {
       n <- 0
     }
     n <- nrow(occur.data.coord)
+    
     if (n > 0)
     {
       if (exists("occur.data.coord")) {
@@ -1762,14 +1742,15 @@ function(input, output, session) {
     }
   }, options = list(searching = FALSE, lengthMenu = c(5, 30, 50), pageLength = 5))
   
-  # Exhibit Data Cleaning Map
   output$mapadistribuicaodatacleaning <- renderLeaflet({
     input$btnapagar
     input$btneliminarduplicatas
     input$btnbuscarespecieCSV
     input$btnbuscarespeciejabot
     input$btnbuscarespecie
+    
     if (!is.null(occur.data.coord)) {
+      
       if (exists("occur.data.coord")) {
         rownames(occur.data.coord) <- NULL
         occur.data.coord$id = 1:nrow(occur.data.coord)
@@ -1783,7 +1764,6 @@ function(input, output, session) {
     } else {
       showModal(modalDialog(title = "Error!", "Please inform occurrence data",
         easyClose = TRUE))
-      
     }
   })
   
@@ -1791,7 +1771,6 @@ function(input, output, session) {
   pegaDadosCSV <- eventReactive(input$btnbuscarespecieCSV, {
     ETAPA <<- 1
     inFile <<- input$file1
-    
     if (is.null(inFile)) {
       return(NULL)
     } else {
@@ -1815,18 +1794,16 @@ function(input, output, session) {
     occur.data.coord
   })
   
-  
   pegaDadosJabot <- eventReactive(input$btnbuscarespeciejabot, {
     ETAPA <<- 1
     sp_data <<- getOcorrencia_jabot(input$edtespeciejabot)
     sp_data <<- as.data.frame(sp_data, stringsAsFactors=F)
     sp_data_jabot <<- sp_data[,c(2,3)]
-    sp_data_jabot[,1]<<-as.numeric(sp_data_jabot[,1])
-    sp_data_jabot[,2]<<-as.numeric(sp_data_jabot[,2])
-    occur.data.coord <<-sp_data_jabot
+    sp_data_jabot[,1] <<- as.numeric(sp_data_jabot[,1])
+    sp_data_jabot[,2] <<- as.numeric(sp_data_jabot[,2])
+    occur.data.coord <<- sp_data_jabot
     write.csv(occur.data.coord, file = paste0("Jabot_occ_data_All.csv"), row.names = FALSE)
     occur.data.coord
-    
   })
   
   output$dgbriddados <- renderDataTable({
@@ -1839,16 +1816,15 @@ function(input, output, session) {
     if (input$tipodado == "csv") {
       pegaDadosCSV()
     } else {
+      
       if (input$tipodado == "jabot") {
         pegaDadosJabot()
       } else {
         pegaDadosGBif()
-        
       }
     }
   }, options = list(lengthMenu = c(5, 30, 50), pageLength = 5))
   
-  # SAVE SPECIES OCCURENCE DATA ------------------------------------------------------------------
   output$downloadData <- downloadHandler(
     ## tells the client browser what name to use when saving the file.
     filename = function() {
@@ -1860,48 +1836,45 @@ function(input, output, session) {
       write.table(occur.data.coord, file, sep = ';', row.names = FALSE)
     })
   
-  
-  # VIEW SPECIES OCCURENCE MAP -------------------------------------------------
   output$mapadistribuicao <- renderLeaflet({
     progress <- shiny::Progress$new()
     progress$set(message = "Updating occurence map...", value = 0)
+    
     # Close the progress when this reactive exits (even if there's an error)
     on.exit(progress$close())
+    
     input$btnbuscarespecieCSV
     input$btnbuscarespecie
     input$btnbuscarespeciejabot
     
     if (!is.null(occur.data.coord)) {
-      
       if (input$tipodado == "gbif") {
         map = leaflet(occur.data.coord) %>% addTiles %>% addCircles(color = "red",
           lat = ~Latitude, lng = ~Longitude) %>%
           addMarkers(clusterOptions = markerClusterOptions()) %>%
           setView(lng = -31.5, lat = -13.4, zoom = 3)
       }
+      
       if (input$tipodado == "csv") {
         map = leaflet(occur.data.coord) %>% addTiles %>% addCircles(color = "red",
           lat = ~Latitude, lng = ~Longitude) %>%
           setView(lng = -31.5, lat = -13.4, zoom = 3)
       }
+      
       if (input$tipodado == "jabot") {
         map = leaflet(occur.data.coord) %>% addTiles %>% addCircles(color = "red",
           lat = ~Latitude, lng = ~Longitude) %>%
           setView(lng = -31.5, lat = -13.4, zoom = 3)
       }
+      
       map
+      
     } else {
       showModal(modalDialog(title = "Error!",
         "Please inform species occurrence data.",
         easyClose = TRUE))
     }
   })
-  
-  
-  
-  
-  
-  
   
   # CREATE/CONSULT PROJECT -----------------------------------------------------
   observeEvent(input$btnrefreshprojeto, {
@@ -1910,7 +1883,7 @@ function(input, output, session) {
       projeto <- paste0("projeto/", input$edtprojeto.create)
       
       if (projeto == "projeto/") {
-        showModal(modalDialog(title = "Error! Project Id cannot be blank!", paste0("Please enter a valid Id!"),
+        showModal(modalDialog(title = "Error! Project name cannot be blank!", paste0("Please enter a valid name."),
           easyClose = TRUE))
       }
       
@@ -1945,11 +1918,15 @@ function(input, output, session) {
               "/proj"))
             Sys.sleep(0.6)
           })
-          
           showModal(modalDialog(title = "Project succesfully created!", paste0("Project directory: ",
             projeto), easyClose = TRUE))
           
           projeto <<- paste0("projeto/", input$edtprojeto.create)
+        }
+        
+        if (file.exists(paste0(getwd(), "/www/", projeto)) == TRUE) {
+          showModal(modalDialog(title = "This name is alredy in use!", paste0("Please insert a different name"),
+            easyClose = TRUE))
         }
       }
     }
@@ -2059,20 +2036,14 @@ function(input, output, session) {
             " succefully loaded!"), paste0("Output files are dispalyed at the 'Outputs' tab.'"),
             easyClose = TRUE))
         }
-        
-        if (file.exists(paste0(getwd(), "/www/", projeto)) != TRUE) {
-          showModal(modalDialog(title = "Invalid Id!", paste0("Project '",
-            input$edtprojeto, "' was not found."), br(), paste0("Please enter a registed Id!"),
-            easyClose = TRUE))
-        }
       }
+      
       if (projeto == "projeto/") {
-        showModal(modalDialog(title = "Error! Project Id cannot be blank!", paste0("Please enter a valid Id!"),
+        showModal(modalDialog(title = "Error! Project name cannot be blank!", paste0("Please enter a valid name!"),
           easyClose = TRUE))
       }
       projeto <- paste0("projeto/", input$edtprojeto.load)
     }
-    
   })
   
   mkdirs <- function(fp) {
@@ -2081,4 +2052,5 @@ function(input, output, session) {
       dir.create(fp, showWarnings = FALSE, recursive = FALSE, mode = "777")
     }
   }
+  
 }
