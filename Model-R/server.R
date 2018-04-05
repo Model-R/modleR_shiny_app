@@ -1537,7 +1537,7 @@ function(input, output, session) {
       incProgress(1/n, detail = paste0("Loading variables..."))
       ETAPA <<- 3
       
-      group_predvars <- reactiveValues(data = NULL, data_future = NULL, selecionado = FALSE, future = FALSE, past = FALSE)
+      group_predvars <- reactiveValues(data = NULL, data_future = NULL, data_past = NULL, selecionado = FALSE, future = FALSE, past = FALSE)
       
       if (input$tipodadoabiotico == "CLIMA") {
         arquivo <- list()

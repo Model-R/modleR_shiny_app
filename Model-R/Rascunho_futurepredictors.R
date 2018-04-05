@@ -1,16 +1,19 @@
 if (input$tipodadoabiotico == "CLIMA") {
   arquivo <- list()
   arquivo.future <- list()
+  arquivo.past <- list()
   
   check.files <- list()
   check.files_future <- list()
+  check.files_past <- list()
   
   path <- paste0(getwd(), "/ex/clima/current/", input$resolution)
-  path_future <- paste0(getwd(), "/ex/clima/", input$periodo, "/",input$resolucao, "/", input$gcm, "/", input$rcp)
+  path_future <- paste0(getwd(), "/ex/clima/", input$future_wc_dates, "/",input$resolution, "/", input$gcm_future_wc, "/", input$rcp)
+  path_past <- paste0(getwd(), "/ex/clima/", input$past_wc_dates, "/",input$resolution, "/", input$gcm_past_wc)
   
   pred_lay_wc <- paste(input$pred_vars_wc)
   
-  if(length(input$pred_vars_wc)>0){
+  if(length(input$pred_vars_wc) > 0) {
     for(i in c(1:length(input$pred_vars_wc))){
       add.layer <- paste0(path, "/", pred_lay_wc[i], ".bil")
       arquivo <- c(arquivo, add.layer)
@@ -18,24 +21,28 @@ if (input$tipodadoabiotico == "CLIMA") {
       
       
       if (!is.null(input$forecasting_wc) ) {
-       
-         if ('future_wc' %in% input$forecasting_wc) {
+        if ('future_wc' %in% input$forecasting_wc) {
           group_predvars$future <- TRUE
           year <- sub(".*(\\d+{2}).*$", "\\1", input$periodo)
-          
           for(i in c(1:length(input$pred_vars_wc))){
             nbi<- sub("bio", "" ,  pred_lay_wc[i])
-            add.layer.future <-paste0(pathfuturo, "/", input$gcm, input$rcp, "bi",
-              year, nbi, ".tif"
-              arquivo_future <- c(arquivo_future, add.layer.future) 
-              check.files_future <- c(check.files_future, file.exists(add.layer.future))
+            add.layer.future <-paste0(path_future, "/", input$gcm_future_wc, input$rcp, "bi",year, nbi, ".tif")
+            arquivo_future <- c(arquivo_future, add.layer.future) 
+            check.files_future <- c(check.files_future, file.exists(add.layer.future))
           }
         }#future
-      
         
-        }
+        if ('past_wc' %in% input$forecasting_wc) {
+          group_predvars$past <- TRUE
+          for(i in c(1:length(input$pred_vars_wc))){
+            nbi <- sub("bio", "" ,  pred_lay_wc[i])
+            add.layer.past <-paste0(path_past, "/", input$gcm_past_wc, input$past_wc_dates, "bi", nbi, ".tif")
+            arquivo_past <- c(arquivo_past, add.layer.past) 
+            check.files_past <- c(check.files_past, file.exists(add.layer.past))
+          }
+        }#past
+      }#forcasting
     }
-    
   }
     group_predvars$selecionado <- TRUE
     
@@ -80,6 +87,7 @@ if (input$tipodadoabiotico == "CLIMA") {
         }
       }
     }
+    group_predvars$data_past <- arquivo_past
   group_predvars$data_future <- arquivo_future
   group_predvars$data <- arquivo
 }

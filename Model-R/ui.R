@@ -563,7 +563,7 @@ body <- dashboardBody(fluidRow(
                               collapsed = TRUE,
                               title = "General Circulation Models (GCM)",
                               radioButtons(
-                                "gcm_past_wc_mh",
+                                "gcm_past_wc",
                                 label = "",
                                 choices = c(
                                   "CCSM4" = "cc",
@@ -585,7 +585,7 @@ body <- dashboardBody(fluidRow(
                               collapsed = TRUE,
                               title = "General Circulation Models (GCM)",
                               radioButtons(
-                                "gcm_past_wc_lgm",
+                                "gcm_past_wc",
                                 label = "",
                                 choices = c(
                                   "CCSM4" = "cc",
