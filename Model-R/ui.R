@@ -42,7 +42,9 @@ resolution <- c(
   "2.5 arc-minutes" = "2-5m",
   "30 arc-seconds" = "30s"
 )
-
+wc_forecasting_timescale <- c( 'Future conditions' = 'future',
+  'Past conditions' = 'past')
+  
 future_dates_wc <- c("2050" = "2050",
   "2070" = "2070")
 
@@ -59,6 +61,23 @@ gcm_future_wc <- c(
   "MRI-CGCM3" = "mg",
   "NorESM1-M" = "no"
 )
+
+gcm_past_wc_mid<-c(
+  "CCSM4" = "cc",
+  "MIROC-ESM" = "mr",
+  "MPI-ESM-P" = "me",
+  "BCC-CSM1-1" = "bc",
+  "CNRM-CM5 " = "cn",
+  "HadGEM2-CC" = "hg",
+  "HadGEM2-ES" = "he",
+  "IPSL-CM5A-LR" = "ip",
+  "MRI-CGCM3" = "mg")
+
+gcm_past_wc_lgm<-c(
+  "CCSM4" = "cc",
+  "MIROC-ESM" = "mr",
+  "MPI-ESM-P" = "me")
+  
 rcp <- c(
   "rcp26" = "26",
   "rcp45" = "45",
@@ -67,6 +86,17 @@ rcp <- c(
 )
 past_dates_wc <- c("Mid Holocene" = "mid",
   "Last Glacial Maximum" = "lgm")
+
+future_bo_dates<-c("2100"='2100',
+  "2200"='2200'
+)
+
+scenario_bo_2100<- c("A1B" = "A1B",
+  "A2" = "A2",
+  "B1" = "B1")
+
+scenario_bo_2200<- c("A1B" = "A1B",
+      "B1" = "B1")
 
 ################################################################################
 header <- dashboardHeader(title = "Model-R v1.25")
@@ -393,20 +423,18 @@ body <- dashboardBody(
                       checkboxInput('forecasting_bo' , "Project model to another timescale", value = FALSE),
                       
                       conditionalPanel("input.forecasting_bo",
-                        radioButtons("future_bo_dates", 
-                          choices = c('2100','2200'),label = NULL, inline=TRUE),
-                        conditionalPanel("input.future_bo_dates.includes('2100')",
-                          radioButtons("scenario_bo", "Scenario",
-                            choices = c("A1B" = "A1B",
-                              "A2" = "A2",
-                              "B1" = "B1"),
-                            inline=TRUE)
-                        ),
-                        conditionalPanel("input.future_bo_dates.includes('2200')",
-                          radioButtons( "scenario_bo","Scenario",
-                            choices = c("A1B" = "A1B",
-                              "B1" = "B1"),
-                            inline=TRUE)
+                        box(width=NULL,
+                          collapsible = T,
+                          collapsed = T,
+                          title = "Forcasting parameters",
+                          
+                          radioButtons("future_bo_dates", future_bo_dates , label = NULL, inline = TRUE),
+                          conditionalPanel("input.future_bo_dates == '2100'",
+                            radioButtons("scenario_bo_2100", "Scenario", scenario_bo_2100, inline=TRUE)
+                          ),
+                          conditionalPanel("input.future_bo_dates == '2200'",
+                            radioButtons("scenario_bo_2200", "Scenario", scenario_bo_2200, inline=TRUE)
+                          )
                         ),
                         checkboxGroupInput("pred_vars_bo_future","Select variables: ",
                           choices = c(
@@ -449,44 +477,28 @@ body <- dashboardBody(
                     
                     conditionalPanel("input.tipodadoabiotico == 'CLIMA' ",
                       selectInput("resolution", "Resolution:", resolution, selected = "10min"),
+                      
                       checkboxInput("forecasting_wc", "Project model across timescales", value = FALSE),
-                      
                       conditionalPanel("input.forecasting_wc",
-                        radioButtons("wc_forecasting_timescale", label = NULL,
-                          choices = c(
-                            'Future conditions' = 'future',
-                            'Past conditions' = 'past')
-                        )
-                      ),
-                      conditionalPanel("input.forecasting_wc && input.wc_forecasting_timescale == 'future' ",
-                        radioButtons("future_dates_wc",  label = NULL,  future_dates_wc, inline = TRUE),
-                        radioButtons("rcp_wc", "Emission Scenarios (RCP)", rcp),
-                        radioButtons("gcm_future_wc","General Circulation Models (GCM)", gcm_future_wc, selected = "bc")
-                      ),
-                      
-                      conditionalPanel("input.forecasting_wc && input.wc_forecasting_timescale == 'past'",
-                        radioButtons("past_dates_wc", label = NULL , past_dates_wc, inline= TRUE),
-                        
-                        conditionalPanel("input.past_dates_wc == 'mid')",
-                          radioButtons("gcm_past_wc", "General Circulation Models (GCM)",
-                            choices = c(
-                              "CCSM4" = "cc",
-                              "MIROC-ESM" = "mr",
-                              "MPI-ESM-P" = "me",
-                              "BCC-CSM1-1" = "bc",
-                              "CNRM-CM5 " = "cn",
-                              "HadGEM2-CC" = "hg",
-                              "HadGEM2-ES" = "he",
-                              "IPSL-CM5A-LR" = "ip",
-                              "MRI-CGCM3" = "mg")
-                          )
-                        ),
-                        conditionalPanel("input.past_dates_wc == 'lgm' ",
-                          radioButtons("gcm_past_wc","General Circulation Models (GCM)",
-                            choices = c(
-                              "CCSM4" = "cc",
-                              "MIROC-ESM" = "mr",
-                              "MPI-ESM-P" = "me")
+                       
+                        box(width=NULL,
+                          collapsible = T,
+                          collapsed = T,
+                          title = "Forcasting parameters",
+                          radioButtons("wc_forecasting_timescale", "Timescale", wc_forecasting_timescale),
+                          conditionalPanel("input.wc_forecasting_timescale == 'future' ",
+                            radioButtons("future_dates_wc",  "Choose period: ", future_dates_wc, inline = TRUE),
+                            radioButtons("rcp_wc", "Emission Scenarios (RCP)", rcp),
+                            radioButtons("gcm_future_wc","General Circulation Models (GCM)", gcm_future_wc, selected = "bc")
+                          ),
+                          conditionalPanel("input.wc_forecasting_timescale == 'past'",
+                            radioButtons("past_dates_wc","Choose period: " , past_dates_wc, inline= TRUE),
+                            conditionalPanel("input.past_dates_wc == 'mid')",
+                              radioButtons("gcm_past_wc_mid", "General Circulation Models (GCM)", gcm_past_wc_mid)
+                            ),
+                            conditionalPanel("input.past_dates_wc == 'lgm' ",
+                              radioButtons("gcm_past_wc_lgm","General Circulation Models (GCM)", gcm_past_wc_lgm)
+                            )
                           )
                         )
                       ),
@@ -525,8 +537,7 @@ body <- dashboardBody(
                         checkboxGroupInput("pred_vars_other",  "Select rasters: ", choiceNames = c(lista_outros), choiceValues=c(lista_outros))
                       }
                     )
-                  
-                    )
+                  )
                 ),
                 
                 column(width = 7,

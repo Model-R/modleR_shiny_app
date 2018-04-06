@@ -204,7 +204,7 @@ function(input, output, session) {
     TSS.value  =  0.2,
     future.model = F,
     future.raster = newdata,
-    write.future = F,
+    write_forecasting = F,
     write.projecao = F) {
     
     library(dismo)
@@ -1299,22 +1299,19 @@ function(input, output, session) {
     limparResultadosAnteriores()
     library(raster)
     
-    write.future = FALSE
     write.projecao = FALSE
     
-    if ('future_wc' %in% input$forecasting_wc) {
-      write.future = T
+    if (write_forecasting == TRUE && !is.null(envir_data_forecasting)) {
+      write_future = TRUE
     }
-    if ('future_bo' %in% input$forecasting_bo) {
-      write.future = T
-    }
+    
     if (input$project_ext == T) {
       write.projecao = T
     }
     
     dismo.mod("", occur.data.coord, pred_nf, pred_nf2, input$MAXENT, input$BIOCLIM, input$GLM,
       input$RF, input$SVM, input$MAHALANOBIS, input$DOMAIN, input$SVM2, input$edtnumgrupo,
-      input$edtnumpontos, 123, T, T, T, F, F, input$edtTSS, F, future.raster, write.future, write.projecao)
+      input$edtnumpontos, 123, T, T, T, F, F, input$edtTSS, F, pred_nf_forecasting, write_future, write.projecao)
     
     progress$set(message = "Saving data...", value = 0)
     write.csv(occur.data.coord, file = paste0("www/", projeto, "/csv/Occurence_data.csv"))
@@ -1538,23 +1535,30 @@ function(input, output, session) {
       n <- 3
       incProgress(1/n, detail = paste0("Loading variables..."))
       ETAPA <<- 3
-      
-      environmental_vars <<- reactiveValues(
+      environmental_vars <- reactiveValues(
         any_selection = FALSE, 
         write_forecasting = FALSE,
         data_current = NULL, 
         data_forecasting = NULL)
       
+      if (!is.null(input$pred_vars_wc)) {
+        environmental_vars$any_selection <- TRUE
+      }
+      
       if (input$tipodadoabiotico == "CLIMA") {
         path_current <- paste0(getwd(), "/ex/clima/current/", input$resolution)
-        pred.vars_names <- list()
-        environmental_vars$any_selection = FALSE
-        environmental_vars$write_forecasting = FALSE
-        environmental_vars$data_current = NULL
-        environmental_vars$data_forecasting = NULL
+        path_future <- paste0(getwd(), "/ex/clima/", input$future_wc_dates, "/",input$resolution, "/", input$gcm_future_wc, "/", input$rcp_wc)
         
-        if (!is.null(input$pred_vars_wc)) {
-          environmental_vars$any_selection <- TRUE
+        if(input$past_wc_dates == 'mid'){
+          gcm <- input$gcm_past_wc_mid
+        }
+        if(input$past_wc_dates == 'lgm'){
+          gcm <- input$gcm_past_wc_lgm
+        }
+        
+        path_past <- paste0(getwd(), "/ex/clima/", input$past_wc_dates, "/",input$resolution, "/", gcm)
+        
+       
           pred.vars_names <- paste(input$pred_vars_wc)
           pred.vars_files<-list()
           checkfiles <- list()
@@ -1563,7 +1567,56 @@ function(input, output, session) {
             pred.vars_files <- c(pred.vars_files, layer)
             checkfiles <- c(checkfiles, file.exists(layer))
           } 
-          if (any(checkfiles == F)) {
+          
+          if(input$forecasting_wc) {
+            environmental_vars$write_forecasting = TRUE
+            
+            if (input$wc_forecasting_timescale  == 'future') {
+              year <- sub(".*(\\d+{2}).*$", "\\1", input$future_dates_wc)
+              checkfiles_future <- list()
+              pred.vars_files_forecasting <- list()
+              for (i in c(1:length(input$pred_vars_wc))) {
+                nbi <- sub("bio", "" , pred.vars_names[i])
+                layer <- paste0(path_future, "/", input$gcm_future_wc, input$rcp_wc, "bi", year, nbi, ".tif")
+                pred.vars_files_forecasting <- c(pred.vars_files_forecasting, layer) 
+                checkfiles_future <- c(checkfiles_future, file.exists(layer))
+              }  
+              environmental_vars$data_forecasting <- pred.vars_files_forecasting
+              if (any(checkfiles_future != T)) {
+                zip <- paste0(input$gcm_future_wc, input$rcp_wc, "bi", year, ".zip")
+                if (input$resolution == "2-5m") {
+                  url <- paste0( "http://biogeo.ucdavis.edu/data/climate/cmip5/2_5m", "/", zip)
+                }
+                if (input$resolution != "2-5m") {
+                  url <- paste0("http://biogeo.ucdavis.edu/data/climate/cmip5/", input$resolution, "/", zip)
+                }
+                download.file(url,zip, mode = "wb")
+                unzip(zip, exdir = path_future)
+                unlink(zip)
+              }
+            }
+            
+            if (input$wc_forecasting_timescale  == 'past') {
+              checkfiles_past <- list()
+              pred.vars_files_forecasting <- list()
+              for (i in c(1:length(input$pred_vars_wc))){
+                nbi <- sub("bio", "" ,  pred_layer_wc[i])
+                layer <- paste0(path_past, "/", input$gcm_past_wc, input$past_dates_wc, "bi", nbi, ".tif")
+                pred.vars_files_forecasting <- c(pred.vars_files_forecasting, layer) 
+                checkfiles_past <- c(checkfiles_past, file.exists(layer))
+              }
+              environmental_vars$data_forecasting <- pred.vars_files_forecasting
+              if (any(checkfiles_past != T)){
+                url <- paste0( "http://biogeo.ucdavis.edu/data/climate/cmip5/",input$gcm_past_wc,"/",zip)
+                zip <- paste0(input$gcm_past_wc, input$past_dates_wc, "bi_", input$resolution, ".zip")
+                download.file(url, zip, mode = "wb")
+                unzip(zip, exdir = path_past)
+                unlink(zip)
+              }
+            }
+          }
+          environmental_vars$data_current <- pred.vars_files
+          if (any(checkfiles != T)) {
             if (input$resolution != "30s") {
               zip_current <- paste0("bio_", input$resolution, "_bil.zip")
               url <- paste0("http://biogeo.ucdavis.edu/data/climate/worldclim/1_4/grid/cur/", zip_current)
@@ -1599,120 +1652,52 @@ function(input, output, session) {
               }
             }
           }
-          
-          environmental_vars$data_current <- pred.vars_files
-          
-          if(input$forecasting_wc) {
-            environmental_vars$write_forecasting = TRUE
-            
-            if (input$forecasting_wc  == 'future_wc') {
-              path_forecasting <- paste0(getwd(), "/ex/clima/", input$future_wc_dates, "/",input$resolution, "/", input$gcm_future_wc, "/", input$rcp_wc)
-              checkfiles_forecasting <- list()
-              pred.vars_files_forecasting <- list()
-              year <- sub(".*(\\d+{2}).*$", "\\1", input$future_dates_wc)
-              for (i in c(1:length(input$pred_vars_wc))) {
-                nbi <- sub("bio", "" , pred.vars_names[i])
-                layer <- paste0(path_forecasting, "/", input$gcm_future_wc, input$rcp_wc, "bi", year, nbi, ".tif")
-                pred.vars_files_forecasting <- c(pred.vars_files_forecasting, layer) 
-                checkfiles_forecasting <- c(checkfiles_forecasting, file.exists(layer))
-              }  
-              
-              if (any(checkfiles_forecasting == F)) {
-                zip <- paste0(input$gcm_future_wc, input$rcp_wc, "bi", year, ".zip")
-                if (input$resolution == "2-5m") {
-                  url <- paste0( "http://biogeo.ucdavis.edu/data/climate/cmip5/2_5m", "/", zip)
-                }
-                if (input$resolution != "2-5m") {
-                  url <- paste0("http://biogeo.ucdavis.edu/data/climate/cmip5/", input$resolution, "/", zip)
-                }
-                download.file(url,zip, mode = "wb")
-                unzip(zip, exdir = path_forecasting)
-                unlink(zip)
-              }
-            }
-            if (input$forecasting_wc  == 'past_wc') {
-              path_forecasting <- paste0(getwd(), "/ex/clima/", input$past_wc_dates, "/",input$resolution, "/", input$gcm_past_wc)
-              pred.vars_files_forecasting <- list()
-              checkfiles_forecasting <- list()
-              
-              for (i in c(1:length(input$pred_vars_wc))){
-                nbi <- sub("bio", "" ,  pred_layer_wc[i])
-                layer <- paste0(path_forecasting, "/", input$gcm_past_wc, input$past_dates_wc, "bi", nbi, ".tif")
-                pred.vars_files_forecasting <- c(pred.vars_files_forecasting,layer) 
-                checkfiles_forecasting <- c(checkfiles_forecasting, file.exists(layer))
-              }
-              if (any(checkfiles_forecasting == F)) {
-                url <- paste0( "http://biogeo.ucdavis.edu/data/climate/cmip5/",input$gcm_past_wc,"/",zip)
-                zip <- paste0(input$gcm_past_wc, input$past_dates_wc, "bi_", input$resolution, ".zip")
-                download.file(url, zip, mode = "wb")
-                unzip(zip, exdir = path_forecasting)
-                unlink(zip)
-              }
-            }
-            environmental_vars$data_forecasting <- pred.vars_files_forecasting
-          }
-        }
+      
+        
       }
       
       if (input$tipodadoabiotico == "BIOORACLE") {
         path_current <- paste0(getwd(), "/ex/biooracle/current")
-        pred.vars_names <- list()
-        environmental_vars$any_selection = FALSE
-        environmental_vars$write_forecasting = FALSE
-        environmental_vars$data_current = NULL
-        environmental_vars$data_forecasting = NULL
+        path_future <- paste0(getwd(), "/ex/biooracle/", input$future_bo_dates,"/", input$scenario_bo)
         
-        if (!is.null(input$pred_vars_bo)) {
-          environmental_vars$any_selection <- TRUE
+        if (input$forecasting_bo) {
+          pred.vars_names <- paste(input$pred_vars_bo_future)
+          environmental_vars$write_forecasting = TRUE
+          pred.vars_files_forecasting<-list()
           pred.vars_files<-list()
-        
-            if ('future_bo' %in% input$forecasting_bo) {
-            pred.vars_names <- paste(input$pred_vars_bo_future)
-          } else {
-            pred.vars_names <- paste(input$pred_vars_bo)
+          for (i in c(1:length(pred.vars_names))) {
+            layer_code_future <- paste0("BO_",input$scenario_bo, "_", input$future_bo_dates, "_", pred.vars_names[i])
+            pred.vars_files_forecasting  <- c(pred.vars_files_forecasting , load_layers(layer_code_future), rasterstack = FALSE, datadir = path_future)
+            layer_code <- paste0("BO_", pred.vars_names[i])
+            pred.vars_files <- c(pred.vars_files, load_layers(layer_code, rasterstack = FALSE, datadir = path_current))
           }
+          environmental_vars$data_forecasting <- pred.vars_files_forecasting
+          environmental_vars$data_current <- pred.vars_files
           
+        } else {
+          pred.vars_names <- paste(input$pred_vars_bo)
+          pred.vars_files<-list()
           for (i in c(1:length(pred.vars_names))) {
             layer_code <- paste0("BO_", pred.vars_names[i])
             pred.vars_files <- c(pred.vars_files, load_layers(layer_code, rasterstack = FALSE, datadir = path_current))
           }
           environmental_vars$data_current <- pred.vars_files
-          
-          if ('future_bo' %in% input$forecasting_bo) {
-            environmental_vars$write_forecasting = TRUE
-            path_forecasting <- paste0(getwd(), "/ex/biooracle/", input$future_bo_dates,"/", input$scenario_bo)
-            
-            for (i in c(1:length(pred.vars_names))) {
-              layer_code <- paste0("BO_",input$scenario_bo, "_", input$future_bo_dates, "_", pred.vars_names[i])
-              pred.vars_files_forecasting  <- c(pred.vars_files_forecasting , load_layers(layer_code), rasterstack = FALSE, datadir = path_forecasting)
-            }
-            environmental_vars$data_forecasting <- pred.vars_files_forecasting
-          } 
         }
-      }
+      } 
       
       if (input$tipodadoabiotico == "Others") {
         path_current <-  paste(getwd(), "/ex/outros/", sep = "")
-        pred.vars_names <- list()
-        environmental_vars$any_selection = FALSE
-        environmental_vars$write_forecasting = FALSE
-        environmental_vars$data_current = NULL
-        environmental_vars$data_forecasting = NULL
+        pred.vars_names <- paste(input$pred_vars_other)
+        pred.vars_files<-list()
         
-        if (!is.null(input$pred_vars_other)) {
-          environmental_vars$any_selection <- TRUE
-          pred.vars_names <- paste(input$pred_vars_other)
-          pred.vars_files<-list()
-          
-          for (i in c(1:length(input$pred_vars_other))){
-            layer <- paste0(path_current, pred.vars_names[i])
-            pred.vars_files <- c(pred.vars_files, layer)
-          }
-          environmental_vars$data_current <- pred.vars_files
+        for (i in c(1:length(input$pred_vars_other))){
+          layer <- paste0(path_current, pred.vars_names[i])
+          pred.vars_files <- c(pred.vars_files, layer)
         }
+        environmental_vars$data_current <- pred.vars_files
       }
       
-      check_selected <<- environmental_vars$any_selection
+      check_selected <- environmental_vars$any_selection
       envir_data <<- environmental_vars$data_current
       write_forecasting <<- environmental_vars$write_forecasting
       envir_data_forecasting <<- environmental_vars$data_forecasing
@@ -1720,44 +1705,44 @@ function(input, output, session) {
       incProgress(2/n, detail = paste0("Calculating corelation..."))
       
       if (!is.null(envir_data) && exists("occur.data.coord") && check_selected == TRUE) {
-        ext <<- extent(ext1, ext2, ext3, ext4)
+        ext <- extent(ext1, ext2, ext3, ext4)
         ext2 <- extent(ext12, ext22, ext32, ext42)
-        predictors <<- stack(envir_data)
+        predictors <- stack(envir_data)
         pred_nf <<- crop(predictors, ext)
         pred_nf2 <<- crop(predictors, ext2)
         
-        if(write_forecasting == TRUE && !is.null(envir_data_forecasting)) {
-      predictors_forecasting <<- stack(envir_data_forecasting)
-      pred_nf_forecasting <<- crop(predictors_forecasting, ext)
-    }
-    
-    presvals <<- raster::extract(pred_nf, occur.data.coord)
-    
-    backgr <- randomPoints(pred_nf, 300)
-    colnames(backgr) <- c("Longitude", "Latitude")
-    absvals <- raster::extract(pred_nf, backgr)
-    
-    if (length(envir_data) > 1) {
-      sdmdata <<- data.frame(cbind(absvals))
-      output$grafico_correlacao <- renderPlot({
-        if (is.null(envir_data) | length(envir_data) <= 1) 
-          return(NULL) 
-        else{
-          pairs(sdmdata, cex = 0.1, fig = TRUE, lower.panel = panel.reg, diag.panel = panel.hist, upper.panel = panel.cor)
-          
-          output$dgbriddadoscorrelacao <- renderDataTable({
-            round(cor(sdmdata), 2)
-          }, options = list(searching = FALSE), rownames = TRUE, colnames = c('Variable' = 1)) 
+        if (write_forecasting == TRUE && !is.null(envir_data_forecasting)) {
+          predictors_forecasting <- stack(envir_data_forecasting)
+          pred_nf_forecasting <<- crop (predictors_forecasting, ext)
         }
-      })
-    }
+        
+        presvals <<- raster::extract(pred_nf, occur.data.coord)
+        
+        backgr <- randomPoints(pred_nf, 300)
+        colnames(backgr) <- c("Longitude", "Latitude")
+        absvals <- raster::extract(pred_nf, backgr)
+        
+        if (length(envir_data) > 1) {
+          sdmdata <- data.frame(cbind(absvals))
+          output$grafico_correlacao <- renderPlot({
+            if (is.null(envir_data) | length(envir_data) <= 1) 
+              return(NULL) 
+            else{
+              pairs(sdmdata, cex = 0.1, fig = TRUE, lower.panel = panel.reg, diag.panel = panel.hist, upper.panel = panel.cor)
+              
+              output$dgbriddadoscorrelacao <- renderDataTable({
+                round(cor(sdmdata), 2)
+              }, options = list(searching = FALSE), rownames = TRUE, colnames = c('Variable' = 1)) 
+            }
+          })
+        }
       }
       incProgress(3/n, detail = paste0("Ploting..."))
     })
   })  
+  
   output$mapaabiotico <- renderPlot({
     input$btnAtualizaSelecaoVariaveis
-    
     if (is.null(envir_data)) 
       return(NULL) else {
         plot(pred_nf)
