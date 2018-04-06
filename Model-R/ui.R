@@ -35,9 +35,6 @@ env_datasource <- c(
   "Upload Dataset" = "Others"
 )
 
-time_scale <- c("current" = "current",
-  "future" = "future",
-  "past" = "past")
 
 resolution <- c(
   "10 arc-minutes" = "10m",
@@ -71,12 +68,10 @@ rcp <- c(
 past_dates_wc <- c("Mid Holocene" = "mid",
   "Last Glacial Maximum" = "lgm")
 
-
 ################################################################################
 header <- dashboardHeader(title = "Model-R v1.25")
 body <- dashboardBody(
   fluidRow(
-    useShinyjs(),
     tags$head(
       tags$link(rel = "stylesheet", type = "text/css", href = "style.css")
     ),
@@ -122,10 +117,11 @@ body <- dashboardBody(
                       status = "primary",
                       solidHeader = TRUE,
                       width = NULL,
-                      selectInput(
-                        "select_project",
-                        "Select project: ",
-                        choices = c("Create new project" = "new_proj", "Open project" = "load_proj")
+                      selectInput("select_project",
+                        label= "Select project: ",
+                        choices = c(
+                          "Create new project" = "new_proj", 
+                          "Open project" = "load_proj")
                       ),
                       conditionalPanel("input.select_project == 'load_proj' ",
                         helpText('Select project: '),
@@ -388,237 +384,166 @@ body <- dashboardBody(
               ),
               tabPanel("Select Predictors",
                 column(width = 5,
-                  tabBox(width = NULL,
-                    tabPanel("Choose Variables",
-                      box(width = NULL,
-                        status = "warning",
-                        actionButton("btnAtualizaSelecaoVariaveis", "Update selected"),
-                        selectInput("tipodadoabiotico", "Variables dataset:", env_datasource),
-                        conditionalPanel("input.tipodadoabiotico == 'BIOORACLE' ",
-                          checkboxGroupInput("forecasting_bo",
-                            label = "Project model to another timescale",
-                            choices = c('Future conditions' = 'future_bo')
-                          ),
-                          conditionalPanel("input.forecasting_bo.includes('future_bo') ",
-                            checkboxGroupInput("pred_vars_bo_future",
-                              label = "Select variables: ",
-                              choices = c(
-                                'Temperature (Max) ' = 'sstmax',
-                                'Temperature (Min) ' = 'sstmin',
-                                'Temperature (Range)' = 'sstrange',
-                                'Temperature (Mean)' = 'sstmean',
-                                'Salinity' = 'salinity'
-                              )
-                            )
-                          ),
-                          conditionalPanel("input.forecasting_bo != 'future_bo' ",
-                            checkboxGroupInput("pred_vars_bo",
-                              label = "Select variables: ",
-                              choices = c(
-                                'Temperature (Max) ' = 'sstmax',
-                                'Temperature (Min) ' = 'sstmin',
-                                'Temperature (Range)' = 'sstrange',
-                                'Temperature (Mean)' = 'sstmean',
-                                'Salinity' = 'salinity',
-                                'Calcite' =   'calcite',
-                                'Nitrate' =  'nitrate',
-                                'pH' = 'ph',
-                                'Silicate' = 'silicate' ,
-                                'Phosphate' = 'phosphate',
-                                'Dissolved mol. oxygen' = 'dissox',
-                                'Chlorophyll (Min)' =  'chlomin',
-                                'Chlorophyll (Max)' =  'chlomax',
-                                'Chlorophyll (Range)' =  'chlorange',
-                                'Chlorophyll(Mean)' =  'chlomean',
-                                'Cloud cover (Mean)' = 'cloudmean',
-                                'Cloud cover (Max)' = 'cloudmax',
-                                'Cloud cover (Min)' =  'cloudmin',
-                                'Diffuse attenuation (Mean)' =  'damean',
-                                'Diffuse attenuation (Min)' =   'damin',
-                                'Diffuse attenuation (Max)' = 'damax',
-                                'Photosynt. Avail. Radiation (Max)' =  'parmax',
-                                'Photosynt. Avail. Radiation (Mean)' =  'parmean'
-                              )
-                            )
-                          )
+                  box(width = NULL,
+                    status = "warning",
+                    actionButton("btnAtualizaSelecaoVariaveis", "Update selected"),
+                    selectInput("tipodadoabiotico", "Variables dataset:", env_datasource),
+                    
+                    conditionalPanel("input.tipodadoabiotico == 'BIOORACLE' ",
+                      checkboxInput('forecasting_bo' , "Project model to another timescale", value = FALSE),
+                      
+                      conditionalPanel("input.forecasting_bo",
+                        radioButtons("future_bo_dates", 
+                          choices = c('2100','2200'),label = NULL, inline=TRUE),
+                        conditionalPanel("input.future_bo_dates.includes('2100')",
+                          radioButtons("scenario_bo", "Scenario",
+                            choices = c("A1B" = "A1B",
+                              "A2" = "A2",
+                              "B1" = "B1"),
+                            inline=TRUE)
                         ),
-                        conditionalPanel("input.tipodadoabiotico == 'CLIMA' ",
-                          selectInput("resolution", "Resolution:", resolution, selected = "10min"),
-                          checkboxInput("check_forecasting_wc",
-                            label = "Project model across timescales",
-                            value = FALSE
-                          ),
-                          conditionalPanel("input.check_forecasting_wc",
-                            radioButtons("forecasting_wc",
-                              label = "",
-                              choices = c(
-                                'Future conditions' = 'future_wc',
-                                'Past conditions' = 'past_wc'
-                              )
-                            )
-                          ),
-                          checkboxGroupInput("pred_vars_wc",
-                            label = "Select variables: ",
-                            choices = c(
-                              '(Bio1) Annual Mean Temperature' = 'bio1',
-                              '(Bio2) Mean Diurnal Range' = 'bio2',
-                              '(Bio3) Isothermality' = 'bio3',
-                              '(Bio4) Temperature Seasonality' = 'bio4',
-                              '(Bio5) Max Temperature of Warmest Month' = 'bio5',
-                              '(Bio6) Min Temperature of Coldest Month' = 'bio6',
-                              '(Bio7) Temperature Annual Range' = 'bio7',
-                              '(Bio8) Mean Temperature of Wettest Quarter' = 'bio8',
-                              '(Bio9) Mean Temperature of Driest Quarter' = 'bio9',
-                              '(Bio10) Mean Temperature of Warmest Quarter' = 'bio10',
-                              '(Bio11) Mean Temperature of Coldest Quarter' = 'bio11',
-                              '(Bio12) Annual Precipitation' = 'bio12',
-                              '(Bio13) Precipitation of Wettest Month' = 'bio13',
-                              '(Bio14) Precipitation of Driest Month' = 'bio14',
-                              '(Bio15) Precipitation Seasonality' = 'bio15',
-                              '(Bio16) Precipitation of Wettest Quarter' = 'bio16',
-                              '(Bio17) Precipitation of Driest Quarter' = 'bio17',
-                              '(Bio18) Precipitation of Warmest Quarter' = 'bio18',
-                              '(Bio19) Precipitation of Coldest Quarter' = 'bio19'
-                            )
-                          )
+                        conditionalPanel("input.future_bo_dates.includes('2200')",
+                          radioButtons( "scenario_bo","Scenario",
+                            choices = c("A1B" = "A1B",
+                              "B1" = "B1"),
+                            inline=TRUE)
                         ),
-                        
-                        conditionalPanel("input.tipodadoabiotico == 'Others' ",
-                          helpText( 'All layers should have the same spatial extent, resolution, origin, and projection'),
-                          helpText(''),
-                          helpText('Accepted extentions: Tagged Image File Format(.tif); Golden Software Grid (.grd); Band interleaved by line (.bil)'),
-                          helpText('Before loading .bil files, make sure that the corresponding .hdr files are placed in the same directory.'),
-                          
-                          if (length(list.files( "ex/outros/", full.names = T) > 0)) {
-                            lista_outros <-list.files("ex/outros/",full.names = F, pattern = ".tif|.bil|.grd")
-                            checkboxGroupInput("pred_vars_other",  "Select rasters: ", choiceNames = c(lista_outros), choiceValues=c(lista_outros))
-                          }
+                        checkboxGroupInput("pred_vars_bo_future","Select variables: ",
+                          choices = c(
+                            'Temperature (Max) ' = 'sstmax',
+                            'Temperature (Min) ' = 'sstmin',
+                            'Temperature (Range)' = 'sstrange',
+                            'Temperature (Mean)' = 'sstmean',
+                            'Salinity' = 'salinity')
+                        )
+                      ),
+                      conditionalPanel("input.forecasting_bo == false ",
+                        checkboxGroupInput("pred_vars_bo", "Select variables: ",
+                          choices = c(
+                            'Temperature (Max) ' = 'sstmax',
+                            'Temperature (Min) ' = 'sstmin',
+                            'Temperature (Range)' = 'sstrange',
+                            'Temperature (Mean)' = 'sstmean',
+                            'Salinity' = 'salinity',
+                            'Calcite' =   'calcite',
+                            'Nitrate' =  'nitrate',
+                            'pH' = 'ph',
+                            'Silicate' = 'silicate' ,
+                            'Phosphate' = 'phosphate',
+                            'Dissolved mol. oxygen' = 'dissox',
+                            'Chlorophyll (Min)' =  'chlomin',
+                            'Chlorophyll (Max)' =  'chlomax',
+                            'Chlorophyll (Range)' =  'chlorange',
+                            'Chlorophyll(Mean)' =  'chlomean',
+                            'Cloud cover (Mean)' = 'cloudmean',
+                            'Cloud cover (Max)' = 'cloudmax',
+                            'Cloud cover (Min)' =  'cloudmin',
+                            'Diffuse attenuation (Mean)' =  'damean',
+                            'Diffuse attenuation (Min)' =   'damin',
+                            'Diffuse attenuation (Max)' = 'damax',
+                            'Photosynt. Avail. Radiation (Max)' =  'parmax',
+                            'Photosynt. Avail. Radiation (Mean)' =  'parmean')
                         )
                       )
                     ),
-                    tabPanel("Forecasting parameters",
-                      conditionalPanel("input.tipodadoabiotico == 'CLIMA' && input.forecasting_wc.includes('future_wc') ",
-                        box(width = NULL,
-                          title ="Future",
-                          radioButtons(
-                            "future_dates_wc", 
-                            label = NULL, 
-                            future_dates_wc
-                          ),
-                          box(width = 12 ,
-                            collapsible = TRUE,
-                            collapsed = TRUE,
-                            title = "Emission Scenarios (RCP)",
-                            radioButtons("rcp_wc", 
-                              rcp, 
-                              label = NULL)
-                          ),
-                          box(width = 12 ,
-                            collapsible = TRUE,
-                            collapsed = TRUE,
-                            title = "General Circulation Models (GCM)",
-                            radioButtons("gcm_future_wc",
-                              gcm_future_wc,
-                              selected = "bc",
-                              label = NULL)
+                    
+                    conditionalPanel("input.tipodadoabiotico == 'CLIMA' ",
+                      selectInput("resolution", "Resolution:", resolution, selected = "10min"),
+                      checkboxInput("forecasting_wc", "Project model across timescales", value = FALSE),
+                      
+                      conditionalPanel("input.forecasting_wc",
+                        radioButtons("wc_forecasting_timescale", label = NULL,
+                          choices = c(
+                            'Future conditions' = 'future',
+                            'Past conditions' = 'past')
+                        )
+                      ),
+                      conditionalPanel("input.forecasting_wc && input.wc_forecasting_timescale == 'future' ",
+                        radioButtons("future_dates_wc",  label = NULL,  future_dates_wc, inline = TRUE),
+                        radioButtons("rcp_wc", "Emission Scenarios (RCP)", rcp),
+                        radioButtons("gcm_future_wc","General Circulation Models (GCM)", gcm_future_wc, selected = "bc")
+                      ),
+                      
+                      conditionalPanel("input.forecasting_wc && input.wc_forecasting_timescale == 'past'",
+                        radioButtons("past_dates_wc", label = NULL , past_dates_wc, inline= TRUE),
+                        
+                        conditionalPanel("input.past_dates_wc == 'mid')",
+                          radioButtons("gcm_past_wc", "General Circulation Models (GCM)",
+                            choices = c(
+                              "CCSM4" = "cc",
+                              "MIROC-ESM" = "mr",
+                              "MPI-ESM-P" = "me",
+                              "BCC-CSM1-1" = "bc",
+                              "CNRM-CM5 " = "cn",
+                              "HadGEM2-CC" = "hg",
+                              "HadGEM2-ES" = "he",
+                              "IPSL-CM5A-LR" = "ip",
+                              "MRI-CGCM3" = "mg")
+                          )
+                        ),
+                        conditionalPanel("input.past_dates_wc == 'lgm' ",
+                          radioButtons("gcm_past_wc","General Circulation Models (GCM)",
+                            choices = c(
+                              "CCSM4" = "cc",
+                              "MIROC-ESM" = "mr",
+                              "MPI-ESM-P" = "me")
                           )
                         )
                       ),
-                      conditionalPanel("input.tipodadoabiotico == 'CLIMA' &&input.forecasting_wc.includes('past_wc')",
-                        box(title="Past",
-                          radioButtons("past_dates_wc", 
-                            label = NULL, 
-                            past_dates_wc),
-                          conditionalPanel("input.past_dates_wc.includes('mid')",
-                            box(width = NULL ,
-                              collapsible = TRUE,
-                              collapsed = TRUE,
-                              title = "General Circulation Models (GCM)",
-                              radioButtons("gcm_past_wc",
-                                choices = c(
-                                  "CCSM4" = "cc",
-                                  "MIROC-ESM" = "mr",
-                                  "MPI-ESM-P" = "me",
-                                  "BCC-CSM1-1" = "bc",
-                                  "CNRM-CM5 " = "cn",
-                                  "HadGEM2-CC" = "hg",
-                                  "HadGEM2-ES" = "he",
-                                  "IPSL-CM5A-LR" = "ip",
-                                  "MRI-CGCM3" = "mg"
-                                ),
-                                label = "")
-                            ),
-                            conditionalPanel("input.past_dates_wc.includes('lgm')",
-                              box(width = NULL ,
-                                collapsible = TRUE,
-                                collapsed = TRUE,
-                                title = "General Circulation Models (GCM)",
-                                radioButtons("gcm_past_wc",
-                                  choices = c(
-                                    "CCSM4" = "cc",
-                                    "MIROC-ESM" = "mr",
-                                    "MPI-ESM-P" = "me"),
-                                  label = "")
-                              )
-                            )
-                          )
-                        ),
-                        
-                     
-                        
-                        conditionalPanel("input.tipodadoabiotico == 'BIOORACLE' && input.forecasting_bo.includes('future_bo')",
-                          radioButtons(
-                            "future_bo_dates", 
-                            choices = c('2100','2200'),
-                            label = NULL
-                          ),
-                          conditionalPanel("input.future_bo_dates.includes('2100')",
-                            box(width = NULL ,
-                              collapsible = TRUE,
-                              collapsed = TRUE,
-                              title = "Scenario",
-                              radioButtons("scenario_bo",
-                                choices = c("A1B" = "A1B",
-                                  "A2" = "A2",
-                                  "B1" = "B1"),
-                                label = NULL)
-                            )
-                          ),
-                          conditionalPanel("input.future_bo_dates.includes('2200')",
-                            box(width = NULL,
-                              collapsible = TRUE,
-                              collapsed = TRUE,
-                              title = "Scenario",
-                              radioButtons( "scenario_bo",  
-                                choices = c(
-                                  "A1B" = "A1B",
-                                  "B1" = "B1"),
-                                label = NULL)
-                            )
-                          )
+                      
+                      checkboxGroupInput("pred_vars_wc", "Select variables: ",
+                        choices = c(
+                          '(Bio1) Annual Mean Temperature' = 'bio1',
+                          '(Bio2) Mean Diurnal Range' = 'bio2',
+                          '(Bio3) Isothermality' = 'bio3',
+                          '(Bio4) Temperature Seasonality' = 'bio4',
+                          '(Bio5) Max Temperature of Warmest Month' = 'bio5',
+                          '(Bio6) Min Temperature of Coldest Month' = 'bio6',
+                          '(Bio7) Temperature Annual Range' = 'bio7',
+                          '(Bio8) Mean Temperature of Wettest Quarter' = 'bio8',
+                          '(Bio9) Mean Temperature of Driest Quarter' = 'bio9',
+                          '(Bio10) Mean Temperature of Warmest Quarter' = 'bio10',
+                          '(Bio11) Mean Temperature of Coldest Quarter' = 'bio11',
+                          '(Bio12) Annual Precipitation' = 'bio12',
+                          '(Bio13) Precipitation of Wettest Month' = 'bio13',
+                          '(Bio14) Precipitation of Driest Month' = 'bio14',
+                          '(Bio15) Precipitation Seasonality' = 'bio15',
+                          '(Bio16) Precipitation of Wettest Quarter' = 'bio16',
+                          '(Bio17) Precipitation of Driest Quarter' = 'bio17',
+                          '(Bio18) Precipitation of Warmest Quarter' = 'bio18',
+                          '(Bio19) Precipitation of Coldest Quarter' = 'bio19'
                         )
-                        
-                        
                       )
+                    ),
+                    
+                    conditionalPanel("input.tipodadoabiotico == 'Others' ",
+                      helpText('All layers should have the same spatial extent, resolution, origin, and projection'),
+                      helpText(''),
+                      helpText('Before loading multi-files extentions, make sure that all corresponding files are placed in the same directory.'),
+                      lista_outros <-list.files("ex/outros/",full.names = F, pattern = ".tif|.bil|.grd"),
+                      if (length(list.files( "ex/outros/", full.names = T) > 0)) {
+                        checkboxGroupInput("pred_vars_other",  "Select rasters: ", choiceNames = c(lista_outros), choiceValues=c(lista_outros))
+                      }
                     )
-                  )
+                  
+                    )
                 ),
+                
                 column(width = 7,
                   tabBox(width = NULL,
                     tabPanel("Check correlation",
                       plotOutput(outputId = "grafico_correlacao", width = "100%", height="400px"),
                       dataTableOutput('dgbriddadoscorrelacao')
                     ),
-                    tabPanel(
-                      "View raster layers",
+                    tabPanel("View raster layers",
                       plotOutput(outputId = "mapaabiotico", height = "400px")
                     )
                   )
                 )
-              )# SELECT PRED
+              )
+              
+              
             )
-            
-            
           )
         ),
         
