@@ -42,7 +42,8 @@ ipak(c("shinydashboard",
 jdk_version <- list.files("/Library/Java/JavaVirtualMachines/")
 if (length(jdk_version) !=0) {
   dyn.load(paste0("/Library/Java/JavaVirtualMachines/", jdk_version, "/Contents/Home/lib/server/libjvm.dylib"))
-} else {
+  library("rJava")
+}else{
   library("rJava")
 }
 
@@ -601,7 +602,7 @@ function(input, output, session) {
               writeRaster(x = bc_cont_proj, filename = paste0("./www/", projeto,
                 "/proj/pre_", i, "_bc_con_proj", ".tif"), overwrite = T)
             }
-            if (write.future == T) {
+            if (write_forecasting == T) {
               writeRaster(x = bc_future, filename = paste0("./www/", projeto,
                 "/futuro/fut_", i, "_bc_con", ".tif"), overwrite = T)
               png(filename = paste0("./www/", projeto, "/jpg/fut_", i, "_bc_con",
@@ -621,7 +622,7 @@ function(input, output, session) {
               writeRaster(x = do_cont_proj, filename = paste0("./www/", projeto,
                 "/proj/pre_", i, "_do_con_proj", ".tif"), overwrite = T)
             }
-            if (write.future == T) {
+            if (write_forecasting == T) {
               writeRaster(x = do_future, filename = paste0("./www/", projeto,
                 "/futuro/fut_", i, "_do_con", ".tif"), overwrite = T)
               png(filename = paste0("./www/", projeto, "/jpg/fut_", i, "_do_con",
@@ -641,7 +642,7 @@ function(input, output, session) {
               writeRaster(x = mx_cont_proj, filename = paste0("./www/", projeto,
                 "/proj/pre_", i, "_mx_con_proj", ".tif"), overwrite = T)
             }
-            if (write.future == T) {
+            if (write_forecasting == T) {
               writeRaster(x = mx_future, filename = paste0("./www/", projeto,
                 "/futuro/fut_", i, "_mx_con", ".tif"), overwrite = T)
               png(filename = paste0("./www/", projeto, "/jpg/fut_", i, "_mx_con",
@@ -661,7 +662,7 @@ function(input, output, session) {
               writeRaster(x = glm_cont_proj, filename = paste0("./www/",
                 projeto, "/proj/pre_", i, "_glm_con_proj", ".tif"), overwrite = T)
             }
-            if (write.future == T) {
+            if (write_forecasting == T) {
               writeRaster(x = glm_future, filename = paste0("./www/", projeto,
                 "/futuro/fut_", i, "_glm_con", ".tif"), overwrite = T)
               png(filename = paste0("./www/", projeto, "/jpg/fut_", i, "_glm_con",
@@ -681,7 +682,7 @@ function(input, output, session) {
               writeRaster(x = rf1_cont_proj, filename = paste0("./www/",
                 projeto, "/proj/pre_", i, "_rf_con_proj", ".tif"), overwrite = T)
             }
-            if (write.future == T) {
+            if (write_forecasting == T) {
               writeRaster(x = rf1_future, filename = paste0("./www/", projeto,
                 "/futuro/fut_", i, "_rf1_con", ".tif"), overwrite = T)
               png(filename = paste0("./www/", projeto, "/jpg/fut_", i, "_rf1_con",
@@ -701,7 +702,7 @@ function(input, output, session) {
               writeRaster(x = svm_cont_proj, filename = paste0("./www/",
                 projeto, "/proj/pre_", i, "_svm_con_proj", ".tif"), overwrite = T)
             }
-            if (write.future == T) {
+            if (write_forecasting == T) {
               writeRaster(x = svm_future, filename = paste0("./www/", projeto,
                 "/futuro/fut_", i, "_svm_con", ".tif"), overwrite = T)
               png(filename = paste0("./www/", projeto, "/jpg/fut_", i, "_svm_con",
@@ -721,7 +722,7 @@ function(input, output, session) {
               writeRaster(x = ma_cont_proj, filename = paste0("./www/", projeto,
                 "/proj/pre_", i, "_ma_con_proj", ".tif"), overwrite = T)
             }
-            if (write.future == T) {
+            if (write_forecasting == T) {
               writeRaster(x = ma_future, filename = paste0("./www/", projeto,
                 "/futuro/fut_", i, "_ma_con", ".tif"), overwrite = T)
               png(filename = paste0("./www/", projeto, "/jpg/fut_", i, "_ma_con",
@@ -742,7 +743,7 @@ function(input, output, session) {
               ".jpg"))
             plot(bc_bin, main = paste("Bioclim - Bin ", i))
             dev.off()
-            if (write.future == T) {
+            if (write_forecasting == T) {
               writeRaster(x = bc_future_bin, filename = paste0("./www/",
                 projeto, "/futuro/fut_", i, "_bc_bin", ".tif"), overwrite = T)
             }
@@ -754,7 +755,7 @@ function(input, output, session) {
               ".jpg"))
             plot(do_bin, main = paste("Domain - Bin ", i))
             dev.off()
-            if (write.future == T) {
+            if (write_forecasting == T) {
               writeRaster(x = do_future_bin, filename = paste0("./www/",
                 projeto, "/futuro/fut_", i, "_do_bin", ".tif"), overwrite = T)
             }
@@ -766,7 +767,7 @@ function(input, output, session) {
               ".jpg"))
             plot(mx_bin, main = paste("Maxent - Bin ", i))
             dev.off()
-            if (write.future == T) {
+            if (write_forecasting == T) {
               writeRaster(x = mx_future_bin, filename = paste0("./www/",
                 projeto, "/futuro/fut_", i, "_mx_bin", ".tif"), overwrite = T)
             }
@@ -778,7 +779,7 @@ function(input, output, session) {
               ".jpg"))
             plot(glm_bin, main = paste("GLM - Bin ", i))
             dev.off()
-            if (write.future == T) {
+            if (write_forecasting == T) {
               writeRaster(x = glm_future_bin, filename = paste0("./www/",
                 projeto, "/futuro/fut_", i, "_glm_bin", ".tif"), overwrite = T)
             }
@@ -790,7 +791,7 @@ function(input, output, session) {
               ".jpg"))
             plot(rf1_bin, main = paste("RF - Bin ", i))
             dev.off()
-            if (write.future == T) {
+            if (write_forecasting == T) {
               writeRaster(x = rf1_future_bin, filename = paste0("./www/",
                 projeto, "/futuro/fut_", i, "_rf_bin", ".tif"), overwrite = T)
             }
@@ -802,7 +803,7 @@ function(input, output, session) {
               ".jpg"))
             plot(svm_bin, main = paste("SVM - Bin ", i))
             dev.off()
-            if (write.future == T) {
+            if (write_forecasting == T) {
               writeRaster(x = svm_future_bin, filename = paste0("./www/",
                 projeto, "/futuro/fut_", i, "_svm_bin", ".tif"), overwrite = T)
             }
@@ -814,7 +815,7 @@ function(input, output, session) {
               ".jpg"))
             plot(ma_bin, main = paste("Mahalanobis - Bin ", i))
             dev.off()
-            if (write.future == T) {
+            if (write_forecasting == T) {
               writeRaster(x = ma_future_bin, filename = paste0("./www/",
                 projeto, "/futuro/fut_", i, "_ma_bin", ".tif"), overwrite = T)
             }
@@ -827,7 +828,7 @@ function(input, output, session) {
           if (Bioclim == T) {
             writeRaster(x = bc_mult, filename = paste0("./www/", projeto,
               "/models/pre_", i, "_bc_mult", ".tif"), overwrite = T)
-            if (write.future == T) {
+            if (write_forecasting == T) {
               writeRaster(x = bc_future_mult, filename = paste0("./www/",
                 projeto, "/futuro/fut_", i, "_bc_mult", ".tif"), overwrite = T)
             }
@@ -835,7 +836,7 @@ function(input, output, session) {
           if (Domain == T) {
             writeRaster(x = do_mult, filename = paste0("./www/", projeto,
               "/models/pre_", i, "_do_mult", ".tif"), overwrite = T)
-            if (write.future == T) {
+            if (write_forecasting == T) {
               writeRaster(x = do_future_mult, filename = paste0("./www/",
                 projeto, "/futuro/fut_", i, "_do_mult", ".tif"), overwrite = T)
             }
@@ -843,7 +844,7 @@ function(input, output, session) {
           if (maxent == T) {
             writeRaster(x = mx_mult, filename = paste0("./www/", projeto,
               "/models/pre_", i, "_mx_mult", ".tif"), overwrite = T)
-            if (write.future == T) {
+            if (write_forecasting == T) {
               writeRaster(x = mx_future_mult, filename = paste0("./www/",
                 projeto, "/futuro/fut_", i, "_mx_mult", ".tif"), overwrite = T)
             }
@@ -851,7 +852,7 @@ function(input, output, session) {
           if (GLM == T) {
             writeRaster(x = glm_mult, filename = paste0("./www/", projeto,
               "/models/pre_", i, "_glm_mult", ".tif"), overwrite = T)
-            if (write.future == T) {
+            if (write_forecasting == T) {
               writeRaster(x = glm_future_mult, filename = paste0("./www/",
                 projeto, "/futuro/fut_", i, "_glm_mult", ".tif"), overwrite = T)
             }
@@ -859,7 +860,7 @@ function(input, output, session) {
           if (RF == T) {
             writeRaster(x = rf1_mult, filename = paste0("./www/", projeto,
               "/models/pre_", i, "_rf_mult", ".tif"), overwrite = T)
-            if (write.future == T) {
+            if (write_forecasting == T) {
               writeRaster(x = rf1_future_mult, filename = paste0("./www/",
                 projeto, "/futuro/fut_", i, "_rf_mult", ".tif"), overwrite = T)
             }
@@ -867,7 +868,7 @@ function(input, output, session) {
           if (SVM == T) {
             writeRaster(x = svm_mult, filename = paste0("./www/", projeto,
               "/models/pre_", i, "_svm_mult", ".tif"), overwrite = T)
-            if (write.future == T) {
+            if (write_forecasting == T) {
               writeRaster(x = svm_future_mult, filename = paste0("./www/",
                 projeto, "/futuro/fut_", i, "_svm_mult", ".tif"), overwrite = T)
             }
@@ -875,7 +876,7 @@ function(input, output, session) {
           if (Mahal == T && condicao_Mahal == TRUE) {
             writeRaster(x = ma_mult, filename = paste0("./www/", projeto,
               "/models/pre_", i, "_ma_mult", ".tif"), overwrite = T)
-            if (write.future == T) {
+            if (write_forecasting == T) {
               writeRaster(x = ma_future_mult, filename = paste0("./www/",
                 projeto, "/models/fut_", i, "_ma_mult", ".tif"), overwrite = T)
             }
@@ -1300,10 +1301,10 @@ function(input, output, session) {
     library(raster)
     
     write.projecao = FALSE
-    
-    if (write_forecasting == TRUE && !is.null(envir_data_forecasting)) {
-      write_future = TRUE
-    }
+    # 
+    #  if (write_forecasting == TRUE && !is.null(envir_data_forecasting)) {
+    #   write_forecasting = TRUE
+    # }
     
     if (input$project_ext == T) {
       write.projecao = T
@@ -1311,7 +1312,7 @@ function(input, output, session) {
     
     dismo.mod("", occur.data.coord, pred_nf, pred_nf2, input$MAXENT, input$BIOCLIM, input$GLM,
       input$RF, input$SVM, input$MAHALANOBIS, input$DOMAIN, input$SVM2, input$edtnumgrupo,
-      input$edtnumpontos, 123, T, T, T, F, F, input$edtTSS, F, pred_nf_forecasting, write_future, write.projecao)
+      input$edtnumpontos, 123, T, T, T, F, F, input$edtTSS, F, pred_nf_forecasting, write_forecasting, write.projecao)
     
     progress$set(message = "Saving data...", value = 0)
     write.csv(occur.data.coord, file = paste0("www/", projeto, "/csv/Occurence_data.csv"))
@@ -1549,110 +1550,114 @@ function(input, output, session) {
         path_current <- paste0(getwd(), "/ex/clima/current/", input$resolution)
         path_future <- paste0(getwd(), "/ex/clima/", input$future_wc_dates, "/",input$resolution, "/", input$gcm_future_wc, "/", input$rcp_wc)
         
-        if(input$past_wc_dates == 'mid'){
-          gcm <- input$gcm_past_wc_mid
-        }
-        if(input$past_wc_dates == 'lgm'){
-          gcm <- input$gcm_past_wc_lgm
-        }
-        
-        path_past <- paste0(getwd(), "/ex/clima/", input$past_wc_dates, "/",input$resolution, "/", gcm)
-        
-       
-          pred.vars_names <- paste(input$pred_vars_wc)
-          pred.vars_files<-list()
-          checkfiles <- list()
-          for (i in c(1:length(input$pred_vars_wc))) {
-            layer <- paste0(path_current, "/", pred.vars_names[i], ".bil") 
-            pred.vars_files <- c(pred.vars_files, layer)
-            checkfiles <- c(checkfiles, file.exists(layer))
-          } 
+        if(input$wc_forecasting_timescale  == 'past'){
+          if(input$past_wc_dates == 'mid'){
+            gcm <- input$gcm_past_wc_mid
+          }
+          if(input$past_wc_dates == 'lgm'){
+            gcm <- input$gcm_past_wc_lgm
+          }
+          path_past <- paste0(getwd(), "/ex/clima/", input$past_wc_dates, "/",input$resolution, "/", gcm)
           
-          if(input$forecasting_wc) {
-            environmental_vars$write_forecasting = TRUE
-            
-            if (input$wc_forecasting_timescale  == 'future') {
-              year <- sub(".*(\\d+{2}).*$", "\\1", input$future_dates_wc)
-              checkfiles_future <- list()
-              pred.vars_files_forecasting <- list()
-              for (i in c(1:length(input$pred_vars_wc))) {
-                nbi <- sub("bio", "" , pred.vars_names[i])
-                layer <- paste0(path_future, "/", input$gcm_future_wc, input$rcp_wc, "bi", year, nbi, ".tif")
-                pred.vars_files_forecasting <- c(pred.vars_files_forecasting, layer) 
-                checkfiles_future <- c(checkfiles_future, file.exists(layer))
-              }  
-              environmental_vars$data_forecasting <- pred.vars_files_forecasting
-              if (any(checkfiles_future != T)) {
-                zip <- paste0(input$gcm_future_wc, input$rcp_wc, "bi", year, ".zip")
-                if (input$resolution == "2-5m") {
-                  url <- paste0( "http://biogeo.ucdavis.edu/data/climate/cmip5/2_5m", "/", zip)
-                }
-                if (input$resolution != "2-5m") {
-                  url <- paste0("http://biogeo.ucdavis.edu/data/climate/cmip5/", input$resolution, "/", zip)
-                }
-                download.file(url,zip, mode = "wb")
-                unzip(zip, exdir = path_future)
-                unlink(zip)
+        }
+        
+        
+        
+        
+        pred.vars_names <- paste(input$pred_vars_wc)
+        pred.vars_files<-list()
+        checkfiles <- list()
+        for (i in c(1:length(input$pred_vars_wc))) {
+          layer <- paste0(path_current, "/", pred.vars_names[i], ".bil") 
+          pred.vars_files <- c(pred.vars_files, layer)
+          checkfiles <- c(checkfiles, file.exists(layer))
+        } 
+        
+        if(input$forecasting_wc) {
+          environmental_vars$write_forecasting = TRUE
+          
+          if (input$wc_forecasting_timescale  == 'future') {
+            year <- sub(".*(\\d+{2}).*$", "\\1", input$future_dates_wc)
+            checkfiles_future <- list()
+            pred.vars_files_forecasting <- list()
+            for (i in c(1:length(input$pred_vars_wc))) {
+              nbi <- sub("bio", "" , pred.vars_names[i])
+              layer <- paste0(path_future, "/", input$gcm_future_wc, input$rcp_wc, "bi", year, nbi, ".tif")
+              pred.vars_files_forecasting <- c(pred.vars_files_forecasting, layer) 
+              checkfiles_future <- c(checkfiles_future, file.exists(layer))
+            }  
+            environmental_vars$data_forecasting <- pred.vars_files_forecasting
+            if (any(checkfiles_future != T)) {
+              zip <- paste0(input$gcm_future_wc, input$rcp_wc, "bi", year, ".zip")
+              if (input$resolution == "2-5m") {
+                url <- paste0( "http://biogeo.ucdavis.edu/data/climate/cmip5/2_5m", "/", zip)
               }
-            }
-            
-            if (input$wc_forecasting_timescale  == 'past') {
-              checkfiles_past <- list()
-              pred.vars_files_forecasting <- list()
-              for (i in c(1:length(input$pred_vars_wc))){
-                nbi <- sub("bio", "" ,  pred_layer_wc[i])
-                layer <- paste0(path_past, "/", input$gcm_past_wc, input$past_dates_wc, "bi", nbi, ".tif")
-                pred.vars_files_forecasting <- c(pred.vars_files_forecasting, layer) 
-                checkfiles_past <- c(checkfiles_past, file.exists(layer))
+              if (input$resolution != "2-5m") {
+                url <- paste0("http://biogeo.ucdavis.edu/data/climate/cmip5/", input$resolution, "/", zip)
               }
-              environmental_vars$data_forecasting <- pred.vars_files_forecasting
-              if (any(checkfiles_past != T)){
-                url <- paste0( "http://biogeo.ucdavis.edu/data/climate/cmip5/",input$gcm_past_wc,"/",zip)
-                zip <- paste0(input$gcm_past_wc, input$past_dates_wc, "bi_", input$resolution, ".zip")
-                download.file(url, zip, mode = "wb")
-                unzip(zip, exdir = path_past)
-                unlink(zip)
-              }
+              download.file(url,zip, mode = "wb")
+              unzip(zip, exdir = path_future)
+              unlink(zip)
             }
           }
-          environmental_vars$data_current <- pred.vars_files
-          if (any(checkfiles != T)) {
-            if (input$resolution != "30s") {
-              zip_current <- paste0("bio_", input$resolution, "_bil.zip")
-              url <- paste0("http://biogeo.ucdavis.edu/data/climate/worldclim/1_4/grid/cur/", zip_current)
-              download.file(url, zip_current, mode = "wb")
-              unzip(zip_current, exdir = path_current)
-              unlink(zip_current)
+          
+          if (input$wc_forecasting_timescale  == 'past') {
+            checkfiles_past <- list()
+            pred.vars_files_forecasting <- list()
+            for (i in c(1:length(input$pred_vars_wc))){
+              nbi <- sub("bio", "" ,  pred_layer_wc[i])
+              layer <- paste0(path_past, "/", input$gcm_past_wc, input$past_dates_wc, "bi", nbi, ".tif")
+              pred.vars_files_forecasting <- c(pred.vars_files_forecasting, layer) 
+              checkfiles_past <- c(checkfiles_past, file.exists(layer))
             }
-            if (input$resolution == "30s") {
-              group1 <- c('bio1', 'bio2', 'bio3','bio4','bio5','bio6','bio7', 'bio8','bio9')
-              group2 <- c('bio10', 'bio11', 'bio12','bio13','bio14','bio15','bio16','bio17', 'bio18','bio19')
-              
-              if (any(group1 %in% input$pred_vars_wc)) {
-                download.file("http://biogeo.ucdavis.edu/data/climate/worldclim/1_4/grid/cur/bio1-9_30s_bil.zip", 
-                  "bio_30s1.zip", mode = "wb")
-                unzip("bio_30s1.zip", exdir = path_current)
-                unlink("bio_30s1.zip")
-                files <- paste0(path_current, "/", list.files(path_current))
-                file.rename(from = files, to = sub(
-                  pattern = "bio_", replacement = "bio",
-                  files
-                ))
-              }
-              if (any(group2 %in% input$pred_vars_wc)) {
-                download.file("http://biogeo.ucdavis.edu/data/climate/worldclim/1_4/grid/cur/bio10-19_30s_bil.zip", 
-                  "bio_30s2.zip", mode = "wb")
-                unzip("bio_30s2.zip", exdir = path_current)
-                unlink("bio_30s2.zip")
-                files <- paste0(path_current, "/", list.files(path_current))
-                file.rename(from = files, to = sub(
-                  pattern = "bio_", replacement = "bio",
-                  files
-                ))
-              }
+            environmental_vars$data_forecasting <- pred.vars_files_forecasting
+            if (any(checkfiles_past != T)){
+              url <- paste0( "http://biogeo.ucdavis.edu/data/climate/cmip5/",input$gcm_past_wc,"/",zip)
+              zip <- paste0(input$gcm_past_wc, input$past_dates_wc, "bi_", input$resolution, ".zip")
+              download.file(url, zip, mode = "wb")
+              unzip(zip, exdir = path_past)
+              unlink(zip)
             }
           }
-      
+        }
+        environmental_vars$data_current <- pred.vars_files
+        if (any(checkfiles != T)) {
+          if (input$resolution != "30s") {
+            zip_current <- paste0("bio_", input$resolution, "_bil.zip")
+            url <- paste0("http://biogeo.ucdavis.edu/data/climate/worldclim/1_4/grid/cur/", zip_current)
+            download.file(url, zip_current, mode = "wb")
+            unzip(zip_current, exdir = path_current)
+            unlink(zip_current)
+          }
+          if (input$resolution == "30s") {
+            group1 <- c('bio1', 'bio2', 'bio3','bio4','bio5','bio6','bio7', 'bio8','bio9')
+            group2 <- c('bio10', 'bio11', 'bio12','bio13','bio14','bio15','bio16','bio17', 'bio18','bio19')
+            
+            if (any(group1 %in% input$pred_vars_wc)) {
+              download.file("http://biogeo.ucdavis.edu/data/climate/worldclim/1_4/grid/cur/bio1-9_30s_bil.zip", 
+                "bio_30s1.zip", mode = "wb")
+              unzip("bio_30s1.zip", exdir = path_current)
+              unlink("bio_30s1.zip")
+              files <- paste0(path_current, "/", list.files(path_current))
+              file.rename(from = files, to = sub(
+                pattern = "bio_", replacement = "bio",
+                files
+              ))
+            }
+            if (any(group2 %in% input$pred_vars_wc)) {
+              download.file("http://biogeo.ucdavis.edu/data/climate/worldclim/1_4/grid/cur/bio10-19_30s_bil.zip", 
+                "bio_30s2.zip", mode = "wb")
+              unzip("bio_30s2.zip", exdir = path_current)
+              unlink("bio_30s2.zip")
+              files <- paste0(path_current, "/", list.files(path_current))
+              file.rename(from = files, to = sub(
+                pattern = "bio_", replacement = "bio",
+                files
+              ))
+            }
+          }
+        }
+        
         
       }
       
