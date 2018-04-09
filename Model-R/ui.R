@@ -35,7 +35,6 @@ env_datasource <- c(
   "Upload Dataset" = "Others"
 )
 
-
 resolution <- c(
   "10 arc-minutes" = "10m",
   "5 arc-minutes" = "5m",
@@ -44,7 +43,7 @@ resolution <- c(
 )
 wc_forecasting_timescale <- c( 'Future conditions' = 'future',
   'Past conditions' = 'past')
-  
+
 future_dates_wc <- c("2050" = "2050",
   "2070" = "2070")
 
@@ -77,26 +76,20 @@ gcm_past_wc_lgm<-c(
   "CCSM4" = "cc",
   "MIROC-ESM" = "mr",
   "MPI-ESM-P" = "me")
-  
+
 rcp <- c(
   "rcp26" = "26",
   "rcp45" = "45",
   "rcp60" = "60",
   "rcp85" = "85"
 )
-past_dates_wc <- c("Mid Holocene" = "mid",
-  "Last Glacial Maximum" = "lgm")
+past_dates_wc <- c("Mid Holocene" = 'mid',
+  "Last Glacial Maximum" = 'lgm')
 
 future_bo_dates<-c("2100"='2100',
   "2200"='2200'
 )
 
-scenario_bo_2100<- c("A1B" = "A1B",
-  "A2" = "A2",
-  "B1" = "B1")
-
-scenario_bo_2200<- c("A1B" = "A1B",
-      "B1" = "B1")
 
 ################################################################################
 header <- dashboardHeader(title = "Model-R v1.25")
@@ -412,31 +405,60 @@ body <- dashboardBody(
                   )
                 )
               ),
+              
               tabPanel("Select Predictors",
                 column(width = 5,
                   box(width = NULL,
                     status = "warning",
-                    actionButton("btnAtualizaSelecaoVariaveis", "Update selected"),
-                    selectInput("tipodadoabiotico", "Variables dataset:", env_datasource),
+                    actionButton("btnAtualizaSelecaoVariaveis", 
+                      "Update selected"),
+                    selectInput("tipodadoabiotico", "Variables dataset:", env_datasource, selected='CLIMA'),
+                    
+                    conditionalPanel("input.tipodadoabiotico == 'Others' ",
+                      helpText('All layers should have the same spatial extent, resolution, origin, and projection'),
+                      helpText(''),
+                      helpText('Before loading multi-files extentions, make sure that all corresponding files are placed in the same directory.'),
+                      if (length(list.files("ex/outros/",full.names=T,pattern=c('.*'))>0)){
+                        lista_outros <-list.files("ex/outros/",full.names = F, pattern = ".tif|.bil|.grd")
+                        checkboxGroupInput("pred_vars_other",  "Select rasters: ", choiceNames = c(lista_outros), choiceValues=c(lista_outros))
+                      }
+                    ),
                     
                     conditionalPanel("input.tipodadoabiotico == 'BIOORACLE' ",
-                      checkboxInput('forecasting_bo' , "Project model to another timescale", value = FALSE),
+                      selectInput('forecasting_bo', 
+                        "Project model across timescales", 
+                        c("Future" = 'future_bo',
+                          "None" = 'current_bo'),
+                        selected = 'current_bo'),
                       
-                      conditionalPanel("input.forecasting_bo",
+                      conditionalPanel("input.forecasting_bo == 'future_bo'",
                         box(width=NULL,
                           collapsible = T,
                           collapsed = T,
                           title = "Forcasting parameters",
+                          selectInput("future_bo_dates", 
+                            "Choose dates", 
+                            future_bo_dates, 
+                            selected='2100'),
                           
-                          radioButtons("future_bo_dates", future_bo_dates , label = NULL, inline = TRUE),
                           conditionalPanel("input.future_bo_dates == '2100'",
-                            radioButtons("scenario_bo_2100", "Scenario", scenario_bo_2100, inline=TRUE)
+                            selectInput("scenario_bo_2100", 
+                              "Scenario", 
+                              choices = c("A1B", "A2","B1"),
+                              selected='A1B'
+                            )
                           ),
+                          
                           conditionalPanel("input.future_bo_dates == '2200'",
-                            radioButtons("scenario_bo_2200", "Scenario", scenario_bo_2200, inline=TRUE)
+                            selectInput("scenario_bo_2200", 
+                              "Scenario", 
+                              choices = c("A1B","B1"),
+                              selected='A1B'
+                            )
                           )
                         ),
-                        checkboxGroupInput("pred_vars_bo_future","Select variables: ",
+                        checkboxGroupInput("pred_vars_bo_fut",
+                          "Select variables: ",
                           choices = c(
                             'Temperature (Max) ' = 'sstmax',
                             'Temperature (Min) ' = 'sstmin',
@@ -445,7 +467,7 @@ body <- dashboardBody(
                             'Salinity' = 'salinity')
                         )
                       ),
-                      conditionalPanel("input.forecasting_bo == false ",
+                      conditionalPanel("input.forecasting_bo == 'current_bo'",
                         checkboxGroupInput("pred_vars_bo", "Select variables: ",
                           choices = c(
                             'Temperature (Max) ' = 'sstmax',
@@ -477,30 +499,42 @@ body <- dashboardBody(
                     
                     conditionalPanel("input.tipodadoabiotico == 'CLIMA' ",
                       selectInput("resolution", "Resolution:", resolution, selected = "10min"),
+                      selectInput("forecasting_wc", 
+                        "Project model across timescales", 
+                        c("Future" = 'future_wc',
+                          "Past" = 'past_wc',
+                          "None" = 'current_wc'),
+                        selected = 'current_wc'),
                       
-                      checkboxInput("forecasting_wc", "Project model across timescales", value = FALSE),
-                      conditionalPanel("input.forecasting_wc",
-                       
+                      conditionalPanel("input.forecasting_wc != 'current_wc'",
                         box(width=NULL,
                           collapsible = T,
                           collapsed = T,
-                          title = "Forcasting parameters",
-                          radioButtons("wc_forecasting_timescale", "Timescale", wc_forecasting_timescale),
-                          conditionalPanel("input.wc_forecasting_timescale == 'future' ",
-                            radioButtons("future_dates_wc",  "Choose period: ", future_dates_wc, inline = TRUE),
-                            radioButtons("rcp_wc", "Emission Scenarios (RCP)", rcp),
-                            radioButtons("gcm_future_wc","General Circulation Models (GCM)", gcm_future_wc, selected = "bc")
+                          title = "Forecasting parameters",
+                         
+                           conditionalPanel("input.forecasting_wc == 'future_wc' ",
+                            selectInput("future_dates_wc",  "Choose period: ", future_dates_wc),
+                            selectInput("rcp_wc", "Emission Scenarios (RCP)", c(
+                              "rcp26" = "26",
+                              "rcp45" = "45",
+                              "rcp60" = "60",
+                              "rcp85" = "85"
+                            )),
+                            selectInput("gcm_future_wc","General Circulation Models (GCM)", gcm_future_wc, selected = "bc")
                           ),
-                          conditionalPanel("input.wc_forecasting_timescale == 'past'",
-                            radioButtons("past_dates_wc","Choose period: " , past_dates_wc, inline= TRUE),
-                            conditionalPanel("input.past_dates_wc == 'mid')",
-                              radioButtons("gcm_past_wc_mid", "General Circulation Models (GCM)", gcm_past_wc_mid)
+                          
+                          conditionalPanel("input.forecasting_wc == 'past_wc'",
+                            selectInput("past_dates_wc","Choose period: " , past_dates_wc, selected='mid'),
+                            conditionalPanel("input.past_dates_wc == 'mid'",
+                              selectInput("gcm_past_wc_mid", "General Circulation Models (GCM)", gcm_past_wc_mid)
                             ),
                             conditionalPanel("input.past_dates_wc == 'lgm' ",
-                              radioButtons("gcm_past_wc_lgm","General Circulation Models (GCM)", gcm_past_wc_lgm)
+                              selectInput("gcm_past_wc_lgm","General Circulation Models (GCM)", gcm_past_wc_lgm)
                             )
                           )
+                          
                         )
+                        
                       ),
                       
                       checkboxGroupInput("pred_vars_wc", "Select variables: ",
@@ -526,16 +560,6 @@ body <- dashboardBody(
                           '(Bio19) Precipitation of Coldest Quarter' = 'bio19'
                         )
                       )
-                    ),
-                    
-                    conditionalPanel("input.tipodadoabiotico == 'Others' ",
-                      helpText('All layers should have the same spatial extent, resolution, origin, and projection'),
-                      helpText(''),
-                      helpText('Before loading multi-files extentions, make sure that all corresponding files are placed in the same directory.'),
-                      lista_outros <-list.files("ex/outros/",full.names = F, pattern = ".tif|.bil|.grd"),
-                      if (length(list.files( "ex/outros/", full.names = T) > 0)) {
-                        checkboxGroupInput("pred_vars_other",  "Select rasters: ", choiceNames = c(lista_outros), choiceValues=c(lista_outros))
-                      }
                     )
                   )
                 ),
@@ -758,10 +782,9 @@ body <- dashboardBody(
           )
         )
         ########################################################################
-        
-      ) # tabBox
-    ) # column
-  ) # fluidrow
+      ) 
+    ) 
+  ) 
 )#Body
 
 dashboardPage(header,
