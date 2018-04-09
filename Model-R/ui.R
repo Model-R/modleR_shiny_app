@@ -625,7 +625,7 @@ body <- dashboardBody(
                   "Pseudo-absences:",
                   min = 100,
                   max = 2000,
-                  value = 300,
+                  value = 1000,
                   step = 100
                 ),
                 sliderInput(
