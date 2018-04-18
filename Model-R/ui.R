@@ -303,283 +303,287 @@ body <- dashboardBody(
         
         ########################################################################
         tabPanel("Environmental data",
-          column(width = 12,
-            tabBox(side = "left",
-              title = "",
-              width = NULL,
-              height = "600px",
-              selected = "Modeling extent", 
-              
-              tabPanel("Modeling extent",
-                tabBox(side = "right",
-                  title = "" ,
-                  width = NULL,
-                  height = "600px",
-                  selected = "Study area extent", 
-                  
-                  tabPanel("Study area extent",
-                    box(width = 8,
-                      solidHeader = TRUE,
-                      leafletOutput('mapapontosextend', height = 500)
-                    ),
-                    box(width = 4,
-                      solidHeader = TRUE,
-                      box(width = NULL,
-                        status = "warning",
-                        numericInput(
-                          "edtextend1",
-                          "Longitude left:",
-                          min = -180,
-                          max = 180,
-                          value = -90,
-                          step = 1
-                        ),
-                        numericInput(
-                          "edtextend2",
-                          "Longitude right:",
-                          min = -180,
-                          max = 180,
-                          value = -32,
-                          step = 1
-                        ),
-                        numericInput(
-                          "edtextend4",
-                          "Latitude higher:",
-                          min = -90,
-                          max = 90,
-                          value = 23,
-                          step = 1
-                        ),
-                        numericInput(
-                          "edtextend3",
-                          "Latitude lower:",
-                          min = -90,
-                          max = 90,
-                          value = -33,
-                          step = 1
+                 column(width = 12,
+                        tabBox(side = "left",
+                               title = "",
+                               width = NULL,
+                               height = "600px",
+                               selected = "Modeling extent", 
+                               
+                               tabPanel("Modeling extent",
+                                        tabBox(side = "right",
+                                               title = "" ,
+                                               width = NULL,
+                                               height = "600px",
+                                               selected = "Study area extent", 
+                                               tabPanel("Projection extent",
+                                                        box(width=12,
+                                                            status = "warning",
+                                                            checkboxInput('project_ext', 'Design on another extension', value = FALSE),
+                                                      
+                                                        conditionalPanel("input.project_ext", 
+                                                                         box(width=8, 
+                                                                             solidHeader = TRUE,
+                                                                             leafletOutput('mapapontosextend2', height = 500)
+                                                                         ),
+                                                                         box(width = 4,
+                                                                             solidHeader = TRUE,
+                                                                             numericInput(
+                                                                               "edtextend12",
+                                                                               "Longitude left:",
+                                                                               min = -180,
+                                                                               max = 180,
+                                                                               value = -90,
+                                                                               step = 1),
+                                                                             numericInput(
+                                                                               "edtextend22",
+                                                                               "Longitude right:",
+                                                                               min = -180,
+                                                                               max = 180,
+                                                                               value = -32,
+                                                                               step = 1),
+                                                                             numericInput(
+                                                                               "edtextend42",
+                                                                               "Latitude higher:",
+                                                                               min = -90,
+                                                                               max = 90,
+                                                                               value = 23,
+                                                                               step = 1),
+                                                                             numericInput(
+                                                                               "edtextend32",
+                                                                               "Latitude lower:",
+                                                                               min = -90,
+                                                                               max = 90,
+                                                                               value = -33,
+                                                                               step = 1)
+                                                                         )
+                                                        )
+                                               )
+                                               ),
+                                               
+                                               tabPanel("Study area extent",
+                                                        box(width = 8,
+                                                            solidHeader = TRUE,
+                                                            leafletOutput('mapapontosextend', height = 500)
+                                                        ),
+                                                        box(width = 4,
+                                                            solidHeader = TRUE,
+                                                            box(width = NULL,
+                                                                status = "warning",
+                                                                numericInput(
+                                                                  "edtextend1",
+                                                                  "Longitude left:",
+                                                                  min = -180,
+                                                                  max = 180,
+                                                                  value = -90,
+                                                                  step = 1
+                                                                ),
+                                                                numericInput(
+                                                                  "edtextend2",
+                                                                  "Longitude right:",
+                                                                  min = -180,
+                                                                  max = 180,
+                                                                  value = -32,
+                                                                  step = 1
+                                                                ),
+                                                                numericInput(
+                                                                  "edtextend4",
+                                                                  "Latitude higher:",
+                                                                  min = -90,
+                                                                  max = 90,
+                                                                  value = 23,
+                                                                  step = 1
+                                                                ),
+                                                                numericInput(
+                                                                  "edtextend3",
+                                                                  "Latitude lower:",
+                                                                  min = -90,
+                                                                  max = 90,
+                                                                  value = -33,
+                                                                  step = 1
+                                                                )
+                                                            )
+                                                        )
+                                               )
+                                        )
+                               ),
+                               
+                               tabPanel("Select Predictors",
+                                        column(width = 5,
+                                               box(width = NULL,
+                                                   status = "warning",
+                                                   actionButton("btnAtualizaSelecaoVariaveis", 
+                                                                "Update selected"),
+                                                   selectInput("tipodadoabiotico", "Variables dataset:", env_datasource, selected='CLIMA'),
+                                                   
+                                                   conditionalPanel("input.tipodadoabiotico == 'Others' ",
+                                                                    helpText('All layers should have the same spatial extent, resolution, origin, and projection'),
+                                                                    helpText(''),
+                                                                    helpText('Before loading multi-files extentions, make sure that all corresponding files are placed in the same directory.'),
+                                                                    if (length(list.files("ex/outros/",full.names=T,pattern=c('.*'))>0)){
+                                                                      lista_outros <-list.files("ex/outros/",full.names = F, pattern = ".tif|.bil|.grd")
+                                                                      checkboxGroupInput("pred_vars_other",  "Select rasters: ", choiceNames = c(lista_outros), choiceValues=c(lista_outros))
+                                                                    }
+                                                   ),
+                                                   
+                                                   conditionalPanel("input.tipodadoabiotico == 'BIOORACLE' ",
+                                                                    selectInput('forecasting_bo', 
+                                                                                "Project model across timescales", 
+                                                                                c("Future" = 'future_bo',
+                                                                                  "None" = 'current_bo'),
+                                                                                selected = 'current_bo'),
+                                                                    
+                                                                    conditionalPanel("input.forecasting_bo == 'future_bo'",
+                                                                                     box(width=NULL,
+                                                                                         collapsible = T,
+                                                                                         collapsed = T,
+                                                                                         title = "Forcasting parameters",
+                                                                                         selectInput("future_bo_dates", 
+                                                                                                     "Choose dates", 
+                                                                                                     future_bo_dates, 
+                                                                                                     selected='2100'),
+                                                                                         
+                                                                                         conditionalPanel("input.future_bo_dates == '2100'",
+                                                                                                          selectInput("scenario_bo_2100", 
+                                                                                                                      "Scenario", 
+                                                                                                                      choices = c("A1B", "A2","B1"),
+                                                                                                                      selected='A1B'
+                                                                                                          )
+                                                                                         ),
+                                                                                         
+                                                                                         conditionalPanel("input.future_bo_dates == '2200'",
+                                                                                                          selectInput("scenario_bo_2200", 
+                                                                                                                      "Scenario", 
+                                                                                                                      choices = c("A1B","B1"),
+                                                                                                                      selected='A1B'
+                                                                                                          )
+                                                                                         )
+                                                                                     ),
+                                                                                     checkboxGroupInput("pred_vars_bo_fut",
+                                                                                                        "Select variables: ",
+                                                                                                        choices = c(
+                                                                                                          'Temperature (Max) ' = 'sstmax',
+                                                                                                          'Temperature (Min) ' = 'sstmin',
+                                                                                                          'Temperature (Range)' = 'sstrange',
+                                                                                                          'Temperature (Mean)' = 'sstmean',
+                                                                                                          'Salinity' = 'salinity')
+                                                                                     )
+                                                                    ),
+                                                                    conditionalPanel("input.forecasting_bo == 'current_bo'",
+                                                                                     checkboxGroupInput("pred_vars_bo", "Select variables: ",
+                                                                                                        choices = c(
+                                                                                                          'Temperature (Max) ' = 'sstmax',
+                                                                                                          'Temperature (Min) ' = 'sstmin',
+                                                                                                          'Temperature (Range)' = 'sstrange',
+                                                                                                          'Temperature (Mean)' = 'sstmean',
+                                                                                                          'Salinity' = 'salinity',
+                                                                                                          'Calcite' =   'calcite',
+                                                                                                          'Nitrate' =  'nitrate',
+                                                                                                          'pH' = 'ph',
+                                                                                                          'Silicate' = 'silicate' ,
+                                                                                                          'Phosphate' = 'phosphate',
+                                                                                                          'Dissolved mol. oxygen' = 'dissox',
+                                                                                                          'Chlorophyll (Min)' =  'chlomin',
+                                                                                                          'Chlorophyll (Max)' =  'chlomax',
+                                                                                                          'Chlorophyll (Range)' =  'chlorange',
+                                                                                                          'Chlorophyll(Mean)' =  'chlomean',
+                                                                                                          'Cloud cover (Mean)' = 'cloudmean',
+                                                                                                          'Cloud cover (Max)' = 'cloudmax',
+                                                                                                          'Cloud cover (Min)' =  'cloudmin',
+                                                                                                          'Diffuse attenuation (Mean)' =  'damean',
+                                                                                                          'Diffuse attenuation (Min)' =   'damin',
+                                                                                                          'Diffuse attenuation (Max)' = 'damax',
+                                                                                                          'Photosynt. Avail. Radiation (Max)' =  'parmax',
+                                                                                                          'Photosynt. Avail. Radiation (Mean)' =  'parmean')
+                                                                                     )
+                                                                    )
+                                                   ),
+                                                   
+                                                   conditionalPanel("input.tipodadoabiotico == 'CLIMA' ",
+                                                                    selectInput("resolution", "Resolution:", resolution, selected = "10min"),
+                                                                    selectInput("forecasting_wc", 
+                                                                                "Project model across timescales", 
+                                                                                c("Future" = 'future_wc',
+                                                                                  "Past" = 'past_wc',
+                                                                                  "None" = 'current_wc'),
+                                                                                selected = 'current_wc'),
+                                                                    
+                                                                    conditionalPanel("input.forecasting_wc != 'current_wc'",
+                                                                                     box(width=NULL,
+                                                                                         collapsible = T,
+                                                                                         collapsed = T,
+                                                                                         title = "Set forecasting parameters",
+                                                                                         
+                                                                                         conditionalPanel("input.forecasting_wc == 'future_wc' ",
+                                                                                                          selectInput("future_dates_wc",  "Choose period: ", future_dates_wc),
+                                                                                                          selectInput("rcp_wc", "Emission Scenarios (RCP)", c(
+                                                                                                            "rcp26" = "26",
+                                                                                                            "rcp45" = "45",
+                                                                                                            "rcp60" = "60",
+                                                                                                            "rcp85" = "85"
+                                                                                                          )),
+                                                                                                          selectInput("gcm_future_wc","General Circulation Models (GCM)", gcm_future_wc, selected = "bc")
+                                                                                         ),
+                                                                                         
+                                                                                         conditionalPanel("input.forecasting_wc == 'past_wc'",
+                                                                                                          selectInput("past_dates_wc","Choose period: " , past_dates_wc, selected='mid'),
+                                                                                                          conditionalPanel("input.past_dates_wc == 'mid'",
+                                                                                                                           selectInput("gcm_past_wc_mid", "General Circulation Models (GCM)", gcm_past_wc_mid)
+                                                                                                          ),
+                                                                                                          conditionalPanel("input.past_dates_wc == 'lgm' ",
+                                                                                                                           selectInput("gcm_past_wc_lgm","General Circulation Models (GCM)", gcm_past_wc_lgm)
+                                                                                                          )
+                                                                                         )
+                                                                                         
+                                                                                     )
+                                                                                     
+                                                                    ),
+                                                                    
+                                                                    checkboxGroupInput("pred_vars_wc", "Select variables: ",
+                                                                                       choices = c(
+                                                                                         '(Bio1) Annual Mean Temperature' = 'bio1',
+                                                                                         '(Bio2) Mean Diurnal Range' = 'bio2',
+                                                                                         '(Bio3) Isothermality' = 'bio3',
+                                                                                         '(Bio4) Temperature Seasonality' = 'bio4',
+                                                                                         '(Bio5) Max Temperature of Warmest Month' = 'bio5',
+                                                                                         '(Bio6) Min Temperature of Coldest Month' = 'bio6',
+                                                                                         '(Bio7) Temperature Annual Range' = 'bio7',
+                                                                                         '(Bio8) Mean Temperature of Wettest Quarter' = 'bio8',
+                                                                                         '(Bio9) Mean Temperature of Driest Quarter' = 'bio9',
+                                                                                         '(Bio10) Mean Temperature of Warmest Quarter' = 'bio10',
+                                                                                         '(Bio11) Mean Temperature of Coldest Quarter' = 'bio11',
+                                                                                         '(Bio12) Annual Precipitation' = 'bio12',
+                                                                                         '(Bio13) Precipitation of Wettest Month' = 'bio13',
+                                                                                         '(Bio14) Precipitation of Driest Month' = 'bio14',
+                                                                                         '(Bio15) Precipitation Seasonality' = 'bio15',
+                                                                                         '(Bio16) Precipitation of Wettest Quarter' = 'bio16',
+                                                                                         '(Bio17) Precipitation of Driest Quarter' = 'bio17',
+                                                                                         '(Bio18) Precipitation of Warmest Quarter' = 'bio18',
+                                                                                         '(Bio19) Precipitation of Coldest Quarter' = 'bio19'
+                                                                                       )
+                                                                    )
+                                                   )
+                                               )
+                                        ),
+                                        
+                                        column(width = 7,
+                                               tabBox(width = NULL,
+                                                      side = "right",
+                                                     selected="Check correlation",
+                                                      tabPanel("View raster layers",
+                                                               plotOutput(outputId = "mapaabiotico", height = "400px")
+                                                      ), 
+                                                      tabPanel("Check correlation",
+                                                               plotOutput(outputId = "grafico_correlacao", width = "100%", height="400px"),
+                                                               dataTableOutput('dgbriddadoscorrelacao')
+                                                      )
+                                               )
+                                        )
+                               )
+                               
+                               
                         )
-                      )
-                    )
-                  ),
-                  tabPanel("Projection extent",
-                    box(width=12,
-                      status = "warning",
-                      checkboxInput('project_ext', 'Design on another extension', value = FALSE)
-                    ),
-                    conditionalPanel("input.project_ext", 
-                      box(width=8,
-                        solidHeader = FALSE,
-                        leafletOutput('mapapontosextend2', height = 400)
-                      ),
-                      box(width = 4,
-                        numericInput(
-                          "edtextend12",
-                          "Longitude left:",
-                          min = -180,
-                          max = 180,
-                          value = -90,
-                          step = 1),
-                        numericInput(
-                          "edtextend22",
-                          "Longitude right:",
-                          min = -180,
-                          max = 180,
-                          value = -32,
-                          step = 1),
-                        numericInput(
-                          "edtextend42",
-                          "Latitude higher:",
-                          min = -90,
-                          max = 90,
-                          value = 23,
-                          step = 1),
-                        numericInput(
-                          "edtextend32",
-                          "Latitude lower:",
-                          min = -90,
-                          max = 90,
-                          value = -33,
-                          step = 1)
-                      )
-                    )
-                  )
-                )
-              ),
-              
-              tabPanel("Select Predictors",
-                column(width = 5,
-                  box(width = NULL,
-                    status = "warning",
-                    actionButton("btnAtualizaSelecaoVariaveis", 
-                      "Update selected"),
-                    selectInput("tipodadoabiotico", "Variables dataset:", env_datasource, selected='CLIMA'),
-                    
-                    conditionalPanel("input.tipodadoabiotico == 'Others' ",
-                      helpText('All layers should have the same spatial extent, resolution, origin, and projection'),
-                      helpText(''),
-                      helpText('Before loading multi-files extentions, make sure that all corresponding files are placed in the same directory.'),
-                      if (length(list.files("ex/outros/",full.names=T,pattern=c('.*'))>0)){
-                        lista_outros <-list.files("ex/outros/",full.names = F, pattern = ".tif|.bil|.grd")
-                        checkboxGroupInput("pred_vars_other",  "Select rasters: ", choiceNames = c(lista_outros), choiceValues=c(lista_outros))
-                      }
-                    ),
-                    
-                    conditionalPanel("input.tipodadoabiotico == 'BIOORACLE' ",
-                      selectInput('forecasting_bo', 
-                        "Project model across timescales", 
-                        c("Future" = 'future_bo',
-                          "None" = 'current_bo'),
-                        selected = 'current_bo'),
-                      
-                      conditionalPanel("input.forecasting_bo == 'future_bo'",
-                        box(width=NULL,
-                          collapsible = T,
-                          collapsed = T,
-                          title = "Forcasting parameters",
-                          selectInput("future_bo_dates", 
-                            "Choose dates", 
-                            future_bo_dates, 
-                            selected='2100'),
-                          
-                          conditionalPanel("input.future_bo_dates == '2100'",
-                            selectInput("scenario_bo_2100", 
-                              "Scenario", 
-                              choices = c("A1B", "A2","B1"),
-                              selected='A1B'
-                            )
-                          ),
-                          
-                          conditionalPanel("input.future_bo_dates == '2200'",
-                            selectInput("scenario_bo_2200", 
-                              "Scenario", 
-                              choices = c("A1B","B1"),
-                              selected='A1B'
-                            )
-                          )
-                        ),
-                        checkboxGroupInput("pred_vars_bo_fut",
-                          "Select variables: ",
-                          choices = c(
-                            'Temperature (Max) ' = 'sstmax',
-                            'Temperature (Min) ' = 'sstmin',
-                            'Temperature (Range)' = 'sstrange',
-                            'Temperature (Mean)' = 'sstmean',
-                            'Salinity' = 'salinity')
-                        )
-                      ),
-                      conditionalPanel("input.forecasting_bo == 'current_bo'",
-                        checkboxGroupInput("pred_vars_bo", "Select variables: ",
-                          choices = c(
-                            'Temperature (Max) ' = 'sstmax',
-                            'Temperature (Min) ' = 'sstmin',
-                            'Temperature (Range)' = 'sstrange',
-                            'Temperature (Mean)' = 'sstmean',
-                            'Salinity' = 'salinity',
-                            'Calcite' =   'calcite',
-                            'Nitrate' =  'nitrate',
-                            'pH' = 'ph',
-                            'Silicate' = 'silicate' ,
-                            'Phosphate' = 'phosphate',
-                            'Dissolved mol. oxygen' = 'dissox',
-                            'Chlorophyll (Min)' =  'chlomin',
-                            'Chlorophyll (Max)' =  'chlomax',
-                            'Chlorophyll (Range)' =  'chlorange',
-                            'Chlorophyll(Mean)' =  'chlomean',
-                            'Cloud cover (Mean)' = 'cloudmean',
-                            'Cloud cover (Max)' = 'cloudmax',
-                            'Cloud cover (Min)' =  'cloudmin',
-                            'Diffuse attenuation (Mean)' =  'damean',
-                            'Diffuse attenuation (Min)' =   'damin',
-                            'Diffuse attenuation (Max)' = 'damax',
-                            'Photosynt. Avail. Radiation (Max)' =  'parmax',
-                            'Photosynt. Avail. Radiation (Mean)' =  'parmean')
-                        )
-                      )
-                    ),
-                    
-                    conditionalPanel("input.tipodadoabiotico == 'CLIMA' ",
-                      selectInput("resolution", "Resolution:", resolution, selected = "10min"),
-                      selectInput("forecasting_wc", 
-                        "Project model across timescales", 
-                        c("Future" = 'future_wc',
-                          "Past" = 'past_wc',
-                          "None" = 'current_wc'),
-                        selected = 'current_wc'),
-                      
-                      conditionalPanel("input.forecasting_wc != 'current_wc'",
-                        box(width=NULL,
-                          collapsible = T,
-                          collapsed = T,
-                          title = "Forecasting parameters",
-                         
-                           conditionalPanel("input.forecasting_wc == 'future_wc' ",
-                            selectInput("future_dates_wc",  "Choose period: ", future_dates_wc),
-                            selectInput("rcp_wc", "Emission Scenarios (RCP)", c(
-                              "rcp26" = "26",
-                              "rcp45" = "45",
-                              "rcp60" = "60",
-                              "rcp85" = "85"
-                            )),
-                            selectInput("gcm_future_wc","General Circulation Models (GCM)", gcm_future_wc, selected = "bc")
-                          ),
-                          
-                          conditionalPanel("input.forecasting_wc == 'past_wc'",
-                            selectInput("past_dates_wc","Choose period: " , past_dates_wc, selected='mid'),
-                            conditionalPanel("input.past_dates_wc == 'mid'",
-                              selectInput("gcm_past_wc_mid", "General Circulation Models (GCM)", gcm_past_wc_mid)
-                            ),
-                            conditionalPanel("input.past_dates_wc == 'lgm' ",
-                              selectInput("gcm_past_wc_lgm","General Circulation Models (GCM)", gcm_past_wc_lgm)
-                            )
-                          )
-                          
-                        )
-                        
-                      ),
-                      
-                      checkboxGroupInput("pred_vars_wc", "Select variables: ",
-                        choices = c(
-                          '(Bio1) Annual Mean Temperature' = 'bio1',
-                          '(Bio2) Mean Diurnal Range' = 'bio2',
-                          '(Bio3) Isothermality' = 'bio3',
-                          '(Bio4) Temperature Seasonality' = 'bio4',
-                          '(Bio5) Max Temperature of Warmest Month' = 'bio5',
-                          '(Bio6) Min Temperature of Coldest Month' = 'bio6',
-                          '(Bio7) Temperature Annual Range' = 'bio7',
-                          '(Bio8) Mean Temperature of Wettest Quarter' = 'bio8',
-                          '(Bio9) Mean Temperature of Driest Quarter' = 'bio9',
-                          '(Bio10) Mean Temperature of Warmest Quarter' = 'bio10',
-                          '(Bio11) Mean Temperature of Coldest Quarter' = 'bio11',
-                          '(Bio12) Annual Precipitation' = 'bio12',
-                          '(Bio13) Precipitation of Wettest Month' = 'bio13',
-                          '(Bio14) Precipitation of Driest Month' = 'bio14',
-                          '(Bio15) Precipitation Seasonality' = 'bio15',
-                          '(Bio16) Precipitation of Wettest Quarter' = 'bio16',
-                          '(Bio17) Precipitation of Driest Quarter' = 'bio17',
-                          '(Bio18) Precipitation of Warmest Quarter' = 'bio18',
-                          '(Bio19) Precipitation of Coldest Quarter' = 'bio19'
-                        )
-                      )
-                    )
-                  )
-                ),
-                
-                column(width = 7,
-                  tabBox(width = NULL,
-                    tabPanel("Check correlation",
-                      plotOutput(outputId = "grafico_correlacao", width = "100%", height="400px"),
-                      dataTableOutput('dgbriddadoscorrelacao')
-                    ),
-                    tabPanel("View raster layers",
-                      plotOutput(outputId = "mapaabiotico", height = "400px")
-                    )
-                  )
-                )
-              )
-              
-              
-            )
-          )
+                 )
         ),
         
         ########################################################################
@@ -742,13 +746,13 @@ body <- dashboardBody(
                   column(width = 2,
                     box(width = NULL,
                       status = "warning",
-                      h4("Projection"),
+                      h4("Geographic projections"),
                       htmlOutput("uiarquivosprojecao")
                     )),
                   column(width = 2,
                     box(width = NULL,
                       status = "warning",
-                      h4("Projection future"),
+                      h4("Time projections"),
                       htmlOutput("uiarquivosprojecaofuturo")
                     ))
                 )
