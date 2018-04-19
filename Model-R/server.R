@@ -186,7 +186,7 @@ function(input, output, session) {
     var = expl,
     var2 = expl2,
     
-    maxent = F,
+    Maxent = F,
     Bioclim = F,
     GLM = F,
     RF = F,
@@ -216,10 +216,8 @@ function(input, output, session) {
     library(XML)
     library(raster)
     library(rgdal)
-    #library(rJava)
     library(maps)
     
-    # DELETE PREVIOUS EVALUATE ANS STATS FILES FROM THE PROJECT DIRECTORY
     unlink(paste0("www/", projeto, "/models/evaluate_.txt"), recursive = TRUE)
     unlink(paste0("www/", projeto, "/models/statsALL.txt"), recursive = TRUE)
     unlink(paste0("www/", projeto, "/models/evaluate_ALL_models.txt"), recursive = TRUE)
@@ -228,7 +226,7 @@ function(input, output, session) {
       print(date())
       cat(paste("Modeling", sp, "...", "\n"))
       
-      # PREPARING SDM DATA -----------------------------------------------------
+      ## PREPARING SDM DATA -----------------------------------------------------
       coord <- occur.data.coord
       n <- nrow(coord)
       
@@ -238,7 +236,7 @@ function(input, output, session) {
       ## Fixing seed to ensure the same random points
       set.seed(seed)
       
-      ## Generating random pseudo-absences 
+      ## Generating random pseudo-absences
       backgr <- randomPoints(var, numpontos)
       colnames(backgr) = c("Longitude", "Latitude")
       
@@ -249,7 +247,7 @@ function(input, output, session) {
       pre_abs <- c(rep(1, nrow(presvals)), rep(0, nrow(absvals)))
       
       ## Number of partitions
-      if (n < 10) 
+      if (n < 10)
         part <- n else part <- part
       
       ## Setting seed to distribute the presences always to the same partitions
@@ -265,17 +263,19 @@ function(input, output, session) {
       cbind_1 <- cbind(coord, presvals)
       cbind_2 <- cbind(backgr, absvals)
       rbind_1 <- rbind(cbind_1, cbind_2)
-      sdmdata <- data.frame(cbind(append_1, pre_abs, rbind_1))
+      sdmdata <<- data.frame(cbind(append_1, pre_abs, rbind_1))
       sdmdata2 <- sdmdata[-1]
       sdmdata2 <- sdmdata2[-1]
       sdmdata2 <- sdmdata2[-1]
       sdmdata2 <- sdmdata2[-1]
       colnames(sdmdata)[1] <- "group"
       
+      
+      ## For each partition
       for (i in unique(group_pre)) {
         progress$set(message = paste("Processing models", i), value = 0)
         
-        ## Separate the sdmdata between teste and train 
+        ## Separate the sdmdata between test and train groups
         sdmdata_train <- subset(sdmdata, group != i)
         sdmdata_teste <- subset(sdmdata, group == i)
         
@@ -286,8 +286,7 @@ function(input, output, session) {
         envtest_pre <- subset(sdmdata_teste, pre_abs == 1, select = c(-group, -Latitude, -Latitude, -pre_abs))
         envtest_abs <- subset(sdmdata_teste, pre_abs == 0, select = c(-group, -Latitude, -Latitude, -pre_abs))
         
-        # Separating the data (only coordinates) to run presence only algorithms 
-        # (BioClim, Maxent and Mahalanobis)
+        # Separating the data (only coordinates) to run presence only algorithms
         coord_pres_train <- subset(sdmdata_train, pre_abs == 1, select = c(
           Longitude,
           Latitude
@@ -307,633 +306,555 @@ function(input, output, session) {
         
         ## FITTING THE MODELS -------------------------------------------------------------
         cat(paste("Modeling...", sp, "Partition", i, "\n"))
-        
         if (Bioclim == T) {
-          cat(paste("#Bioclim", "\n"))
-          # Constroi o modelo no espaco ambiental
-          bc <- bioclim(var, coord_pres_train)
+          cat(paste("Bioclim", "\n"))
+          
+          bc <<- bioclim(var, coord_pres_train)
+          
           # Validacao da performance
           ebc <<- dismo::evaluate(coord_pres_teste, coord_abs_teste, bc, var)
+          
           # Calculo do TSS
           bcTSS <- max(ebc@TPR + ebc@TNR) - 1
+          
           # Extrai o valor do limiar que maximiza a soma da especificidade e sensibilidade
           tbc <- threshold(ebc, "spec_sens")
-          # Projeta no espaco geografico o modelo contnuo
+          
+          # Projeta no espaco geografico o modelo continuo
           bc_cont <- predict(var, bc, progress = "text")
           bc_cont_proj <- predict(var2, bc, progress = "text")
+          
           # Transforma em binario o modelo continuo cortando-o pelo limiar tbc
           bc_bin <- bc_cont > tbc
+          
           # Resgata os valores continuos ao multiplicar o modelo binario pelo continuo
           bc_mult <- bc_bin * bc_cont
+          
           # Normaliza o modelo mult
           bc_mult <- bc_mult/maxValue(bc_mult)
+          
           # Faz os modelos futuros
           if (future.model == T) {
+            
             # Projeta o modelo nas variiveis futuras
-            bc_future <- predict(future.raster, bc, progress = "text")
+            names(future.raster) = names(pred_nf)
+             bc_future <- dismo::predict(future.raster, bc, progress = "text")
+            
             # Transforma em binario o modelo futuro continuo pelo threshold do modelo
             # presente
             if (bin == T) {
               bc_future_bin <- bc_future > tbc
             }
+            
             # Resgata os valores continuos ao multiplicar o modelo binario pelo continuo
             if (mult == T) {
               bc_future_mult <- bc_future_bin * bc_future
+              
               # Normaliza o modelo mult
               bc_future_mult <- bc_future_mult/maxValue(bc_future_mult)
             }
-          }  # Fecha o modelo futuro
-        }  # Fecha o algoritmo Bioclim
+          }
+        }
         
         if (Domain == T) {
           cat(paste("Domain", "\n"))
-          # Constroi o modelo no espaco ambiental
           do <- domain(var, coord_pres_train)
-          # Validacao da performance
-          edo <<- dismo::evaluate(coord_pres_teste, coord_abs_teste, do, 
-                                  var)
-          # Calculo do TSS
+          edo <<- dismo::evaluate(coord_pres_teste, coord_abs_teste, do, var)
           doTSS <- max(edo@TPR + edo@TNR) - 1
-          # Extrai o valor do limiar que maximiza a soma da especificidade e sensibilidade
           tdo <- threshold(edo, "spec_sens")
-          # Projeta no espaco geografico o modelo continuo
           do_cont <- predict(var, do, progress = "text")
           do_cont_proj <- predict(var2, do, progress = "text")
-          # Transforma em binario o modelo continuo cortando-o pelo limiar tbc
           do_bin <- do_cont > tdo
-          # Resgata os valores continuos ao multiplicar o modelo binario pelo continuo
           do_mult <- do_bin * do_cont
-          # Normaliza o modelo mult
           do_mult <- do_mult/maxValue(do_mult)
-          # Faz os modelos futuros
           if (future.model == T) {
-            # Projeta o modelo nas variaveis futuras
+            names(future.raster) = names(pred_nf)
             do_future <- predict(future.raster, do, progress = "text")
-            # Transforma em binario o modelo futuro continuo pelo threshold do modelo
-            # presente
             if (bin == T) {
               do_future_bin <- do_future > tdo
             }
-            # Resgata os valores continuos ao multiplicar o modelo binario pelo continuo
             if (mult == T) {
               do_future_mult <- do_future_bin * do_future
-              # Normaliza o modelo mult
+              
               do_future_mult <- do_future_mult/maxValue(do_future_mult)
             }
-          }  # Fecha o modelo futuro
-        }  # Fecha o algoritmo Domain
+          }
+        }
         
-        if (maxent == T) {
+        if (Maxent == T) {
           cat(paste("Maxent", "\n"))
-          # Constroi o modelo no espaco ambiental
           mx <- maxent(var, coord_pres_train)
-          # Validacao da performance
           emx <- dismo::evaluate(coord_pres_teste, coord_abs_teste, mx, var)
-          # Calculo do TSS
           mxTSS <- max(emx@TPR + emx@TNR) - 1
-          # Extrai o valor do limiar que maximiza a soma da especificidade e sensibilidade
           tmx <- threshold(emx, "spec_sens")
-          # Projeta no espaco geografico o modelo continuo
           mx_cont <- predict(var, mx, progress = "text")
           mx_cont_proj <- predict(var2, mx, progress = "text")
-          # Transforma em binario o modelo continuo cortando-o pelo limiar tbc
           mx_bin <- mx_cont > tmx
-          # Resgata os valores continuos ao multiplicar o modelo binario pelo continuo
           mx_mult <- mx_bin * mx_cont
-          # Normaliza o modelo mult
           mx_mult <- mx_mult/maxValue(mx_mult)
           if (future.model == T) {
-            # Projeta o modelo nas variaveis futuras
+            names(future.raster) = names(pred_nf)
             mx_future <- predict(future.raster, mx, progress = "text")
-            # Transforma em binario o modelo futuro continuo pelo threshold do modelo
-            # presente
             if (bin == T) {
               mx_future_bin <- mx_future > tmx
             }
-            # Resgata os valores continuos ao multiplicar o modelo binario pelo continuo
             if (mult == T) {
               mx_future_mult <- mx_future_bin * mx_future
-              # Normaliza o modelo mult
               mx_future_mult <- mx_future_mult/maxValue(mx_future_mult)
             }
-          }  # Fecha o modelo futuro
-        }  # Fecha o algoritmo Maxent
+          }
+        }
         
         if (GLM == T) {
           cat(paste("GLM", "\n"))
-          # Constroi o modelo no espaco ambiental
           mglm <- glm(pre_abs ~ ., data = envtrain)
-          # Validacao da performance
           eglm <- dismo::evaluate(envtest_pre, envtest_abs, mglm)
-          # Calculo do TSS
           glmTSS <- max(eglm@TPR + eglm@TNR) - 1
-          # Extrai o valor do limiar que maximiza a soma da especificidade e sensibilidade
           tglm <- threshold(eglm, "spec_sens")
-          # Projeta no espaco geografico o modelo continuo
           glm_cont <- predict(var, mglm, progress = "text")
           glm_cont_proj <- predict(var2, mglm, progress = "text")
-          # plot(glm_cont) Transforma em binario o modelo continuo cortando-o pelo limiar
-          # tbc
           glm_bin <- glm_cont > tglm
-          # Resgata os valores continuos ao multiplicar o modelo binario pelo continuo
           glm_mult <- glm_bin * glm_cont
-          # Normaliza o modelo mult
           glm_mult <- glm_mult/maxValue(glm_mult)
           if (future.model == T) {
-            # Projeta o modelo nas variaveis futuras
+            names(future.raster) = names(pred_nf)
             glm_future <- predict(future.raster, mglm, progress = "text")
-            # Transforma em binario o modelo futuro continuo pelo threshold do modelo
-            # presente
             if (bin == T) {
               glm_future_bin <- glm_future > tglm
             }
-            # Resgata os valores continuos ao multiplicar o modelo binario pelo continuo
             if (mult == T) {
               glm_future_mult <- glm_future_bin * glm_future
-              # Normaliza o modelo mult
               glm_future_mult <- glm_future_mult/maxValue(glm_future_mult)
             }
-          }  # Fecha o modelo futuro
-        }  # Fecha o algoritmo GLM
+          }
+        }
         
         if (RF == T) {
           cat(paste("RF", "\n"))
-          # Constroi o modelo no espaco ambiental rf1 <- randomForest
-          # (pre_abs~.,data=envtrain) # porque da mensagem de aviso ao usar rf1(regression)
-          # envtrain pre_abs
-          rf1 <- randomForest(pre_abs ~ ., data = envtrain)  # porque da mensagem de aviso ao usar rf1(regression)
-          # rf2 <- randomForest (factor(pre_abs) ~ ., data=envtrain) # faz classification e
-          # nao da mensagem de erro.  rf2 tem como output somente modelos binarios
-          # Validacao de performance
+          rf1 <- randomForest
+          rf1 <- randomForest(pre_abs ~ ., data = envtrain)
           erf1 <- dismo::evaluate(envtest_pre, envtest_abs, rf1)
-          # erf2 <- dismo::evaluate(envtest_pre,envtest_abs, rf2) Calculo do TSS
           rfTSS1 <- max(erf1@TPR + erf1@TNR) - 1
-          # rfTSS2 <- max(erf2@TPR + erf2@TNR)-1 Extrai o valor do limiar que maximiza a
-          # soma da especificidade e sensibilidade
           trf1 <- threshold(erf1, "spec_sens")
-          # trf2 <- threshold (erf2,'spec_sens') # tbm da mensagem de erro Projeta no
-          # espaco geografico o modelo continuo
           rf1_cont <- predict(var, rf1, progress = "text")
           rf1_cont_proj <- predict(var2, rf1, progress = "text")
-          # rf_cont2 <- predict (var,rf2,progress='text') # o continuo fica igual ao
-          # binario!  Transforma em binario o modelo continuo cortando-o pelo limiar tbc
           rf1_bin <- rf1_cont > trf1
-          # rf_bin2 <- rf_cont2>trf2 Resgata os valores continuos ao multiplicar o modelo
-          # binario pelo continuo
           rf1_mult <- rf1_bin * rf1_cont
-          # rf_mult2 <- rf_bin2*rf_cont2 Normaliza o modelo mult
           rf1_mult <- rf1_mult/maxValue(rf1_mult)
           if (future.model == T) {
-            # Projeta o modelo nas variaveis futuras
+            names(future.raster) = names(pred_nf)
             rf1_future <- predict(future.raster, rf1, progress = "text")
-            # Transforma em binario o modelo futuro continuo pelo threshold do modelo
-            # presente
             if (bin == T) {
               rf1_future_bin <- rf1_future > trf1
             }
-            # Resgata os valores continuos ao multiplicar o modelo binario pelo continuo
             if (mult == T) {
               rf1_future_mult <- rf1_future_bin * rf1_future
-              # Normaliza o modelo mult
               rf1_future_mult <- rf1_future_mult/maxValue(rf1_future_mult)
             }
-          }  # Fecha o modelo futuro
-        }  # Fecha o algoritmo RandomForest
+          }
+        }
         
         if (SVM == T) {
           cat(paste("SVM", "\n"))
-          # Constroi o modelo no espaco ambiental
           msvm <- ksvm(pre_abs ~ ., data = envtrain)
-          # Validacao da performance
           esvm <- dismo::evaluate(envtest_pre, envtest_abs, msvm)
-          # Calculo do TSS
           svmTSS <- max(esvm@TPR + esvm@TNR) - 1
-          # Extrai o valor do limiar que maximiza a soma da especificidade e sensibilidade
           tsvm <- threshold(esvm, "spec_sens")
-          # Projeta no espaco geografico o modelo continuo
           svm_cont <- predict(var, msvm, progress = "text")
           svm_cont_proj <- predict(var2, msvm, progress = "text")
-          # Transforma em binario o modelo continuo cortando-o pelo limiar tbc
           svm_bin <- svm_cont > tsvm
-          # Resgata os valores continuos ao multiplicar o modelo binario pelo continuo
           svm_mult <- svm_bin * svm_cont
-          # Normaliza o modelo mult
           svm_mult <- svm_mult/maxValue(svm_mult)
           if (future.model == T) {
-            # Projeta o modelo nas variaveis futuras
+            names(future.raster) = names(pred_nf)
             svm_future <- predict(future.raster, msvm, progress = "text")
-            # Transforma em binario o modelo futuro continuo pelo threshold do modelo
-            # presente
             if (bin == T) {
               svm_future_bin <- svm_future > tsvm
             }
-            # Resgata os valores continuos ao multiplicar o modelo binario pelo continuo
             if (mult == T) {
               svm_future_mult <- svm_future_bin * svm_future
-              # Normaliza o modelo mult
               svm_future_mult <- svm_future_mult/maxValue(svm_future_mult)
             }
-          }  # Fecha o modelo futuro
-        }  # Fecha o algoritmo SVM
+          }
+        }
         
         if (Mahal == T) {
           cat(paste("Mahal", "\n"))
-          # Checa se o numero de registros de presenca e maior que o numero de variaveis
           condicao_Mahal <- nrow(coord_pres_train) > length(names(var))
           if (condicao_Mahal == TRUE) {
-            # Construi o modelo no espaco ambiental
             ma <- mahal(var, coord_pres_train)
-            # validacao da performance
-            ema <- dismo::evaluate(coord_pres_teste, coord_abs_teste, ma, 
-                                   var)
-            # Calculo do TSS
+            ema <- dismo::evaluate(coord_pres_teste, coord_abs_teste, ma, var)
             maTSS <- max(ema@TPR + ema@TNR) - 1
-            # Extrai o valor do limiar que maximiza a soma da especificidade e sensibilidade
             tma <- threshold(ema, "spec_sens")
-            # Projeta no espaco geografico o modelo continuo
             ma_cont <- predict(var, ma, progress = "text")
             ma_cont_proj <- predict(var2, ma, progress = "text")
-            # Invertendo os valores dos pixel, porque o valor 0 corresponde ao maior valor de
-            # adequabilidade
             ma_cont_invert <- ma_cont + (-1 * minValue(ma_cont))
-            # Transforma em binario o modelo continuo cortando-o pelo limiar tma
             ma_bin <- ma_cont > tma
-            # Resgata os valores continuos ao multiplicar o modelo binario pelo continuo
-            # invertido
             ma_mult <- ma_bin * ma_cont_invert
-            # Normaliza o modelo mult
             ma_mult <- ma_mult/maxValue(ma_mult)
-            # Faz os modelos futuros
             if (future.model == T) {
-              # Projeta o modelo nas variaveis futuras
+              names(future.raster) = names(pred_nf)
               ma_future <- predict(future.raster, ma, progress = "text")
-              # Invertendo os valores dos pixel, porque o valor 0 corresponde ao maior valor de
-              # adequabilidade
               ma_future_invert <- ma_future + (-1 * minValue(ma_future))
-              # Transforma em binario o modelo futuro continuo pelo threshold do modelo
-              # presente
               if (bin == T) {
                 ma_future_bin <- ma_future > tma
               }
-              # Resgata os valores continuos ao multiplicar o modelo binario pelo continuo
               if (mult == T) {
                 ma_future_mult <- ma_future_bin * ma_future_invert
-                # Normaliza o modelo mult
                 ma_future_mult <- ma_future_mult/maxValue(ma_future_mult)
               }
-            }  # Fecha o modelo futuro
-          }  # Fecha o algoritmo Mahalanobis
+            }
+          }
           else {
-            
           }
         }
         
         ### WRITING THE MODELS -----------------------------------------------------
-        ## Continuos models
         if (write.cont == T) {
           cat(paste("Salving continuous models...", sp, i, "\n"))
+          
           if (Bioclim == T) {
-            writeRaster(x = bc_cont, filename = paste0("./www/", projeto, 
+            writeRaster(x = bc_cont, filename = paste0("./www/", projeto,
                                                        "/models/pre_", i, "_bc_con", ".tif"), overwrite = T)
-            png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_bc_con", 
+            png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_bc_con",
                                   ".jpg"))
             plot(bc_cont, main = paste("BioClim - ", i))
             dev.off()
             if (write.projecao == T) {
-              writeRaster(x = bc_cont_proj, filename = paste0("./www/", projeto, 
+              writeRaster(x = bc_cont_proj, filename = paste0("./www/", projeto,
                                                               "/proj/pre_", i, "_bc_con_proj", ".tif"), overwrite = T)
             }
             if (write.future == T) {
-              writeRaster(x = bc_future, filename = paste0("./www/", projeto, 
+              writeRaster(x = bc_future, filename = paste0("./www/", projeto,
                                                            "/futuro/fut_", i, "_bc_con", ".tif"), overwrite = T)
-              png(filename = paste0("./www/", projeto, "/jpg/fut_", i, "_bc_con", 
+              png(filename = paste0("./www/", projeto, "/jpg/fut_", i, "_bc_con",
                                     ".jpg"))
               plot(bc_future, main = paste("BioClim - Fut ", i))
               dev.off()
             }
           }
           if (Domain == T) {
-            writeRaster(x = do_cont, filename = paste0("./www/", projeto, 
+            writeRaster(x = do_cont, filename = paste0("./www/", projeto,
                                                        "/models/pre_", i, "_do_con", ".tif"), overwrite = T)
-            png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_do_con", 
+            png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_do_con",
                                   ".jpg"))
             plot(do_cont, main = paste("Domain - ", i))
             dev.off()
             if (write.projecao == T) {
-              writeRaster(x = do_cont_proj, filename = paste0("./www/", projeto, 
+              writeRaster(x = do_cont_proj, filename = paste0("./www/", projeto,
                                                               "/proj/pre_", i, "_do_con_proj", ".tif"), overwrite = T)
             }
             if (write.future == T) {
-              writeRaster(x = do_future, filename = paste0("./www/", projeto, 
+              writeRaster(x = do_future, filename = paste0("./www/", projeto,
                                                            "/futuro/fut_", i, "_do_con", ".tif"), overwrite = T)
-              png(filename = paste0("./www/", projeto, "/jpg/fut_", i, "_do_con", 
+              png(filename = paste0("./www/", projeto, "/jpg/fut_", i, "_do_con",
                                     ".jpg"))
               plot(bc_future, main = paste("Domain - Fut ", i))
               dev.off()
             }
           }
-          if (maxent == T) {
-            writeRaster(x = mx_cont, filename = paste0("./www/", projeto, 
+          if (Maxent == T) {
+            writeRaster(x = mx_cont, filename = paste0("./www/", projeto,
                                                        "/models/pre_", i, "_mx_con", ".tif"), overwrite = T)
-            png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_mx_con", 
+            png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_mx_con",
                                   ".jpg"))
             plot(mx_cont, main = paste("Maxent - ", i))
             dev.off()
             if (write.projecao == T) {
-              writeRaster(x = mx_cont_proj, filename = paste0("./www/", projeto, 
+              writeRaster(x = mx_cont_proj, filename = paste0("./www/", projeto,
                                                               "/proj/pre_", i, "_mx_con_proj", ".tif"), overwrite = T)
             }
             if (write.future == T) {
-              writeRaster(x = mx_future, filename = paste0("./www/", projeto, 
+              writeRaster(x = mx_future, filename = paste0("./www/", projeto,
                                                            "/futuro/fut_", i, "_mx_con", ".tif"), overwrite = T)
-              png(filename = paste0("./www/", projeto, "/jpg/fut_", i, "_mx_con", 
+              png(filename = paste0("./www/", projeto, "/jpg/fut_", i, "_mx_con",
                                     ".jpg"))
               plot(mx_future, main = paste("Maxent - Fut ", i))
               dev.off()
             }
           }
           if (GLM == T) {
-            writeRaster(x = glm_cont, filename = paste0("./www/", projeto, 
+            writeRaster(x = glm_cont, filename = paste0("./www/", projeto,
                                                         "/models/pre_", i, "_glm_con", ".tif"), overwrite = T)
-            png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_glm_con", 
+            png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_glm_con",
                                   ".jpg"))
             plot(glm_cont, main = paste("GLM - ", i))
             dev.off()
             if (write.projecao == T) {
-              writeRaster(x = glm_cont_proj, filename = paste0("./www/", 
+              writeRaster(x = glm_cont_proj, filename = paste0("./www/",
                                                                projeto, "/proj/pre_", i, "_glm_con_proj", ".tif"), overwrite = T)
             }
             if (write.future == T) {
-              writeRaster(x = glm_future, filename = paste0("./www/", projeto, 
+              writeRaster(x = glm_future, filename = paste0("./www/", projeto,
                                                             "/futuro/fut_", i, "_glm_con", ".tif"), overwrite = T)
-              png(filename = paste0("./www/", projeto, "/jpg/fut_", i, "_glm_con", 
+              png(filename = paste0("./www/", projeto, "/jpg/fut_", i, "_glm_con",
                                     ".jpg"))
               plot(glm_future, main = paste("GLM - Fut ", i))
               dev.off()
             }
           }
           if (RF == T) {
-            writeRaster(x = rf1_cont, filename = paste0("./www/", projeto, 
+            writeRaster(x = rf1_cont, filename = paste0("./www/", projeto,
                                                         "/models/pre_", i, "_rf_con", ".tif"), overwrite = T)
-            png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_rf_con", 
+            png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_rf_con",
                                   ".jpg"))
             plot(rf1_cont, main = paste("RF - ", i))
             dev.off()
             if (write.projecao == T) {
-              writeRaster(x = rf1_cont_proj, filename = paste0("./www/", 
+              writeRaster(x = rf1_cont_proj, filename = paste0("./www/",
                                                                projeto, "/proj/pre_", i, "_rf_con_proj", ".tif"), overwrite = T)
             }
             if (write.future == T) {
-              writeRaster(x = rf1_future, filename = paste0("./www/", projeto, 
+              writeRaster(x = rf1_future, filename = paste0("./www/", projeto,
                                                             "/futuro/fut_", i, "_rf1_con", ".tif"), overwrite = T)
-              png(filename = paste0("./www/", projeto, "/jpg/fut_", i, "_rf1_con", 
+              png(filename = paste0("./www/", projeto, "/jpg/fut_", i, "_rf1_con",
                                     ".jpg"))
               plot(rf1_future, main = paste("RF - Fut ", i))
               dev.off()
             }
           }
           if (SVM == T) {
-            writeRaster(x = svm_cont, filename = paste0("./www/", projeto, 
+            writeRaster(x = svm_cont, filename = paste0("./www/", projeto,
                                                         "/models/pre_", i, "_svm_con", ".tif"), overwrite = T)
-            png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_svm_con", 
+            png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_svm_con",
                                   ".jpg"))
             plot(svm_cont, main = paste("SVM - ", i))
             dev.off()
             if (write.projecao == T) {
-              writeRaster(x = svm_cont_proj, filename = paste0("./www/", 
+              writeRaster(x = svm_cont_proj, filename = paste0("./www/",
                                                                projeto, "/proj/pre_", i, "_svm_con_proj", ".tif"), overwrite = T)
             }
             if (write.future == T) {
-              writeRaster(x = svm_future, filename = paste0("./www/", projeto, 
+              writeRaster(x = svm_future, filename = paste0("./www/", projeto,
                                                             "/futuro/fut_", i, "_svm_con", ".tif"), overwrite = T)
-              png(filename = paste0("./www/", projeto, "/jpg/fut_", i, "_svm_con", 
+              png(filename = paste0("./www/", projeto, "/jpg/fut_", i, "_svm_con",
                                     ".jpg"))
               plot(svm_future, main = paste("SVM - Fut ", i))
               dev.off()
             }
           }
           if (Mahal == T && condicao_Mahal == TRUE) {
-            writeRaster(x = ma_cont, filename = paste0("./www/", projeto, 
+            writeRaster(x = ma_cont, filename = paste0("./www/", projeto,
                                                        "/models/pre_", i, "_ma_con", ".tif"), overwrite = T)
-            png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_ma_con", 
+            png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_ma_con",
                                   ".jpg"))
             plot(ma_cont, main = paste("Mahalanobis - ", i))
             dev.off()
             if (write.projecao == T) {
-              writeRaster(x = ma_cont_proj, filename = paste0("./www/", projeto, 
+              writeRaster(x = ma_cont_proj, filename = paste0("./www/", projeto,
                                                               "/proj/pre_", i, "_ma_con_proj", ".tif"), overwrite = T)
             }
             if (write.future == T) {
-              writeRaster(x = ma_future, filename = paste0("./www/", projeto, 
+              writeRaster(x = ma_future, filename = paste0("./www/", projeto,
                                                            "/futuro/fut_", i, "_ma_con", ".tif"), overwrite = T)
-              png(filename = paste0("./www/", projeto, "/jpg/fut_", i, "_ma_con", 
+              png(filename = paste0("./www/", projeto, "/jpg/fut_", i, "_ma_con",
                                     ".jpg"))
               plot(ma_future, main = paste("Mahalanobis - Fut ", i))
               dev.off()
             }
           }
-        }  # Fecha escrita de modelos continuos
+        }  
         
-        ## Binary models
+        # Binary models
         if (write.bin == T) {
           cat(paste("Saving binary models...", sp, i, "\n"))
-          if (Bioclim == T) {
-            writeRaster(x = bc_bin, filename = paste0("./www/", projeto, 
+         
+           if (Bioclim == T) {
+            writeRaster(x = bc_bin, filename = paste0("./www/", projeto,
                                                       "/models/pre_", i, "_bc_bin", ".tif"), overwrite = T)
-            png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_bc_bin", 
+            png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_bc_bin",
                                   ".jpg"))
             plot(bc_bin, main = paste("Bioclim - Bin ", i))
             dev.off()
             if (write.future == T) {
-              writeRaster(x = bc_future_bin, filename = paste0("./www/", 
+              writeRaster(x = bc_future_bin, filename = paste0("./www/",
                                                                projeto, "/futuro/fut_", i, "_bc_bin", ".tif"), overwrite = T)
             }
           }
           if (Domain == T) {
-            writeRaster(x = do_bin, filename = paste0("./www/", projeto, 
+            writeRaster(x = do_bin, filename = paste0("./www/", projeto,
                                                       "/models/pre_", i, "_do_bin", ".tif"), overwrite = T)
-            png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_do_bin", 
+            png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_do_bin",
                                   ".jpg"))
             plot(do_bin, main = paste("Domain - Bin ", i))
             dev.off()
             if (write.future == T) {
-              writeRaster(x = do_future_bin, filename = paste0("./www/", 
+              writeRaster(x = do_future_bin, filename = paste0("./www/",
                                                                projeto, "/futuro/fut_", i, "_do_bin", ".tif"), overwrite = T)
             }
           }
-          if (maxent == T) {
-            writeRaster(x = mx_bin, filename = paste0("./www/", projeto, 
+          if (Maxent == T) {
+            writeRaster(x = mx_bin, filename = paste0("./www/", projeto,
                                                       "/models/pre_", i, "_mx_bin", ".tif"), overwrite = T)
-            png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_mx_bin", 
+            png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_mx_bin",
                                   ".jpg"))
             plot(mx_bin, main = paste("Maxent - Bin ", i))
             dev.off()
             if (write.future == T) {
-              writeRaster(x = mx_future_bin, filename = paste0("./www/", 
+              writeRaster(x = mx_future_bin, filename = paste0("./www/",
                                                                projeto, "/futuro/fut_", i, "_mx_bin", ".tif"), overwrite = T)
             }
           }
           if (GLM == T) {
-            writeRaster(x = glm_bin, filename = paste0("./www/", projeto, 
+            writeRaster(x = glm_bin, filename = paste0("./www/", projeto,
                                                        "/models/pre_", i, "_glm_bin", ".tif"), overwrite = T)
-            png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_glm_bin", 
+            png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_glm_bin",
                                   ".jpg"))
             plot(glm_bin, main = paste("GLM - Bin ", i))
             dev.off()
             if (write.future == T) {
-              writeRaster(x = glm_future_bin, filename = paste0("./www/", 
+              writeRaster(x = glm_future_bin, filename = paste0("./www/",
                                                                 projeto, "/futuro/fut_", i, "_glm_bin", ".tif"), overwrite = T)
             }
           }
           if (RF == T) {
-            writeRaster(x = rf1_bin, filename = paste0("./www/", projeto, 
+            writeRaster(x = rf1_bin, filename = paste0("./www/", projeto,
                                                        "/models/pre_", i, "_rf_bin", ".tif"), overwrite = T)
-            png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_rf_bin", 
+            png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_rf_bin",
                                   ".jpg"))
             plot(rf1_bin, main = paste("RF - Bin ", i))
             dev.off()
             if (write.future == T) {
-              writeRaster(x = rf1_future_bin, filename = paste0("./www/", 
+              writeRaster(x = rf1_future_bin, filename = paste0("./www/",
                                                                 projeto, "/futuro/fut_", i, "_rf_bin", ".tif"), overwrite = T)
             }
           }
           if (SVM == T) {
-            writeRaster(x = svm_bin, filename = paste0("./www/", projeto, 
+            writeRaster(x = svm_bin, filename = paste0("./www/", projeto,
                                                        "/models/pre_", i, "_svm_bin", ".tif"), overwrite = T)
-            png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_svm_bin", 
+            png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_svm_bin",
                                   ".jpg"))
             plot(svm_bin, main = paste("SVM - Bin ", i))
             dev.off()
             if (write.future == T) {
-              writeRaster(x = svm_future_bin, filename = paste0("./www/", 
+              writeRaster(x = svm_future_bin, filename = paste0("./www/",
                                                                 projeto, "/futuro/fut_", i, "_svm_bin", ".tif"), overwrite = T)
             }
           }
           if (Mahal == T && condicao_Mahal == TRUE) {
-            writeRaster(x = ma_bin, filename = paste0("./www/", projeto, 
+            writeRaster(x = ma_bin, filename = paste0("./www/", projeto,
                                                       "/models/pre_", i, "_ma_bin", ".tif"), overwrite = T)
-            png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_ma_bin", 
+            png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_ma_bin",
                                   ".jpg"))
             plot(ma_bin, main = paste("Mahalanobis - Bin ", i))
             dev.off()
             if (write.future == T) {
-              writeRaster(x = ma_future_bin, filename = paste0("./www/", 
+              writeRaster(x = ma_future_bin, filename = paste0("./www/",
                                                                projeto, "/futuro/fut_", i, "_ma_bin", ".tif"), overwrite = T)
             }
           }
-        }  # Fecha escrita de modelos binarios
+        }  
         
-        ## Multiplied models
+        ## Mult models
         if (write.mult == T) {
-          cat(paste("Salvando modelos multiplicados...", sp, i, "\n"))
           if (Bioclim == T) {
-            writeRaster(x = bc_mult, filename = paste0("./www/", projeto, 
+            writeRaster(x = bc_mult, filename = paste0("./www/", projeto,
                                                        "/models/pre_", i, "_bc_mult", ".tif"), overwrite = T)
             if (write.future == T) {
-              writeRaster(x = bc_future_mult, filename = paste0("./www/", 
+              writeRaster(x = bc_future_mult, filename = paste0("./www/",
                                                                 projeto, "/futuro/fut_", i, "_bc_mult", ".tif"), overwrite = T)
             }
           }
           if (Domain == T) {
-            writeRaster(x = do_mult, filename = paste0("./www/", projeto, 
+            writeRaster(x = do_mult, filename = paste0("./www/", projeto,
                                                        "/models/pre_", i, "_do_mult", ".tif"), overwrite = T)
             if (write.future == T) {
-              writeRaster(x = do_future_mult, filename = paste0("./www/", 
+              writeRaster(x = do_future_mult, filename = paste0("./www/",
                                                                 projeto, "/futuro/fut_", i, "_do_mult", ".tif"), overwrite = T)
             }
           }
-          if (maxent == T) {
-            writeRaster(x = mx_mult, filename = paste0("./www/", projeto, 
+          if (Maxent == T) {
+            writeRaster(x = mx_mult, filename = paste0("./www/", projeto,
                                                        "/models/pre_", i, "_mx_mult", ".tif"), overwrite = T)
             if (write.future == T) {
-              writeRaster(x = mx_future_mult, filename = paste0("./www/", 
+              writeRaster(x = mx_future_mult, filename = paste0("./www/",
                                                                 projeto, "/futuro/fut_", i, "_mx_mult", ".tif"), overwrite = T)
             }
           }
           if (GLM == T) {
-            writeRaster(x = glm_mult, filename = paste0("./www/", projeto, 
+            writeRaster(x = glm_mult, filename = paste0("./www/", projeto,
                                                         "/models/pre_", i, "_glm_mult", ".tif"), overwrite = T)
             if (write.future == T) {
-              writeRaster(x = glm_future_mult, filename = paste0("./www/", 
+              writeRaster(x = glm_future_mult, filename = paste0("./www/",
                                                                  projeto, "/futuro/fut_", i, "_glm_mult", ".tif"), overwrite = T)
             }
           }
           if (RF == T) {
-            writeRaster(x = rf1_mult, filename = paste0("./www/", projeto, 
+            writeRaster(x = rf1_mult, filename = paste0("./www/", projeto,
                                                         "/models/pre_", i, "_rf_mult", ".tif"), overwrite = T)
             if (write.future == T) {
-              writeRaster(x = rf1_future_mult, filename = paste0("./www/", 
+              writeRaster(x = rf1_future_mult, filename = paste0("./www/",
                                                                  projeto, "/futuro/fut_", i, "_rf_mult", ".tif"), overwrite = T)
             }
           }
           if (SVM == T) {
-            writeRaster(x = svm_mult, filename = paste0("./www/", projeto, 
+            writeRaster(x = svm_mult, filename = paste0("./www/", projeto,
                                                         "/models/pre_", i, "_svm_mult", ".tif"), overwrite = T)
             if (write.future == T) {
-              writeRaster(x = svm_future_mult, filename = paste0("./www/", 
+              writeRaster(x = svm_future_mult, filename = paste0("./www/",
                                                                  projeto, "/futuro/fut_", i, "_svm_mult", ".tif"), overwrite = T)
             }
           }
           if (Mahal == T && condicao_Mahal == TRUE) {
-            writeRaster(x = ma_mult, filename = paste0("./www/", projeto, 
+            writeRaster(x = ma_mult, filename = paste0("./www/", projeto,
                                                        "/models/pre_", i, "_ma_mult", ".tif"), overwrite = T)
             if (write.future == T) {
-              writeRaster(x = ma_future_mult, filename = paste0("./www/", 
+              writeRaster(x = ma_future_mult, filename = paste0("./www/",
                                                                 projeto, "/models/fut_", i, "_ma_mult", ".tif"), overwrite = T)
             }
           }
-        }  # Fecha escrita de modelos multiplicados
+        }  
         
-        ### Saving performance validation files (evaluate.txt)
+        ### Saving validation files (evaluate.txt)
         cat(paste("Saving validation files...", sp, i, "\n"))
         sink(file = paste0("./www/", projeto, "/models/evaluate_", sp, ".txt"), split = T, append = T)
         if (Bioclim == T) {
-          print(paste(sp, spname, i, "BioClim", round(ebc@auc, 3), round(bcTSS, 
-                                                                         3), round(tbc, 3), round(threshold(ebc)$kappa, 3), round(threshold(ebc)$equal_sens_spec, 
-                                                                                                                                  3), round(threshold(ebc)$no_omission, 3), round(threshold(ebc)$prevalence, 
-                                                                                                                                                                                  3), round(threshold(ebc)$sensitivity, 3), ebc@np, ebc@na, round(ebc@cor, 
+          print(paste(sp, spname, i, "BioClim", round(ebc@auc, 3), round(bcTSS,
+                                                                         3), round(tbc, 3), round(threshold(ebc)$kappa, 3), round(threshold(ebc)$equal_sens_spec,
+                                                                                                                                  3), round(threshold(ebc)$no_omission, 3), round(threshold(ebc)$prevalence,
+                                                                                                                                                                                  3), round(threshold(ebc)$sensitivity, 3), ebc@np, ebc@na, round(ebc@cor,
                                                                                                                                                                                                                                                   3), sep = ","))
         }
         if (Domain == T) {
-          print(paste(sp, spname, i, "Domain", round(edo@auc, 3), round(doTSS, 
-                                                                        3), round(tdo, 3), round(threshold(edo)$kappa, 3), round(threshold(edo)$equal_sens_spec, 
-                                                                                                                                 3), round(threshold(edo)$no_omission, 3), round(threshold(edo)$prevalence, 
-                                                                                                                                                                                 3), round(threshold(edo)$sensitivity, 3), edo@np, edo@na, round(edo@cor, 
+          print(paste(sp, spname, i, "Domain", round(edo@auc, 3), round(doTSS,
+                                                                        3), round(tdo, 3), round(threshold(edo)$kappa, 3), round(threshold(edo)$equal_sens_spec,
+                                                                                                                                 3), round(threshold(edo)$no_omission, 3), round(threshold(edo)$prevalence,
+                                                                                                                                                                                 3), round(threshold(edo)$sensitivity, 3), edo@np, edo@na, round(edo@cor,
                                                                                                                                                                                                                                                  3), sep = ","))
         }
-        if (maxent == T) {
-          print(paste(sp, spname, i, "maxent", round(emx@auc, 3), round(mxTSS, 
-                                                                        3), round(tmx, 3), round(threshold(emx)$kappa, 3), round(threshold(emx)$equal_sens_spec, 
-                                                                                                                                 3), round(threshold(emx)$no_omission, 3), round(threshold(emx)$prevalence, 
-                                                                                                                                                                                 3), round(threshold(emx)$sensitivity, 3), emx@np, emx@na, round(emx@cor, 
+        if (Maxent == T) {
+          print(paste(sp, spname, i, "maxent", round(emx@auc, 3), round(mxTSS,
+                                                                        3), round(tmx, 3), round(threshold(emx)$kappa, 3), round(threshold(emx)$equal_sens_spec,
+                                                                                                                                 3), round(threshold(emx)$no_omission, 3), round(threshold(emx)$prevalence,
+                                                                                                                                                                                 3), round(threshold(emx)$sensitivity, 3), emx@np, emx@na, round(emx@cor,
                                                                                                                                                                                                                                                  3), sep = ","))
         }
         if (GLM == T) {
-          print(paste(sp, spname, i, "GLM", round(eglm@auc, 3), round(glmTSS, 
-                                                                      3), round(tglm, 3), round(threshold(eglm)$kappa, 3), round(threshold(eglm)$equal_sens_spec, 
-                                                                                                                                 3), round(threshold(eglm)$no_omission, 3), round(threshold(eglm)$prevalence, 
-                                                                                                                                                                                  3), round(threshold(eglm)$sensitivity, 3), eglm@np, eglm@na, round(eglm@cor, 
+          print(paste(sp, spname, i, "GLM", round(eglm@auc, 3), round(glmTSS,
+                                                                      3), round(tglm, 3), round(threshold(eglm)$kappa, 3), round(threshold(eglm)$equal_sens_spec,
+                                                                                                                                 3), round(threshold(eglm)$no_omission, 3), round(threshold(eglm)$prevalence,
+                                                                                                                                                                                  3), round(threshold(eglm)$sensitivity, 3), eglm@np, eglm@na, round(eglm@cor,
                                                                                                                                                                                                                                                      3), sep = ","))
         }
         if (RF == T) {
-          print(paste(sp, spname, i, "RF", round(erf1@auc, 3), round(rfTSS1, 
-                                                                     3), round(trf1, 3), round(threshold(erf1)$kappa, 3), round(threshold(erf1)$equal_sens_spec, 
-                                                                                                                                3), round(threshold(erf1)$no_omission, 3), round(threshold(erf1)$prevalence, 
-                                                                                                                                                                                 3), round(threshold(erf1)$sensitivity, 3), erf1@np, erf1@na, round(erf1@cor, 
+          print(paste(sp, spname, i, "RF", round(erf1@auc, 3), round(rfTSS1,
+                                                                     3), round(trf1, 3), round(threshold(erf1)$kappa, 3), round(threshold(erf1)$equal_sens_spec,
+                                                                                                                                3), round(threshold(erf1)$no_omission, 3), round(threshold(erf1)$prevalence,
+                                                                                                                                                                                 3), round(threshold(erf1)$sensitivity, 3), erf1@np, erf1@na, round(erf1@cor,
                                                                                                                                                                                                                                                     3), sep = ","))
         }
         if (SVM == T) {
-          print(paste(sp, spname, i, "SVM", round(esvm@auc, 3), round(svmTSS, 
-                                                                      3), round(tsvm, 3), round(threshold(esvm)$kappa, 3), round(threshold(esvm)$equal_sens_spec, 
-                                                                                                                                 3), round(threshold(esvm)$no_omission, 3), round(threshold(esvm)$prevalence, 
-                                                                                                                                                                                  3), round(threshold(esvm)$sensitivity, 3), esvm@np, esvm@na, round(esvm@cor, 
+          print(paste(sp, spname, i, "SVM", round(esvm@auc, 3), round(svmTSS,
+                                                                      3), round(tsvm, 3), round(threshold(esvm)$kappa, 3), round(threshold(esvm)$equal_sens_spec,
+                                                                                                                                 3), round(threshold(esvm)$no_omission, 3), round(threshold(esvm)$prevalence,
+                                                                                                                                                                                  3), round(threshold(esvm)$sensitivity, 3), esvm@np, esvm@na, round(esvm@cor,
                                                                                                                                                                                                                                                      3), sep = ","))
         }
         if (Mahal == T && condicao_Mahal == TRUE) {
-          print(paste(sp, sp, i, "Mahal", round(ema@auc, 3), round(maTSS, 3), 
-                      round(tma, 3), round(threshold(ema)$kappa, 3), round(threshold(ema)$equal_sens_spec, 
-                                                                           3), round(threshold(ema)$no_omission, 3), round(threshold(ema)$prevalence, 
-                                                                                                                           3), round(threshold(ema)$sensitivity, 3), ema@np, ema@na, round(ema@cor, 
+          print(paste(sp, sp, i, "Mahal", round(ema@auc, 3), round(maTSS, 3),
+                      round(tma, 3), round(threshold(ema)$kappa, 3), round(threshold(ema)$equal_sens_spec,
+                                                                           3), round(threshold(ema)$no_omission, 3), round(threshold(ema)$prevalence,
+                                                                                                                           3), round(threshold(ema)$sensitivity, 3), ema@np, ema@na, round(ema@cor,
                                                                                                                                                                                            3), sep = ","))
         }
         sink()
@@ -955,52 +876,52 @@ function(input, output, session) {
           ), sep = ","))
         }
         if (Domain == T) {
-          print(paste(sp, spname, i, "Domain", round(edo@auc, 3), round(doTSS, 
-                                                                        3), round(tdo, 3), round(threshold(edo)$kappa, 3), round(threshold(edo)$equal_sens_spec, 
-                                                                                                                                 3), round(threshold(edo)$no_omission, 3), round(threshold(edo)$prevalence, 
-                                                                                                                                                                                 3), round(threshold(edo)$sensitivity, 3), edo@np, edo@na, round(edo@cor, 
+          print(paste(sp, spname, i, "Domain", round(edo@auc, 3), round(doTSS,
+                                                                        3), round(tdo, 3), round(threshold(edo)$kappa, 3), round(threshold(edo)$equal_sens_spec,
+                                                                                                                                 3), round(threshold(edo)$no_omission, 3), round(threshold(edo)$prevalence,
+                                                                                                                                                                                 3), round(threshold(edo)$sensitivity, 3), edo@np, edo@na, round(edo@cor,
                                                                                                                                                                                                                                                  3), sep = ","))
         }
-        if (maxent == T) {
-          print(paste(sp, spname, i, "maxent", round(emx@auc, 3), round(mxTSS, 
-                                                                        3), round(tmx, 3), round(threshold(emx)$kappa, 3), round(threshold(emx)$equal_sens_spec, 
-                                                                                                                                 3), round(threshold(emx)$no_omission, 3), round(threshold(emx)$prevalence, 
-                                                                                                                                                                                 3), round(threshold(emx)$sensitivity, 3), emx@np, emx@na, round(emx@cor, 
+        if (Maxent == T) {
+          print(paste(sp, spname, i, "maxent", round(emx@auc, 3), round(mxTSS,
+                                                                        3), round(tmx, 3), round(threshold(emx)$kappa, 3), round(threshold(emx)$equal_sens_spec,
+                                                                                                                                 3), round(threshold(emx)$no_omission, 3), round(threshold(emx)$prevalence,
+                                                                                                                                                                                 3), round(threshold(emx)$sensitivity, 3), emx@np, emx@na, round(emx@cor,
                                                                                                                                                                                                                                                  3), sep = ","))
         }
         if (GLM == T) {
-          print(paste(sp, spname, i, "GLM", round(eglm@auc, 3), round(glmTSS, 
-                                                                      3), round(tglm, 3), round(threshold(eglm)$kappa, 3), round(threshold(eglm)$equal_sens_spec, 
-                                                                                                                                 3), round(threshold(eglm)$no_omission, 3), round(threshold(eglm)$prevalence, 
-                                                                                                                                                                                  3), round(threshold(eglm)$sensitivity, 3), eglm@np, eglm@na, round(eglm@cor, 
+          print(paste(sp, spname, i, "GLM", round(eglm@auc, 3), round(glmTSS,
+                                                                      3), round(tglm, 3), round(threshold(eglm)$kappa, 3), round(threshold(eglm)$equal_sens_spec,
+                                                                                                                                 3), round(threshold(eglm)$no_omission, 3), round(threshold(eglm)$prevalence,
+                                                                                                                                                                                  3), round(threshold(eglm)$sensitivity, 3), eglm@np, eglm@na, round(eglm@cor,
                                                                                                                                                                                                                                                      3), sep = ","))
         }
         if (RF == T) {
-          print(paste(sp, spname, i, "RF", round(erf1@auc, 3), round(rfTSS1, 
-                                                                     3), round(trf1, 3), round(threshold(erf1)$kappa, 3), round(threshold(erf1)$equal_sens_spec, 
-                                                                                                                                3), round(threshold(erf1)$no_omission, 3), round(threshold(erf1)$prevalence, 
-                                                                                                                                                                                 3), round(threshold(erf1)$sensitivity, 3), erf1@np, erf1@na, round(erf1@cor, 
+          print(paste(sp, spname, i, "RF", round(erf1@auc, 3), round(rfTSS1,
+                                                                     3), round(trf1, 3), round(threshold(erf1)$kappa, 3), round(threshold(erf1)$equal_sens_spec,
+                                                                                                                                3), round(threshold(erf1)$no_omission, 3), round(threshold(erf1)$prevalence,
+                                                                                                                                                                                 3), round(threshold(erf1)$sensitivity, 3), erf1@np, erf1@na, round(erf1@cor,
                                                                                                                                                                                                                                                     3), sep = ","))
         }
         if (SVM == T) {
-          print(paste(sp, spname, i, "SVM", round(esvm@auc, 3), round(svmTSS, 
-                                                                      3), round(tsvm, 3), round(threshold(esvm)$kappa, 3), round(threshold(esvm)$equal_sens_spec, 
-                                                                                                                                 3), round(threshold(esvm)$no_omission, 3), round(threshold(esvm)$prevalence, 
-                                                                                                                                                                                  3), round(threshold(esvm)$sensitivity, 3), esvm@np, esvm@na, round(esvm@cor, 
+          print(paste(sp, spname, i, "SVM", round(esvm@auc, 3), round(svmTSS,
+                                                                      3), round(tsvm, 3), round(threshold(esvm)$kappa, 3), round(threshold(esvm)$equal_sens_spec,
+                                                                                                                                 3), round(threshold(esvm)$no_omission, 3), round(threshold(esvm)$prevalence,
+                                                                                                                                                                                  3), round(threshold(esvm)$sensitivity, 3), esvm@np, esvm@na, round(esvm@cor,
                                                                                                                                                                                                                                                      3), sep = ","))
         }
         if (Mahal == T && condicao_Mahal == TRUE) {
-          print(paste(sp, spname, i, "Mahal", round(ema@auc, 3), round(maTSS, 
-                                                                       3), round(tma, 3), round(threshold(ema)$kappa, 3), round(threshold(ema)$equal_sens_spec, 
-                                                                                                                                3), round(threshold(ema)$no_omission, 3), round(threshold(ema)$prevalence, 
-                                                                                                                                                                                3), round(threshold(ema)$sensitivity, 3), ema@np, ema@na, round(ema@cor, 
+          print(paste(sp, spname, i, "Mahal", round(ema@auc, 3), round(maTSS,
+                                                                       3), round(tma, 3), round(threshold(ema)$kappa, 3), round(threshold(ema)$equal_sens_spec,
+                                                                                                                                3), round(threshold(ema)$no_omission, 3), round(threshold(ema)$prevalence,
+                                                                                                                                                                                3), round(threshold(ema)$sensitivity, 3), ema@np, ema@na, round(ema@cor,
                                                                                                                                                                                                                                                 3), sep = ","))
         }
         sink()
         
-        stats <- read.delim(file = paste0("./www/", projeto, "/models/evaluate_ALL_models.txt"), 
-                            header = F, sep = ",", quote = "", col.names = c("id", "sp", "part", 
-                                                                             "algorithm", "AUC", "TSS", "TSSth", "Kappa", "Equal_sens_spec", 
+        stats <- read.delim(file = paste0("./www/", projeto, "/models/evaluate_ALL_models.txt"),
+                            header = F, sep = ",", quote = "", col.names = c("id", "sp", "part",
+                                                                             "algorithm", "AUC", "TSS", "TSSth", "Kappa", "Equal_sens_spec",
                                                                              "No_omission", "Prevalence", "Sensitivity", "np", "na", "Cor"))
         stats$Sensitivity <- as.numeric(sub(pattern = "\"", "", stats$Sensitivity))
         stats20 <- stats[order(stats$sp, stats$algorithm, stats$part), -1]
@@ -1009,32 +930,45 @@ function(input, output, session) {
         output$dbgridresultado <- renderDataTable({
           stats20
         }, options = list(lengthMenu = c(5, 30, 50), pageLength = 10))
-      }  # Fecha o for loop
+      }  # For
       
       output$dbgridresultado <- renderDataTable({
         cat(c(date(), "Exhibiting stats20 results", "\n", "\n"))
         stats20
       }, options = list(lengthMenu = c(5, 30, 50), pageLength = 10))
       
-      # The sinked files are re-read and tranformed into a proper data frame...
+      # The sinked files are re-read and transformed into a proper data frame...
       
       cat(c(date(), " == ==  FIM == ==  ", "\n", "\n"))
       
-      # Writing ENSEMBLE FILES -------------------------------------------------
-      
-      # Model Ensemble 
+      # WRITING ENSEMBLE FILES -------------------------------------------------
+      # Model Ensemble
       conta_alg = 0
       algoritmos = ""
+      if (input$BIOCLIM == TRUE) {
+        conta_alg = conta_alg + 1
+        algoritmos <- paste(algoritmos, "Bioclim")
+        bioclim_arquivos <- list.files(paste0("./www/", projeto, "/models/"),
+                                       full.names = T, pattern = paste0("bc_con.tif"))
+        bc_raster <- stack(bioclim_arquivos)
+        ensemble.bc <- mean(bc_raster, bc_raster)
+        writeRaster(ensemble.bc, filename = paste0("www/", projeto, "/final/",
+                                                   "bc_ensemble.tif"), format = "GTiff", overwrite = T)
+        png(filename = paste0("./www/", projeto, "/jpg/bc_ensemble", ".jpg"))
+        dev.off()
+        plot(ensemble.bc, main = paste("BIOCLIM - Ensemble"))
+        points(occur.data.coord, bg = "red", cex = 1, pch = 21)
+        dev.off()
+      }
       if (input$GLM == TRUE) {
         conta_alg = conta_alg + 1
         algoritmos <- paste(algoritmos, "GLM")
-        glm_arquivos <- list.files(paste0("./www/", projeto, "/models/"), full.names = T, 
+        glm_arquivos <- list.files(paste0("./www/", projeto, "/models/"), full.names = T,
                                    pattern = paste0("glm_con.tif"))
         glm_raster <- stack(glm_arquivos)
         ensemble.glm <- mean(glm_raster, glm_raster)
-        writeRaster(ensemble.glm, filename = paste0("www/", projeto, "/final/", 
+        writeRaster(ensemble.glm, filename = paste0("www/", projeto, "/final/",
                                                     "glm_ensemble.tif"), format = "GTiff", overwrite = T)
-        # plot( ensemble.glm, main=paste('(GLM - Ensemble)'))
         png(filename = paste0("./www/", projeto, "/jpg/glm_ensemble", ".jpg"))
         plot(ensemble.glm, main = paste("GLM - Ensemble "))
         points(occur.data.coord, bg = "red", cex = 1, pch = 21)
@@ -1043,43 +977,27 @@ function(input, output, session) {
       if (input$RF == TRUE) {
         conta_alg = conta_alg + 1
         algoritmos <- paste(algoritmos, "RF")
-        rf_arquivos <- list.files(paste0("./www/", projeto, "/models/"), full.names = T, 
+        rf_arquivos <- list.files(paste0("./www/", projeto, "/models/"), full.names = T,
                                   pattern = paste0("rf_con.tif"))
         rf_raster <- stack(rf_arquivos)
         ensemble.rf <- mean(rf_raster, rf_raster)
-        writeRaster(ensemble.rf, filename = paste0("www/", projeto, "/final/", 
+        writeRaster(ensemble.rf, filename = paste0("www/", projeto, "/final/",
                                                    "rf_ensemble.tif"), format = "GTiff", overwrite = T)
-        # plot( ensemble.rf, main=paste('(RF - Ensemble)'))
         png(filename = paste0("./www/", projeto, "/jpg/rf_ensemble", ".jpg"))
         plot(ensemble.rf, main = paste("RF - Ensemble"))
         points(occur.data.coord, bg = "red", cex = 1, pch = 21)
         dev.off()
       }
-      if (input$BIOCLIM == TRUE) {
-        conta_alg = conta_alg + 1
-        algoritmos <- paste(algoritmos, "Bioclim")
-        bioclim_arquivos <- list.files(paste0("./www/", projeto, "/models/"), 
-                                       full.names = T, pattern = paste0("bc_con.tif"))
-        bc_raster <- stack(bioclim_arquivos)
-        ensemble.bc <- mean(bc_raster, bc_raster)
-        writeRaster(ensemble.bc, filename = paste0("www/", projeto, "/final/", 
-                                                   "bc_ensemble.tif"), format = "GTiff", overwrite = T)
-        # plot( ensemble.bc, main=paste('BIOCLIM - Ensemble'))
-        png(filename = paste0("./www/", projeto, "/jpg/bc_ensemble", ".jpg"))
-        plot(ensemble.bc, main = paste("BIOCLIM - Ensemble"))
-        points(occur.data.coord, bg = "red", cex = 1, pch = 21)
-        dev.off()
-      }
+      
       if (input$DOMAIN == TRUE) {
         conta_alg = conta_alg + 1
         algoritmos <- paste(algoritmos, "Domain")
-        domain_arquivos <- list.files(paste0("./www/", projeto, "/models/"), 
+        domain_arquivos <- list.files(paste0("./www/", projeto, "/models/"),
                                       full.names = T, pattern = paste0("do_con.tif"))
         do_raster <- stack(domain_arquivos)
         ensemble.do <- mean(do_raster, do_raster)
-        writeRaster(ensemble.do, filename = paste0("www/", projeto, "/final/", 
+        writeRaster(ensemble.do, filename = paste0("www/", projeto, "/final/",
                                                    "do_ensemble.tif"), format = "GTiff", overwrite = T)
-        # plot( ensemble.bc, main=paste('BIOCLIM - Ensemble'))
         png(filename = paste0("./www/", projeto, "/jpg/do_ensemble", ".jpg"))
         plot(ensemble.do, main = paste("Domain - Ensemble"))
         points(occur.data.coord, bg = "red", cex = 1, pch = 21)
@@ -1088,13 +1006,12 @@ function(input, output, session) {
       if (input$MAHALANOBIS == TRUE) {
         conta_alg = conta_alg + 1
         algoritmos <- paste(algoritmos, "Mahalanobis")
-        maha_arquivos <- list.files(paste0("./www/", projeto, "/models/"), full.names = T, 
+        maha_arquivos <- list.files(paste0("./www/", projeto, "/models/"), full.names = T,
                                     pattern = paste0("ma_con.tif"))
         ma_raster <- stack(maha_arquivos)
         ensemble.ma <- mean(ma_raster, ma_raster)
-        writeRaster(ensemble.ma, filename = paste0("www/", projeto, "/final/", 
+        writeRaster(ensemble.ma, filename = paste0("www/", projeto, "/final/",
                                                    "ma_ensemble.tif"), format = "GTiff", overwrite = T)
-        # plot( ensemble.ma, main=paste('(MAHALANOBIS - Ensemble)'))
         png(filename = paste0("./www/", projeto, "/jpg/ma_ensemble", ".jpg"))
         plot(ensemble.ma, main = paste("MAHALANOBIS - Ensemble"))
         points(occur.data.coord, bg = "red", cex = 1, pch = 21)
@@ -1103,13 +1020,12 @@ function(input, output, session) {
       if (input$SVM == TRUE) {
         conta_alg = conta_alg + 1
         algoritmos <- paste(algoritmos, "SVM")
-        svm_arquivos <- list.files(paste0("./www/", projeto, "/models/"), full.names = T, 
+        svm_arquivos <- list.files(paste0("./www/", projeto, "/models/"), full.names = T,
                                    pattern = paste0("svm_con.tif"))
         svm_raster <- stack(svm_arquivos)
         ensemble.svm <- mean(svm_raster, svm_raster)
-        writeRaster(ensemble.svm, filename = paste0("www/", projeto, "/final/", 
+        writeRaster(ensemble.svm, filename = paste0("www/", projeto, "/final/",
                                                     "svm_ensemble.tif"), format = "GTiff", overwrite = T)
-        # plot( ensemble.svm, main=paste('(SVM - Ensemble)'))
         png(filename = paste0("./www/", projeto, "/jpg/svm_ensemble", ".jpg"))
         plot(ensemble.svm, main = paste("SVM - Ensemble"))
         points(occur.data.coord, bg = "red", cex = 1, pch = 21)
@@ -1118,20 +1034,19 @@ function(input, output, session) {
       if (input$MAXENT == TRUE) {
         conta_alg = conta_alg + 1
         algoritmos <- paste(algoritmos, "Maxent")
-        mx_arquivos <- list.files(paste0("./www/", projeto, "/models/"), full.names = T, 
+        mx_arquivos <- list.files(paste0("./www/", projeto, "/models/"), full.names = T,
                                   pattern = paste0("mx_con.tif"))
         mx_raster <- stack(mx_arquivos)
         ensemble.mx <- mean(mx_raster, mx_raster)
-        writeRaster(ensemble.mx, filename = paste0("www/", projeto, "/final/", 
+        writeRaster(ensemble.mx, filename = paste0("www/", projeto, "/final/",
                                                    "mx_ensemble.tif"), format = "GTiff", overwrite = T)
-        # plot (ensemble.mx, main=paste('(MAXENT - Ensemble)'))
         png(filename = paste0("./www/", projeto, "/jpg/mx_ensemble", ".jpg"))
         plot(ensemble.mx, main = paste("MAXENT - Ensemble"))
         points(occur.data.coord, bg = "red", cex = 1, pch = 21)
         dev.off()
       }
       
-      # Final Ensemble 
+      # Final Ensemble
       ensemble_arquivos <-
         list.files(paste0("./www/", projeto, "/final/"), full.names = T,
                    pattern = paste0("ensemble.tif")
@@ -1139,7 +1054,7 @@ function(input, output, session) {
       if (conta_alg > 1) {
         ensemble_raster <- stack(ensemble_arquivos)
         ensemble.geral <- mean(ensemble_raster, ensemble_raster)
-        writeRaster(ensemble.geral, filename = paste0("www/", projeto, "/final/", 
+        writeRaster(ensemble.geral, filename = paste0("www/", projeto, "/final/",
                                                       "ensemble_geral.tif"), format = "GTiff", overwrite = T)
         png(filename = paste0("./www/", projeto, "/jpg/ensemble_geral", ".jpg"))
         plot(ensemble.geral, main = paste("Ensemble ", algoritmos))
@@ -1147,51 +1062,48 @@ function(input, output, session) {
         dev.off()
       }
       
-      # Future projection ensemble
+      # Future proj. 
       if (future.model == T) {
-        ensemble_futuro_arquivos <- list.files(paste0("./www/", projeto, "/futuro/"), 
+        ensemble_futuro_arquivos <- list.files(paste0("./www/", projeto, "/futuro/"),
                                                full.names = T, pattern = paste0("con"))
         ensemble_futuro_raster <- stack(ensemble_futuro_arquivos)
         ensemble_futuro.geral <- mean(ensemble_futuro_raster, ensemble_futuro_raster)
-        writeRaster(ensemble_futuro.geral, filename = paste0("www/", projeto, 
+        writeRaster(ensemble_futuro.geral, filename = paste0("www/", projeto,
                                                              "/final/", "ensemble_futuro_geral.tif"), format = "GTiff", overwrite = T)
-        plot(ensemble_futuro.geral, main = paste("Ensemble Futuro", ""))
+       # plot(ensemble_futuro.geral, main = paste("Ensemble Futuro", ""))
         png(filename = paste0("./www/", projeto, "/jpg/ensemble_futuro", ".jpg"))
         plot(ensemble_futuro.geral, main = paste("Ensemble Futuro ", ""))
         dev.off()
-        ## Close future proj. ensemble
       }
       
-      # Geographic projection ensemble
+      # Geographic proj. 
       if (write.projecao == T) {
-        ensemble_arquivos_projecao <- list.files(paste0("./www/", projeto, "/proj/"), 
+        ensemble_arquivos_projecao <- list.files(paste0("./www/", projeto, "/proj/"),
                                                  full.names = T, pattern = paste0("proj.tif"))
         ensemble_raster_projecao <- stack(ensemble_arquivos_projecao)
         ensemble.projecao <- mean(ensemble_raster_projecao, ensemble_raster_projecao)
-        writeRaster(ensemble.projecao, filename = paste0("www/", projeto, "/final/", 
+        writeRaster(ensemble.projecao, filename = paste0("www/", projeto, "/final/",
                                                          "proj_ensemble.tif"), format = "GTiff", overwrite = T)
         plot(ensemble.projecao, main = paste("Ensemble Projeção"))
         png(filename = paste0("./www/", projeto, "/jpg/ensemble_projecao", ".jpg"))
         plot(ensemble.projecao, main = paste("Ensemble Projeção"))
         dev.off()
-      } # Close geographic proj. ensemble
-      
+      } 
     })  # ISOLATE
     
+    # select partitions by TSS value
     library("data.table")
     cat(paste("Reading evaluation files", "\n"))
-    evall3 <- list.files(path = paste0("./www/", projeto, "/models", "/"), pattern = paste0("statsALL.txt"), 
+    evall3 <- list.files(path = paste0("./www/", projeto, "/models", "/"), pattern = paste0("statsALL.txt"),
                          full.names = T)
     lista3 <- list()
     for (i in 1:length(evall3)) {
       lista3[[i]] <- read.table(file = evall3[i], header = T, row.names = 1)
     }
+    
     stats3 <- rbindlist(lista3)
     stats3 <- as.data.frame(stats3)
-    
-    # Extracts only for the selected algorithm
     algoritmos <- unique(stats3$algorithm)
-    
     for (algo in algoritmos) {
       stats2 <- stats3[stats3$algorithm == algo, ]
       if (algo == "BioClim") {
@@ -1216,10 +1128,9 @@ function(input, output, session) {
         algo <- "do"
       }
       
-      part <- nrow(stats2)  #How many partitions were there
-      
+      part <- nrow(stats2) 
       cat(paste("Reading models from .tif files", "\n"))
-      modelos <- list.files(path = paste0("./www/", projeto, "/models", "/"), full.names = T, 
+      modelos <- list.files(path = paste0("./www/", projeto, "/models", "/"), full.names = T,
                             pattern = paste0(algo, "_con"))
       mod <- stack(modelos)  #(0)
       names(mod) <- paste0("Partition", 1:part)
@@ -1230,7 +1141,7 @@ function(input, output, session) {
       sel.index <- which(stats2[, "TSS"] >= TSS.value)
       mod.sel <- mod[[sel.index]]
       
-      if (length(sel.index) == 0) 
+      if (length(sel.index) == 0)
         cat(paste("No partition was selected for", "\n"))
       
       if (length(sel.index) > 0) {
@@ -1242,17 +1153,16 @@ function(input, output, session) {
       
       # In case just one partition is selected, several models are the same
       if (length(sel.index) == 1) {
-        cat(paste(length(sel.index), "partitions was selected for", sp))
+        cat(paste(length(sel.index), "partition was selected for", sp))
         final.sel.cont <- mod.sel  #(1)(2)
         final.sel.bin <- bin.sel  #(5)(3)(7) (8)
         final.sel.cut <- cut.sel  #(4)(6)(9)(10)
-        final <- stack(mod.sel, bin.sel, cut.sel, bin.sel, bin.sel, cut.sel, 
+        final <- stack(mod.sel, bin.sel, cut.sel, bin.sel, bin.sel, cut.sel,
                        cut.sel)
-        names(final) <- c("2_Final_cont_mean_", "3_Final_bin_mean_", "4_Final_cut_mean_", 
+        names(final) <- c("2_Final_cont_mean_", "3_Final_bin_mean_", "4_Final_cut_mean_",
                           "7_Final_mean_bin_", "8_Final_inter_bin_", "9_Mean_cut_sel_", "10_inter_cut_sel_")
       }
       
-      # en caso de que sean aplica el mapa
       if (length(sel.index) > 1) {
         cat(paste(length(sel.index), "partitions were selected for"))
         final.cont.mean <- mean(mod.sel)  #(2)
@@ -1262,23 +1172,24 @@ function(input, output, session) {
         final.inter <- prod(bin.sel)  #(8)
         mean.cut.sel <- mean(cut.sel)  #(9)
         inter.cut.sel <- prod(cut.sel)  #(10)
-        final <- stack(final.cont.mean, final.bin.mean, final.cut.mean, final.sel.bin, 
+        final <- stack(final.cont.mean, final.bin.mean, final.cut.mean, final.sel.bin,
                        final.inter, mean.cut.sel, inter.cut.sel)
-        names(final) <- c("2_Final.cont.mean_", "3_Final.bin.mean_", "4_Final.cut.mean_", 
+        names(final) <- c("2_Final.cont.mean_", "3_Final.bin.mean_", "4_Final.cut.mean_",
                           "7_Final.mean.bin_", "8_Final.inter.bin_", "9_Mean.cut.sel_", "10_inter.cut.sel_")
-        writeRaster(x = final.cont.mean, filename = paste0("./www/", projeto, 
+        
+        writeRaster(x = final.cont.mean, filename = paste0("./www/", projeto,
                                                            "/final", "/2_Final_cont_mean_", algo), overwrite = T, format = "GTiff")
-        writeRaster(x = final.bin.mean, filename = paste0("./www/", projeto, 
+        writeRaster(x = final.bin.mean, filename = paste0("./www/", projeto,
                                                           "/final", "/3_Final_bin_mean_", algo), overwrite = T, format = "GTiff")
-        writeRaster(x = final.cut.mean, filename = paste0("./www/", projeto, 
+        writeRaster(x = final.cut.mean, filename = paste0("./www/", projeto,
                                                           "/final", "/4_Final_cut_mean_", algo), overwrite = T, format = "GTiff")
-        writeRaster(x = final.sel.bin, filename = paste0("./www/", projeto, "/final", 
+        writeRaster(x = final.sel.bin, filename = paste0("./www/", projeto, "/final",
                                                          "/7_Final_mean_bin_", algo), overwrite = T, format = "GTiff")
-        writeRaster(x = final.inter, filename = paste0("./www/", projeto, "/final", 
+        writeRaster(x = final.inter, filename = paste0("./www/", projeto, "/final",
                                                        "/8_Final_inter_bin_", algo), overwrite = T, format = "GTiff")
-        writeRaster(x = mean.cut.sel, filename = paste0("./www/", projeto, "/final", 
+        writeRaster(x = mean.cut.sel, filename = paste0("./www/", projeto, "/final",
                                                         "/9_Mean_cut_sel_", algo), overwrite = T, format = "GTiff")
-        writeRaster(x = inter.cut.sel, filename = paste0("./www/", projeto, "/final", 
+        writeRaster(x = inter.cut.sel, filename = paste0("./www/", projeto, "/final",
                                                          "/10_inter_cut_sel_", algo), overwrite = T, format = "GTiff")
       }
       
@@ -1286,15 +1197,14 @@ function(input, output, session) {
         # Writes mean binary of the selected partitions
         #writeRaster(x=final,filename=paste0('./www/',projeto,'/final','/',names(final),algo),bylayer=T,overwrite=T,format='GTiff')
         for (i in 1:dim(final)[[3]]) {
-          png(filename = paste0("./www/", projeto, "/final", "/", names(final)[i], 
+          png(filename = paste0("./www/", projeto, "/final", "/", names(final)[i],
                                 algo, ".png"))
           plot(final[[i]], main = paste0(names(final)[i], algo))
           dev.off()
         }
       }
-      
-    }  # closes for loop
-  }  # Closing dismo.mod
+    } 
+    }
   
   
   # MODELING FUNCTION ----------------------------------------------------------
@@ -1302,39 +1212,21 @@ function(input, output, session) {
     limparResultadosAnteriores()
     library(raster)
     
-   # future.model = FALSE
-    # future.raster = list()
-    #write.forecasting = FALSE
     write.projecao = FALSE
-    
     if (input$project_ext == T) {
       write.projecao = T
     }
     
     futuro = FALSE
-   # if (write_forecasting == T && !is.null(pred_nf_forecasting)) {
-    if (write_forecasting == T) {
+    if ( write_timeproj == T) {
       futuro = TRUE
-      # write.forecasting <<- T
-      #pred_nffuturo <<- pred_nf_forecasting
-      #future.raster <<- pred_nf_forecasting
     }
-    
-    # dismo.mod("", occur.data.coord, pred_nf, pred_nf2, 
-    # input$MAXENT, input$BIOCLIM, input$GLM,input$RF, input$SVM, input$MAHALANOBIS, input$DOMAIN, input$SVM2, 
-    # input$edtnumgrupo, input$edtnumpontos, 123, T, T, T, F, F, input$edtTSS,
-    #   future.model, future.raster,write.forecasting, 
-    #     write.projecao)
-    
-    
     
     dismo.mod("", occur.data.coord, pred_nf, pred_nf2, 
               input$MAXENT,input$BIOCLIM,input$GLM,input$RF,input$SVM,input$MAHALANOBIS,input$DOMAIN,input$SVM2,
               input$edtnumgrupo, input$edtnumpontos, 123, T, T, T, F, F, input$edtTSS,
               futuro, pred_nffuturo, futuro,
               write.projecao)
-    
-    
     
     progress$set(message = "Saving data...", value = 0)
     write.csv(occur.data.coord, file = paste0("www/", projeto, "/csv/Occurence_data.csv"))
@@ -1354,7 +1246,6 @@ function(input, output, session) {
     }
     
     maparesultado_model_proj <- function() {
-      
       if (file.exists(paste0("www/", projeto, "/final/proj_ensemble.tif")) && input$project_ext == TRUE) {
         rproj <- raster::raster(paste0("www/", projeto, "/final/proj_ensemble.tif"))
         palproj <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(rproj), na.color = "transparent")
@@ -1470,7 +1361,7 @@ function(input, output, session) {
     })
     
     output$uiarquivosprojecaofuturo <- renderUI({
-      lista_futuro <- list.files(paste0("www/", projeto, "futuro"), full.names = F,
+      lista_futuro <- list.files(paste0("www/", projeto, "/futuro"), full.names = F,
                                  pattern = paste0(".tif"))
       lapply(1:length(sort(lista_futuro)), function(i) {
         tags$div(tags$a(href = paste0(home, projeto, "/futuro/", lista_futuro[i]),
@@ -1554,29 +1445,27 @@ function(input, output, session) {
   
   # EVIRONMENTAL VARIABLES -----------------------------------------------------
   observeEvent(input$btnAtualizaSelecaoVariaveis,{
-    withProgress(message = '', value = 0, {
+   
+     withProgress(message = '', value = 0, {
       n <- 3
       incProgress(1/n, detail = paste0("Loading variables..."))
       ETAPA <<- 3
       environmental_vars <- reactiveValues(
-        any_selection = FALSE, 
-        write_forecasting = FALSE,
-        data_current = list(), 
+        any_selection = FALSE,
+        write_timeproj = FALSE,
+        data_current = list(),
         data_forecasting = list())
       
       if (input$tipodadoabiotico == "CLIMA") {
-        
         vars_selection <<- paste(input$pred_vars_wc)
-        if (!is.null(vars_selection)) {
-          environmental_vars$any_selection <- TRUE
-        }
         path_current <- paste0(getwd(), "/ex/clima/current/", input$resolution)
         checkfiles <- list()
-        for (i in c(1:length(input$pred_vars_wc))) {
-          layer <- paste0(path_current, "/", vars_selection[i], ".bil") 
+       
+         for (i in c(1:length(input$pred_vars_wc))) {
+          layer <- paste0(path_current, "/", vars_selection[i], ".bil")
           environmental_vars$data_current <- c(environmental_vars$data_current, layer)
           checkfiles <- c(checkfiles, file.exists(layer))
-        } 
+        }
         
         if (any(checkfiles == F)) {
           if (input$resolution != "30s") {
@@ -1591,7 +1480,7 @@ function(input, output, session) {
             group2 <- c('bio10', 'bio11', 'bio12','bio13','bio14','bio15','bio16','bio17', 'bio18','bio19')
             
             if (any(group1 %in% input$pred_vars_wc)) {
-              download.file("http://biogeo.ucdavis.edu/data/climate/worldclim/1_4/grid/cur/bio1-9_30s_bil.zip", 
+              download.file("http://biogeo.ucdavis.edu/data/climate/worldclim/1_4/grid/cur/bio1-9_30s_bil.zip",
                             "bio_30s1.zip", mode = "wb")
               unzip("bio_30s1.zip", exdir = path_current)
               unlink("bio_30s1.zip")
@@ -1602,7 +1491,7 @@ function(input, output, session) {
               ))
             }
             if (any(group2 %in% input$pred_vars_wc)) {
-              download.file("http://biogeo.ucdavis.edu/data/climate/worldclim/1_4/grid/cur/bio10-19_30s_bil.zip", 
+              download.file("http://biogeo.ucdavis.edu/data/climate/worldclim/1_4/grid/cur/bio10-19_30s_bil.zip",
                             "bio_30s2.zip", mode = "wb")
               unzip("bio_30s2.zip", exdir = path_current)
               unlink("bio_30s2.zip")
@@ -1615,7 +1504,7 @@ function(input, output, session) {
           }
         }
         if(input$forecasting_wc != 'current_wc') {
-          environmental_vars$write_forecasting <- TRUE
+          environmental_vars$ write_timeproj <- TRUE
           if (input$forecasting_wc  == 'future_wc') {
             path_future <- paste0(getwd(), "/ex/clima/", input$future_dates_wc, "/",input$resolution, "/", input$gcm_future_wc, "/", input$rcp_wc)
             checkfiles_forecasting <- list()
@@ -1625,7 +1514,7 @@ function(input, output, session) {
               layer <- paste0(path_future, "/", input$gcm_future_wc, input$rcp_wc, "bi", year, nbi, ".tif")
               environmental_vars$data_forecasting <- c(environmental_vars$data_forecasting, layer)
               checkfiles_forecasting <- c(checkfiles_forecasting, file.exists(layer))
-            }  
+            }
           }
           if (input$forecasting_wc  == 'past_wc') {
             if(input$past_wc_dates == 'mid'){
@@ -1671,10 +1560,7 @@ function(input, output, session) {
       
       if (input$tipodadoabiotico == "BIOORACLE") {
         path_current <- paste0(getwd(), "/ex/biooracle/current")
-        if (!is.null(vars_selection)) {
-          environmental_vars$any_selection <- TRUE
-        }
-        
+
         if (input$forecasting_bo == 'future_bo') {
           if(input$future_bo_dates == '2100'){
             scenario_bo<- input$scenario_bo_2100
@@ -1685,15 +1571,15 @@ function(input, output, session) {
           
           path_future <- paste0(getwd(), "/ex/biooracle/", input$future_bo_dates,"/",scenario_bo)
           vars_selection <<- paste(input$pred_vars_bo_fut)
-          environmental_vars$write_forecasting = TRUE
+          environmental_vars$ write_timeproj = TRUE
           
           for (i in c(1:length(vars_selection))) {
             layer_code_future <- paste0("BO_",scenario_bo, "_", input$future_bo_dates, "_", vars_selection[i])
-            environmental_vars$data_forecasting <- c(environmental_vars$data_forecasting, 
+            environmental_vars$data_forecasting <- c(environmental_vars$data_forecasting,
                                                      load_layers(layer_code_future, rasterstack = FALSE, datadir = path_future)
             )
             layer_code <- paste0("BO_", vars_selection[i])
-            environmental_vars$data_current <- c(environmental_vars$data_current, 
+            environmental_vars$data_current <- c(environmental_vars$data_current,
                                                  load_layers(layer_code, rasterstack = FALSE, datadir = path_current)
             )
           }
@@ -1701,20 +1587,16 @@ function(input, output, session) {
           vars_selection <<- paste(input$pred_vars_bo)
           for (i in c(1:length(vars_selection))) {
             layer_code <- paste0("BO_", vars_selection[i])
-            environmental_vars$data_current <- c(environmental_vars$data_current, 
+            environmental_vars$data_current <- c(environmental_vars$data_current,
                                                  load_layers(layer_code, rasterstack = FALSE, datadir = path_current)
             )
           }
         }
-      } 
+      }
       
       if (input$tipodadoabiotico == "Others") {
         path_current <-  paste(getwd(), "/ex/outros/", sep = "")
         vars_selection <<- paste(input$pred_vars_other)
-        
-        if (!is.null(vars_selection)) {
-          environmental_vars$any_selection <- TRUE
-        }
         
         for (i in c(1:length(input$pred_vars_other))){
           layer <- paste0(path_current, vars_selection[i])
@@ -1722,73 +1604,58 @@ function(input, output, session) {
         }
       }
       
+      if (!is.null(vars_selection)) {
+        environmental_vars$any_selection <- TRUE
+      }
+      
       check_selected <- environmental_vars$any_selection
-      envir_data <<- environmental_vars$data_current
-      write_forecasting <<- environmental_vars$write_forecasting
-      envir_data_forecasting <<- environmental_vars$data_forecasting
+      env_data <<- environmental_vars$data_current
+      write_timeproj <<- environmental_vars$ write_timeproj
+      envdata_timeproj <<- environmental_vars$data_forecasting
       
       incProgress(2/n, detail = paste0("Calculating corelation..."))
       
-      if (!is.null(envir_data) && exists("occur.data.coord") && check_selected == TRUE) {
-        predictors <- stack(envir_data)
+      if (!is.null(env_data) && exists("occur.data.coord") && check_selected == TRUE) {
         
-        if (input$tipodadoabiotico != "Others") {
-          if (input$forecasting_wc != 'current_wc') {
-            predictorsfuturo <<- stack(envir_data_forecasting)
-          }
-          if (input$forecasting_bo != 'current_bo') {
-            predictorsfuturo <<- stack(envir_data_forecasting)
-          }
-        }
-        
+        predictors <- stack(env_data)
         ext <- extent(ext1, ext2, ext3, ext4)
         ext2 <- extent(ext12, ext22, ext32, ext42)
         pred_nf <<- crop(predictors, ext)
         pred_nf2 <<- crop(predictors, ext2)
         
-        if (input$tipodadoabiotico != "Others") {
-          if (input$forecasting_wc != 'current_wc') {
-            pred_nffuturo <<- crop(predictorsfuturo, ext)
-          }
-          if (input$forecasting_bo != 'current_bo') {
-            pred_nffuturo <<- crop(predictorsfuturo, ext)
-          }
+        
+        if (length(envdata_timeproj)>1) {
+          predictorsfuturo <<- stack(envdata_timeproj)
+          pred_nffuturo <<- crop(predictorsfuturo, ext)
         }
         
-        
-        # if (write_forecasting == TRUE && !is.null(envir_data_forecasting)) {
-        #   predictors_forecasting <- stack(envir_data_forecasting)
-        #   pred_nf_forecasting <<- crop (predictors_forecasting, ext)
-        # }
-        
-        presvals <<- raster::extract(pred_nf, occur.data.coord)
-        
+        presvals <- raster::extract(pred_nf, occur.data.coord)
         backgr <- randomPoints(pred_nf, 300)
         colnames(backgr) <- c("Longitude", "Latitude")
         absvals <- raster::extract(pred_nf, backgr)
         
-        if (length(envir_data) > 1) {
+        if (length(env_data) > 1) {
           sdmdata <- data.frame(cbind(absvals))
           output$grafico_correlacao <- renderPlot({
-            if (is.null(envir_data) | length(envir_data) <= 1) 
-              return(NULL) 
+            if (is.null(env_data) | length(env_data) <= 1)
+              return(NULL)
             else{
               pairs(sdmdata, cex = 0.1, fig = TRUE, lower.panel = panel.reg, diag.panel = panel.hist, upper.panel = panel.cor)
               
               output$dgbriddadoscorrelacao <- renderDataTable({
                 round(cor(sdmdata), 2)
-              }, options = list(searching = FALSE), rownames = TRUE, colnames = c('Variable' = 1)) 
+              }, options = list(searching = FALSE), rownames = TRUE, colnames = c('Variable' = 1))
             }
           })
         }
       }
       incProgress(3/n, detail = paste0("Ploting..."))
     })
-  })  
+  })
   
   output$mapaabiotico <- renderPlot({
     input$btnAtualizaSelecaoVariaveis
-    if (is.null(envir_data)) 
+    if (is.null(env_data))
       return(NULL) else {
         plot(pred_nf)
       }
@@ -2149,5 +2016,4 @@ function(input, output, session) {
       dir.create(fp, showWarnings = FALSE, recursive = FALSE, mode = "777")
     }
   }
-  
 }
