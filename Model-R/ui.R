@@ -92,7 +92,7 @@ future_bo_dates<-c("2100"='2100',
 
 
 ################################################################################
-header <- dashboardHeader(title = "Model-R v1.25")
+header <- dashboardHeader(title = "Model-R v")
 body <- dashboardBody(
   fluidRow(
     tags$head(
@@ -117,10 +117,7 @@ body <- dashboardBody(
                   img (src = "logo.png", width = 90)),
                 column (width = 9,
                   h2("Model-R"),
-                  h4(
-                    "A Framework for Scalable and
-                  Reproducible Ecological Niche Modeling"
-                  )
+                  h4("A workflow to perform Environmental Niche Modeling based on dismo")
                 ),
                 column (width = 12,
                   br(),

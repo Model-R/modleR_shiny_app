@@ -80,20 +80,17 @@ ext22 <- -33
 ext32 <- -32
 ext42 <- 23
 
-predvars_current <- list()
-predvars_current2 <- list()
-
 ETAPA <- 0
 
 spname <<- ""
 
-## Download and decompress maxent.jar file
-# jar <- paste0(system.file(package = "dismo"), "/java/maxent.jar")
-# if (file.exists(jar) != T) {
-#   url = "http://biodiversityinformatics.amnh.org/open_source/maxent/maxent.php?op=download"
-#   download.file (url, dest = "maxent.zip", mode = "wb")
-#   unzip("maxent.zip", files = "maxent.jar", exdir = system.file("java", package = "dismo"))
-#   unlink("maxent.zip")}
+# Download and decompress maxent.jar file
+jar <- paste0(system.file(package = "dismo"), "/java/maxent.jar")
+if (file.exists(jar) != T) {
+  url = "http://biodiversityinformatics.amnh.org/open_source/maxent/maxent.php?op=download"
+  download.file (url, destfile = "maxent.zip", mode = "wb")
+  unzip("maxent.zip", files = "maxent.jar", exdir = system.file("java", package = "dismo"))
+  unlink("maxent.zip")}
 
 panel.reg <- function(x, y, bg = NA, cex = 1, col.regres = "red", ...) {
   points(x, y, cex = cex)
@@ -142,9 +139,9 @@ limparResultadosAnteriores <- function() ({
   if (length(lista > 0)) {
     file.remove(paste0("www/", projeto, "/proj/", lista))
   }
-  lista <- list.files(paste0("www/", projeto, "/futuro/", full.names = T, pattern = paste0(".")))
+  lista <- list.files(paste0("www/", projeto, "/proj_time/", full.names = T, pattern = paste0(".")))
   if (length(lista > 0)) {
-    file.remove(paste0("www/", projeto, "/futuro/", lista))
+    file.remove(paste0("www/", projeto, "/proj_time/", lista))
   }
   lista <- list.files(paste0("www/", projeto, "/jpg/", full.names = T, pattern = paste0(".jpg")))
   if (length(lista > 0)) {
@@ -153,11 +150,11 @@ limparResultadosAnteriores <- function() ({
 })
 
 getOcorrencia_gbif <- function(taxon_name) {
-  key <- name_backbone(name = taxon_name)$speciesKey
+  key <- name_backbone (name = taxon_name)$speciesKey
   gbif_data <- occ_search(taxonKey = key, return = "data", limit = 1000)
   gbif_data <- subset(gbif_data, !is.na(decimalLongitude) & !is.na(decimalLatitude))
   gbif_data <- subset(gbif_data, (decimalLongitude!=0) & (decimalLatitude!=0))
-  occur.data<- gbif_data[,c(1,4,3)]
+  occur.data <- gbif_data[,c(1,4,3)]
   colnames(occur.data) <- c("Name","Longitude", "Latitude")
   return(occur.data)
 }
@@ -275,7 +272,7 @@ function(input, output, session) {
       colnames(sdmdata)[1] <- "group"
       
       
-      ## For each partition
+      # Fitting a model per partition
       for (i in unique(group_pre)) {
         progress$set(message = paste("Processing models", i), value = 0)
         
@@ -472,7 +469,8 @@ function(input, output, session) {
             ma_bin <- ma_cont > tma
             ma_mult <- ma_bin * ma_cont_invert
             ma_mult <- ma_mult/maxValue(ma_mult)
-            if (future.model == T) {
+           
+             if (future.model == T) {
               names(future.raster) = names(pred_nf)
               ma_future <- predict(future.raster, ma, progress = "text")
               ma_future_invert <- ma_future + (-1 * minValue(ma_future))
@@ -510,7 +508,7 @@ function(input, output, session) {
             
             if (write.future == T) {
               writeRaster(x = bc_future,
-                filename = paste0("./www/", projeto, "/futuro/fut_", i, "_bc_con", ".tif"),
+                filename = paste0("./www/", projeto, "/proj_time/fut_", i, "_bc_con", ".tif"),
                 overwrite = T)
               png(filename = paste0("./www/", projeto, "/jpg/fut_", i, "_bc_con", ".jpg"))
               plot(bc_future, main = paste("BioClim - Fut ", i))
@@ -536,7 +534,7 @@ function(input, output, session) {
             
             if (write.future == T) {
               writeRaster(x = do_future,
-                filename = paste0("./www/", projeto, "/futuro/fut_", i, "_do_con", ".tif"),
+                filename = paste0("./www/", projeto, "/proj_time/fut_", i, "_do_con", ".tif"),
                 overwrite = T)
               png(filename = paste0("./www/", projeto, "/jpg/fut_", i, "_do_con", ".jpg"))
               plot(do_future, main = paste("Domain - Fut ", i))
@@ -562,14 +560,13 @@ function(input, output, session) {
             
             if (write.future == T) {
               writeRaster(x = mx_future,
-                filename = paste0("./www/", projeto,"/futuro/fut_", i, "_mx_con", ".tif"),
+                filename = paste0("./www/", projeto,"/proj_time/fut_", i, "_mx_con", ".tif"),
                 overwrite = T)
               png(filename = paste0("./www/", projeto, "/jpg/fut_", i, "_mx_con", ".jpg"))
               plot(mx_future, main = paste("maxent - Fut ", i))
               dev.off()
             }
           }
-          
           
           if (GLM == T) {
             writeRaster(x = glm_cont,
@@ -587,13 +584,14 @@ function(input, output, session) {
             if (write.future == T) {
               writeRaster(x = glm_future,
                 filename = paste0("./www/", projeto,
-                  "/futuro/fut_", i, "_glm_con", ".tif"), overwrite = T)
+                  "/proj_time/fut_", i, "_glm_con", ".tif"), overwrite = T)
               png(filename = paste0("./www/", projeto, "/jpg/fut_", i, "_glm_con",
                 ".jpg"))
               plot(glm_future, main = paste("GLM - Fut ", i))
               dev.off()
             }
           }
+          
           if (RF == T) {
             writeRaster(x = rf1_cont, filename = paste0("./www/", projeto,
               "/models/pre_", i, "_rf_con", ".tif"), overwrite = T)
@@ -607,7 +605,7 @@ function(input, output, session) {
             }
             if (write.future == T) {
               writeRaster(x = rf1_future, filename = paste0("./www/", projeto,
-                "/futuro/fut_", i, "_rf1_con", ".tif"), overwrite = T)
+                "/proj_time/fut_", i, "_rf1_con", ".tif"), overwrite = T)
               png(filename = paste0("./www/", projeto, "/jpg/fut_", i, "_rf1_con",
                 ".jpg"))
               plot(rf1_future, main = paste("RF - Fut ", i))
@@ -627,7 +625,7 @@ function(input, output, session) {
             }
             if (write.future == T) {
               writeRaster(x = svm_future, filename = paste0("./www/", projeto,
-                "/futuro/fut_", i, "_svm_con", ".tif"), overwrite = T)
+                "/proj_time/fut_", i, "_svm_con", ".tif"), overwrite = T)
               png(filename = paste0("./www/", projeto, "/jpg/fut_", i, "_svm_con",
                 ".jpg"))
               plot(svm_future, main = paste("SVM - Fut ", i))
@@ -647,7 +645,7 @@ function(input, output, session) {
             }
             if (write.future == T) {
               writeRaster(x = ma_future, filename = paste0("./www/", projeto,
-                "/futuro/fut_", i, "_ma_con", ".tif"), overwrite = T)
+                "/proj_time/fut_", i, "_ma_con", ".tif"), overwrite = T)
               png(filename = paste0("./www/", projeto, "/jpg/fut_", i, "_ma_con",
                 ".jpg"))
               plot(ma_future, main = paste("Mahalanobis - Fut ", i))
@@ -669,7 +667,7 @@ function(input, output, session) {
             dev.off()
             if (write.future == T) {
               writeRaster(x = bc_future_bin, filename = paste0("./www/",
-                projeto, "/futuro/fut_", i, "_bc_bin", ".tif"), overwrite = T)
+                projeto, "/proj_time/fut_", i, "_bc_bin", ".tif"), overwrite = T)
             }
           }
           if (Domain == T) {
@@ -681,7 +679,7 @@ function(input, output, session) {
             dev.off()
             if (write.future == T) {
               writeRaster(x = do_future_bin, filename = paste0("./www/",
-                projeto, "/futuro/fut_", i, "_do_bin", ".tif"), overwrite = T)
+                projeto, "/proj_time/fut_", i, "_do_bin", ".tif"), overwrite = T)
             }
           }
           if (maxent == T) {
@@ -693,19 +691,18 @@ function(input, output, session) {
             dev.off()
             if (write.future == T) {
               writeRaster(x = mx_future_bin, filename = paste0("./www/",
-                projeto, "/futuro/fut_", i, "_mx_bin", ".tif"), overwrite = T)
+                projeto, "/proj_time/fut_", i, "_mx_bin", ".tif"), overwrite = T)
             }
           }
           if (GLM == T) {
             writeRaster(x = glm_bin, filename = paste0("./www/", projeto,
               "/models/pre_", i, "_glm_bin", ".tif"), overwrite = T)
-            png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_glm_bin",
-              ".jpg"))
+            png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_glm_bin", ".jpg"))
             plot(glm_bin, main = paste("GLM - Bin ", i))
             dev.off()
             if (write.future == T) {
               writeRaster(x = glm_future_bin, filename = paste0("./www/",
-                projeto, "/futuro/fut_", i, "_glm_bin", ".tif"), overwrite = T)
+                projeto, "/proj_time/fut_", i, "_glm_bin", ".tif"), overwrite = T)
             }
           }
           if (RF == T) {
@@ -717,7 +714,7 @@ function(input, output, session) {
             dev.off()
             if (write.future == T) {
               writeRaster(x = rf1_future_bin, filename = paste0("./www/",
-                projeto, "/futuro/fut_", i, "_rf_bin", ".tif"), overwrite = T)
+                projeto, "/proj_time/fut_", i, "_rf_bin", ".tif"), overwrite = T)
             }
           }
           if (SVM == T) {
@@ -729,7 +726,7 @@ function(input, output, session) {
             dev.off()
             if (write.future == T) {
               writeRaster(x = svm_future_bin, filename = paste0("./www/",
-                projeto, "/futuro/fut_", i, "_svm_bin", ".tif"), overwrite = T)
+                projeto, "/proj_time/fut_", i, "_svm_bin", ".tif"), overwrite = T)
             }
           }
           if (Mahal == T && condicao_Mahal == TRUE) {
@@ -741,7 +738,7 @@ function(input, output, session) {
             dev.off()
             if (write.future == T) {
               writeRaster(x = ma_future_bin, filename = paste0("./www/",
-                projeto, "/futuro/fut_", i, "_ma_bin", ".tif"), overwrite = T)
+                projeto, "/proj_time/fut_", i, "_ma_bin", ".tif"), overwrite = T)
             }
           }
         }
@@ -753,7 +750,7 @@ function(input, output, session) {
               "/models/pre_", i, "_bc_mult", ".tif"), overwrite = T)
             if (write.future == T) {
               writeRaster(x = bc_future_mult, filename = paste0("./www/",
-                projeto, "/futuro/fut_", i, "_bc_mult", ".tif"), overwrite = T)
+                projeto, "/proj_time/fut_", i, "_bc_mult", ".tif"), overwrite = T)
             }
           }
           if (Domain == T) {
@@ -761,7 +758,7 @@ function(input, output, session) {
               "/models/pre_", i, "_do_mult", ".tif"), overwrite = T)
             if (write.future == T) {
               writeRaster(x = do_future_mult, filename = paste0("./www/",
-                projeto, "/futuro/fut_", i, "_do_mult", ".tif"), overwrite = T)
+                projeto, "/proj_time/fut_", i, "_do_mult", ".tif"), overwrite = T)
             }
           }
           if (maxent == T) {
@@ -769,7 +766,7 @@ function(input, output, session) {
               "/models/pre_", i, "_mx_mult", ".tif"), overwrite = T)
             if (write.future == T) {
               writeRaster(x = mx_future_mult, filename = paste0("./www/",
-                projeto, "/futuro/fut_", i, "_mx_mult", ".tif"), overwrite = T)
+                projeto, "/proj_time/fut_", i, "_mx_mult", ".tif"), overwrite = T)
             }
           }
           if (GLM == T) {
@@ -777,7 +774,7 @@ function(input, output, session) {
               "/models/pre_", i, "_glm_mult", ".tif"), overwrite = T)
             if (write.future == T) {
               writeRaster(x = glm_future_mult, filename = paste0("./www/",
-                projeto, "/futuro/fut_", i, "_glm_mult", ".tif"), overwrite = T)
+                projeto, "/proj_time/fut_", i, "_glm_mult", ".tif"), overwrite = T)
             }
           }
           if (RF == T) {
@@ -785,7 +782,7 @@ function(input, output, session) {
               "/models/pre_", i, "_rf_mult", ".tif"), overwrite = T)
             if (write.future == T) {
               writeRaster(x = rf1_future_mult, filename = paste0("./www/",
-                projeto, "/futuro/fut_", i, "_rf_mult", ".tif"), overwrite = T)
+                projeto, "/proj_time/fut_", i, "_rf_mult", ".tif"), overwrite = T)
             }
           }
           if (SVM == T) {
@@ -793,7 +790,7 @@ function(input, output, session) {
               "/models/pre_", i, "_svm_mult", ".tif"), overwrite = T)
             if (write.future == T) {
               writeRaster(x = svm_future_mult, filename = paste0("./www/",
-                projeto, "/futuro/fut_", i, "_svm_mult", ".tif"), overwrite = T)
+                projeto, "/proj_time/fut_", i, "_svm_mult", ".tif"), overwrite = T)
             }
           }
           if (Mahal == T && condicao_Mahal == TRUE) {
@@ -801,7 +798,7 @@ function(input, output, session) {
               "/models/pre_", i, "_ma_mult", ".tif"), overwrite = T)
             if (write.future == T) {
               writeRaster(x = ma_future_mult, filename = paste0("./www/",
-                projeto, "/models/fut_", i, "_ma_mult", ".tif"), overwrite = T)
+                projeto, "/proj_time/fut_", i, "_ma_mult", ".tif"), overwrite = T)
             }
           }
         }
@@ -864,17 +861,12 @@ function(input, output, session) {
         if (Bioclim == T) {
           print(paste(sp, spname, i, "BioClim", round(ebc@auc, 3), round(
             bcTSS,
-            3
-          ), round(tbc, 3), round(threshold(ebc)$kappa, 3), round(
-            threshold(ebc)$equal_sens_spec,
-            3
-          ), round(threshold(ebc)$no_omission, 3), round(
-            threshold(ebc)$prevalence,
-            3
-          ), round(threshold(ebc)$sensitivity, 3), ebc@np, ebc@na, round(
-            ebc@cor,
-            3
-          ), sep = ","))
+            3), round(tbc, 3), round(threshold(ebc)$kappa, 3), round(threshold(ebc)$equal_sens_spec,
+              3), round(threshold(ebc)$no_omission, 
+                3), round(threshold(ebc)$prevalence,
+                  3),round(threshold(ebc)$sensitivity, 
+                    3), ebc@np, ebc@na, round(ebc@cor,
+                      3), sep = ","))
         }
         if (Domain == T) {
           print(paste(sp, spname, i, "Domain", round(edo@auc, 3), round(doTSS,
@@ -1073,14 +1065,14 @@ function(input, output, session) {
       
       # Future proj.
       if (future.model == T) {
-        ensemble_futuro_arquivos <- list.files(paste0("./www/", projeto, "/futuro/"),
+        ensemble_futuro_arquivos <- list.files(paste0("./www/", projeto, "/proj_time/"),
           full.names = T, pattern = paste0("con"))
         ensemble_futuro_raster <- stack(ensemble_futuro_arquivos)
         ensemble_futuro.geral <- mean(ensemble_futuro_raster, ensemble_futuro_raster)
         writeRaster(ensemble_futuro.geral, filename = paste0("www/", projeto,
           "/final/", "ensemble_futuro_geral.tif"), format = "GTiff", overwrite = T)
         png(filename = paste0("./www/", projeto, "/jpg/ensemble_futuro", ".jpg"))
-        plot(ensemble_futuro.geral, main = paste("Ensemble Futuro", ""))
+        plot(ensemble_futuro.geral, main = paste("Ensemble - Time projection", ""))
         dev.off()
       }
       
@@ -1093,7 +1085,7 @@ function(input, output, session) {
         writeRaster(ensemble.projecao, filename = paste0("www/", projeto, "/final/",
           "proj_ensemble.tif"), format = "GTiff", overwrite = T)
         png(filename = paste0("./www/", projeto, "/jpg/ensemble_projecao", ".jpg"))
-        plot(ensemble.projecao, main = paste("Ensemble Projeção"))
+        plot(ensemble.projecao, main = paste("Ensemble - Geo. projection"))
         dev.off()
       }
       
@@ -1371,16 +1363,16 @@ function(input, output, session) {
     })
     
     output$uiarquivosprojecaofuturo <- renderUI({
-      lista_futuro <- list.files(paste0("www/", projeto, "/futuro"), full.names = F, 
+      lista_futuro <- list.files(paste0("www/", projeto, "/proj_time"), full.names = F, 
         pattern = paste0(".tif"))
       lapply(1:length(sort(lista_futuro)), function(i) {
-        tags$div(tags$a(href = paste0(home, projeto, "/futuro/", lista_futuro[i]),
+        tags$div(tags$a(href = paste0(home, projeto, "/proj_time/", lista_futuro[i]),
           paste0(lista_futuro[i]), target = "_blank"))
       })
     })
   }) 
   
-    # GROUPING ALL MODELING PROCESSES BY CLICKING THE EXECUTE BUTTON -------------
+  # GROUPING ALL MODELING PROCESSES BY CLICKING THE EXECUTE BUTTON -------------
   observeEvent(input$btnModelar,{
     if ((input$DOMAIN == "TRUE") || (input$MAXENT == "TRUE") ||
         (input$BIOCLIM == "TRUE") || (input$GLM == "TRUE") ||
@@ -1442,9 +1434,9 @@ function(input, output, session) {
         addMarkers(clusterOptions = markerClusterOptions()) %>%
         addMarkers(~Longitude, ~ Latitude) %>%
         addRectangles(input$edtextend12, input$edtextend32,
-                      input$edtextend22, input$edtextend42, 
-                      color = "green", fill = TRUE, dashArray = "5,5",
-                      weight = 3)
+          input$edtextend22, input$edtextend42, 
+          color = "green", fill = TRUE, dashArray = "5,5",
+          weight = 3)
       map
     }
   })
@@ -1779,7 +1771,7 @@ function(input, output, session) {
   output$mapaabiotico <- renderPlot({
     input$btnAtualizaSelecaoVariaveis
     if (is.null(env_data))
-      return(NULL) else plot(pred_nf)
+      return (NULL) else plot (pred_nf)
   })
   
   # UPDATE SPECIES OCCURENCE DATA --------------------------------------------------------
@@ -1824,12 +1816,10 @@ function(input, output, session) {
           occur.data.coord$id = 1:nrow(occur.data.coord)
           occur.data.coord
         })
-        
         occur.data.coord
       }
     }
   }, options = list(searching = FALSE, lengthMenu = c(5, 30, 50), pageLength = 5))
-  
   
   output$mapadistribuicaodatacleaning <- renderLeaflet({
     
@@ -1885,9 +1875,9 @@ function(input, output, session) {
   
   pegaDadosGBif <- eventReactive(input$btnbuscarespecie, {
     ETAPA <<- 1
-    sp_data <- getOcorrencia_gbif(input$edtespecie)
-    sp_data_gbif <- sp_data[,c(2,3)]
-    occur.data.coord <<-sp_data_gbif
+    sp_data <- getOcorrencia_gbif (input$edtespecie)
+    occur.data_gbif <- occur.data [,c(2,3)]
+    occur.data.coord <<- occur.data_gbif
     occur.data.coord
   })
   
@@ -1968,9 +1958,7 @@ function(input, output, session) {
           addCircles(color = "red", lat = ~ Latitude, lng = ~ Longitude) %>%
           setView(lng = -31.5, lat = -13.4, zoom = 3)
       }
-      
       map
-      
     } else {
       showModal(modalDialog(
         title = "Error!",
@@ -1981,23 +1969,20 @@ function(input, output, session) {
     }
   })
   
-  # CREATE/LOAD PROJECT -----------------------------------------------------
+  ##### CREATE NEW/LOAD PROJECT #####
   
   # Update the project name only when the user clicks the submit button
   observeEvent(input$btnrefreshprojeto, {
-    
-    ## Create new project
+
+    # Create new project
     if (input$select_project == "new_proj") {
       projeto <- paste0("projeto/", input$edtprojeto.create)
       
       # If left in blank, exhibit error message
       if (projeto == "projeto/") {
-        showModal(modalDialog(
-          title = "Error! Project name cannot be blank!",
-          paste0("Please enter a valid name."),
-          easyClose = TRUE
-        )
-        )
+        showModal (modalDialog (title = "Error! Project name cannot be blank!",
+          paste0 ("Please enter a valid name."),
+          easyClose = TRUE))
       }
       
       if (projeto != "projeto/") {
@@ -2007,18 +1992,15 @@ function(input, output, session) {
           showModal(modalDialog(
             title = "This project is alredy in use!",
             paste0("Please insert a different name."),
-            easyClose = TRUE
-          ))
+            easyClose = TRUE))
         }
         
         # If the inserted name is does not exists, create project folder and output directories
         if (file.exists(paste0(getwd(), "/www/", projeto)) != TRUE) {
           withProgress(message = "", value = 0, {
-            n <- 6
+            n <- 7
             
             mkdirs(paste0("www/", projeto))
-            
-            mkdirs(paste0("www/", projeto, "/csv"))
             incProgress(1 / n, detail = paste0("Creating directory ", projeto))
             Sys.sleep(0.2)
             
@@ -2026,8 +2008,8 @@ function(input, output, session) {
             incProgress(2 / n, detail = paste0("Creating directory ", projeto, "/final"))
             Sys.sleep(0.2)
             
-            mkdirs(paste0("www/", projeto, "/futuro"))
-            incProgress(3 / n, detail = paste0("Creating directory ", projeto,"/futuro"))
+            mkdirs(paste0("www/", projeto, "/proj_time"))
+            incProgress(3 / n, detail = paste0("Creating directory ", projeto,"/proj_time"))
             Sys.sleep(0.2)
             
             mkdirs(paste0("www/", projeto, "/jpg"))
@@ -2040,6 +2022,10 @@ function(input, output, session) {
             
             mkdirs(paste0("www/", projeto, "/proj"))
             incProgress(6 / n, detail = paste0("Creating directory ", projeto, "/proj"))
+            Sys.sleep(0.2)
+            
+            mkdirs(paste0("www/", projeto, "/csv"))
+            incProgress(7 / n, detail = paste0("Creating directory ", projeto, "/csv"))
             Sys.sleep(0.2)
             
           })
@@ -2201,26 +2187,23 @@ function(input, output, session) {
           
           # List time projected files
           output$uiarquivosprojecaofuturo <- renderUI({
-            lista_futuro <-
-              list.files(
-                paste0("www/", projeto, "futuro"),
+            list_timeproj <- list.files(
+                paste0("www/", projeto, "proj_time"),
                 full.names = F,
                 pattern = paste0(".tif")
               )
-            lapply(1:length(sort(lista_futuro)), function(i) {
-              tags$div(tags$a(
-                href = paste0(home, projeto, "/futuro/", lista_futuro[i]),
-                paste0(lista_futuro[i]),
+            lapply(1:length(sort(list_timeproj)), function(i) {
+              tags$div(tags$a(href = paste0(home, projeto, "/proj_time/", list_timeproj [i]),
+                paste0(list_timeproj [i]),
                 target = "_blank"
               ))
             })
           })
           
-          showModal(modalDialog(
+          showModal (modalDialog (
             title = paste0("Project ", input$edtprojeto.load, " succefully loaded!"),
             paste0("Output files are dispalyed at the 'Outputs' tab."),
-            easyClose = TRUE
-          ))
+            easyClose = TRUE))
           
           projeto <<- paste0("projeto/", input$edtprojeto.load)
           
