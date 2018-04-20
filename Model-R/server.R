@@ -151,12 +151,14 @@ limparResultadosAnteriores <- function() ({
 
 getOcorrencia_gbif <- function(taxon_name) {
   key <- name_backbone (name = taxon_name)$speciesKey
-  gbif_data <- occ_search(taxonKey = key, return = "data", limit = 1000)
-  gbif_data <- subset(gbif_data, !is.na(decimalLongitude) & !is.na(decimalLatitude))
-  gbif_data <- subset(gbif_data, (decimalLongitude!=0) & (decimalLatitude!=0))
-  occur.data <- gbif_data[,c(1,4,3)]
-  colnames(occur.data) <- c("Name","Longitude", "Latitude")
-  return(occur.data)
+  if(!is.null(key)){
+    gbif_data <- occ_search(taxonKey = key, return = "data", limit = 1000)
+    gbif_data <- subset(gbif_data, !is.na(decimalLongitude) & !is.na(decimalLatitude))
+    gbif_data <- subset(gbif_data, (decimalLongitude!=0) & (decimalLatitude!=0))
+    occur.data <- gbif_data[,c(1,4,3)]
+    colnames(occur.data) <- c("Name","Longitude", "Latitude")
+    return(occur.data)
+  } else return(NULL)
 }
 
 getOcorrencia_jabot <- function(pTaxon) {
@@ -1237,10 +1239,14 @@ function(input, output, session) {
       if (file.exists(paste0("www/", projeto, "/final/", model_ensemble, ".tif"))) {
         r <- raster::raster(paste0("www/", projeto, "/final/", model_ensemble, ".tif"))
         pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(r), na.color = "transparent")
+        lng <-as.numeric(occur.data.coord[,1])
+        lng <-as.numeric(long[[1]])
+        lat <-as.numeric(occur.data.coord[,1])
+        lat <- as.numeric(lat[[1]])
         map <- leaflet() %>% addTiles %>%
           addRasterImage (r, colors = pal, opacity = 0.7) %>%
-          addLegend (pal = pal, values = values(r), title = model_title) %>%
-          addCircles (color = "red", lat = occur.data.coord[, 2], lng = occur.data.coord[, 1]) %>%
+          addLegend(pal = pal, values = values(r), title = model_title) %>%
+          addCircles (color = "red", lat = lat, lng = lng) %>%
           addRectangles (ext1, ext3, ext2, ext4, color = "red", fill = FALSE, dashArray = "5,5", weight = 2)
       }
     }
@@ -1875,7 +1881,7 @@ function(input, output, session) {
   
   pegaDadosGBif <- eventReactive(input$btnbuscarespecie, {
     ETAPA <<- 1
-    sp_data <- getOcorrencia_gbif (input$edtespecie)
+    occur.data <- getOcorrencia_gbif (input$edtespecie)
     occur.data_gbif <- occur.data [,c(2,3)]
     occur.data.coord <<- occur.data_gbif
     occur.data.coord
