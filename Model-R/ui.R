@@ -133,44 +133,36 @@ body <- dashboardBody(
                     full.names = F,
                     pattern = paste0(".")) > 0)) {
                     list_projects <- list.files("./www/projeto/",full.names = F,pattern = paste0("."))
-                    box( title = "Create/Open project",
+                    box(title = "Create/Open project",
                       status = "primary",
                       solidHeader = TRUE,
                       width = NULL,
                       selectInput("select_project",
                         label= "Select project: ",
-                        choices = c(
-                          "Create new project" = "new_proj", 
-                          "Open project" = "load_proj")
+                        choices = c("Create new project" = "new_proj", "Open project" = "load_proj")
                       ),
                       conditionalPanel("input.select_project == 'load_proj' ",
                         helpText('Select project: '),
-                        radioButtons(
-                          "edtprojeto.load",
+                        radioButtons("edtprojeto.load",
                           "Open project:",
                           choices = c(list_projects),
-                          choiceValues =  c(list_projects),
-                          selected = NULL
-                        )
+                          choiceValues = c(list_projects),
+                          selected = NULL)
                       ),
                       conditionalPanel("input.select_project == 'new_proj' ",
-                        textInput("edtprojeto.create", label = "Insert Project Id: ", value = "")
-                      ),
+                        textInput("edtprojeto.create", label = "Insert project name: ", value = "")),
                       actionButton("btnrefreshprojeto", "Submit", icon = icon("ok", lib = "glyphicon"))
                     )
                   } else {
-                    box(
-                      title = "Create/Open project",
+                    box(title = "Create/Open project",
                       status = "primary",
                       solidHeader = TRUE,
                       width = NULL,
-                      selectInput(
-                        "select_project",
+                      selectInput("select_project",
                         "",
-                        choices = c("Create new project" = "new_proj")
-                      ),
+                        choices = c("Create new project" = "new_proj")),
                       conditionalPanel("input.select_project == 'new_proj' ",
-                        textInput("edtprojeto.create", label = "Insert Project Id: ", value = "")
+                        textInput("edtprojeto.create", label = "Insert project name: ", value = "")
                       ),
                       actionButton("btnrefreshprojeto", "Submit", icon = icon("gear"))
                     )
@@ -199,8 +191,7 @@ body <- dashboardBody(
                     width = NULL,
                     height = "600px",
                     id = "tabset1",
-                    tabPanel(
-                      "Load occurrence data",
+                    tabPanel("Load occurrence data",
                       column(width = 8,
                         box(width = NULL,
                           dataTableOutput('dgbriddados'))),
@@ -211,9 +202,7 @@ body <- dashboardBody(
                           selectInput("tipodado", "Occurence data", bio_datasource, selected = "jabot"),
                           conditionalPanel("input.tipodado == 'csv' ",
                             helpText('Format: [Species, Longitude, Latitude]'),
-                            fileInput(
-                              'file1',
-                              '',
+                            fileInput('file1','',
                               accept = c('text/csv',
                                 'text/comma-separated-values,text/plain',
                                 '.csv')
@@ -222,11 +211,9 @@ body <- dashboardBody(
                             radioButtons(
                               'sep',
                               'Separator',
-                              c(
-                                "Comma" = ',',
+                              c("Comma" = ',',
                                 "Semicolon" = ';',
-                                "Tab" = '\t'
-                              ),
+                                "Tab" = '\t'),
                               ',',
                               inline = TRUE
                             ),
@@ -249,7 +236,7 @@ body <- dashboardBody(
                             actionButton("btnbuscarespeciejabot", "Search", icon = icon("search"))
                           ),
                           conditionalPanel("input.tipodado == 'gbif' ",
-                            helpText('Insert Species Scientific Name'),
+                            helpText('Insert species scientific name'),
                             textInput("edtespecie", label = "Species name:", value = "Caesalpinia echinata"),
                             actionButton("btnbuscarespecie", "Search", icon = icon("search"))
                           )

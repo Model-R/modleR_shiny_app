@@ -157,8 +157,14 @@ getOcorrencia_gbif <- function(taxon_name) {
     gbif_data <- subset(gbif_data, (decimalLongitude!=0) & (decimalLatitude!=0))
     occur.data <- gbif_data[,c(1,4,3)]
     colnames(occur.data) <- c("Name","Longitude", "Latitude")
-    return(occur.data)
-  } else return(NULL)
+    return (occur.data)
+  } else {
+    showModal(modalDialog(
+      title = "No results!",
+      paste0 ("Please insert a valid species scientific name."),
+      easyClose = TRUE))
+  }          
+    
 }
 
 getOcorrencia_jabot <- function(pTaxon) {
@@ -1239,11 +1245,11 @@ function(input, output, session) {
       if (file.exists(paste0("www/", projeto, "/final/", model_ensemble, ".tif"))) {
         r <- raster::raster(paste0("www/", projeto, "/final/", model_ensemble, ".tif"))
         pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(r), na.color = "transparent")
-        lng <-as.numeric(occur.data.coord[,1])
-        lng <-as.numeric(long[[1]])
-        lat <-as.numeric(occur.data.coord[,1])
+        lng <-c(occur.data.coord[,1])
+        lng <-as.numeric(lng[[1]])
+        lat <- c(occur.data.coord[,1])
         lat <- as.numeric(lat[[1]])
-        map <- leaflet() %>% addTiles %>%
+         map <- leaflet() %>% addTiles %>%
           addRasterImage (r, colors = pal, opacity = 0.7) %>%
           addLegend(pal = pal, values = values(r), title = model_title) %>%
           addCircles (color = "red", lat = lat, lng = lng) %>%
@@ -1255,6 +1261,10 @@ function(input, output, session) {
       if (file.exists(paste0("www/", projeto, "/final/proj_ensemble.tif")) && input$project_ext == TRUE) {
         rproj <- raster::raster(paste0("www/", projeto, "/final/proj_ensemble.tif"))
         palproj <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(rproj), na.color = "transparent")
+        lng <-c(occur.data.coord[,1])
+        lng <-as.numeric(lng[[1]])
+        lat <- c(occur.data.coord[,1])
+        lat <- as.numeric(lat[[1]])
         map_proj <- leaflet() %>% addTiles %>%
           addRasterImage(rproj, colors = palproj, opacity = 0.7) %>%
           addLegend (pal = palproj, values = values(rproj), title = "") %>%
@@ -1995,8 +2005,7 @@ function(input, output, session) {
         
         # If the project name already exists, exhibit error message
         if (file.exists(paste0(getwd(), "/www/", projeto)) == TRUE) {
-          showModal(modalDialog(
-            title = "This project is alredy in use!",
+          showModal(modalDialog (title = "This project is alredy in use!",
             paste0("Please insert a different name."),
             easyClose = TRUE))
         }
