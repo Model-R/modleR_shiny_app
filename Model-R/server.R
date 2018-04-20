@@ -174,7 +174,7 @@ getOcorrencia_jabot <- function(pTaxon) {
   return(occur.data)
 }
 
-options(shiny.maxRequestSize = 100 * 1024^2)
+options(shiny.maxRequestSize = 100 * 1024 ^ 2)
 dirColors <- c(`1` = "#595490", `2` = "#527525", `3` = "#A93F35", `4` = "#BA48AA")
 
 function(input, output, session) {
@@ -311,7 +311,6 @@ function(input, output, session) {
         ## FITTING THE MODELS -------------------------------------------------------------
         cat(paste("Modeling...", sp, "Partition", i, "\n"))
         if (Bioclim == T) {
-          
           cat(paste("Bioclim", "\n"))
           bc <- bioclim(var, coord_pres_train)
           ebc <- dismo::evaluate(coord_pres_teste, coord_abs_teste, bc, var)
@@ -1247,10 +1246,10 @@ function(input, output, session) {
         r <- raster::raster(paste0("www/", projeto, "/final/", model_ensemble, ".tif"))
         pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(r), na.color = "transparent")
         map <- leaflet() %>% addTiles %>%
-          addRasterImage(r, colors = pal, opacity = 0.7) %>%
-          addLegend(pal = pal, values = values(r), title = model_title) %>%
-          addCircles(color = "red", lat = occur.data.coord[, 2], lng = occur.data.coord[, 1]) %>%
-          addRectangles(ext1, ext3, ext2, ext4, color = "red", fill = FALSE, dashArray = "5,5", weight = 2)
+          addRasterImage (r, colors = pal, opacity = 0.7) %>%
+          addLegend (pal = pal, values = values(r), title = model_title) %>%
+          addCircles (color = "red", lat = occur.data.coord[, 2], lng = occur.data.coord[, 1]) %>%
+          addRectangles (ext1, ext3, ext2, ext4, color = "red", fill = FALSE, dashArray = "5,5", weight = 2)
       }
     }
     
@@ -1260,7 +1259,7 @@ function(input, output, session) {
         palproj <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(rproj), na.color = "transparent")
         map_proj <- leaflet() %>% addTiles %>%
           addRasterImage(rproj, colors = palproj, opacity = 0.7) %>%
-          addLegend(pal = palproj, values = values(rproj), title = "") %>%
+          addLegend (pal = palproj, values = values(rproj), title = "") %>%
           addCircles(color = "red", lat = occur.data.coord[, 2], lng = occur.data.coord[, 1]) %>%
           addRectangles(ext12, ext32, ext22, ext42, color = "green", fill = FALSE, dashArray = "5,5", weight = 2)
       }
@@ -1308,8 +1307,10 @@ function(input, output, session) {
     })
     
     # Display results at the Outputs tab ---------------------------
+    
     output$uiarquivosmodelos <- renderUI({
-      lista_models <- list.files(paste0("www/", projeto, "/models"), full.names = F, pattern = paste0("pre_"))
+      lista_models <- list.files(paste0("www/", projeto, "/models"), full.names = F,
+        pattern = paste0("pre_"))
       lapply(1:length(sort(lista_models)), function(i) {
         tags$div(tags$a(href = paste0(home, projeto, "/models/", lista_models[i]),
           paste0(lista_models[i])))
@@ -1325,8 +1326,8 @@ function(input, output, session) {
       })
     })
     
-    output$ui <- renderUI({
-      lista_txt <- list.files(paste0("www/", projeto, "/"), full.names = F, pattern = paste0(".R"))
+    output$uiscript <- renderUI({
+      lista_txt <- list.files(paste0("www/", projeto, "/"), full.names = F, pattern = paste0("script.R"))
       lapply(1:length(lista_txt), function(i) {
         tags$div(tags$a(href = paste0(home, projeto, "/", lista_txt[i]), paste0(lista_txt[i]),
           target = "_blank"))
@@ -1370,16 +1371,16 @@ function(input, output, session) {
     })
     
     output$uiarquivosprojecaofuturo <- renderUI({
-      lista_futuro <- list.files(paste0("www/", projeto, "/futuro"), full.names = F,
+      lista_futuro <- list.files(paste0("www/", projeto, "/futuro"), full.names = F, 
         pattern = paste0(".tif"))
       lapply(1:length(sort(lista_futuro)), function(i) {
         tags$div(tags$a(href = paste0(home, projeto, "/futuro/", lista_futuro[i]),
           paste0(lista_futuro[i]), target = "_blank"))
       })
     })
-  })
+  }) 
   
-  # GROUPING ALL MODELING PROCESSES BY CLICKING THE EXECUTE BUTTON -------------
+    # GROUPING ALL MODELING PROCESSES BY CLICKING THE EXECUTE BUTTON -------------
   observeEvent(input$btnModelar,{
     if ((input$DOMAIN == "TRUE") || (input$MAXENT == "TRUE") ||
         (input$BIOCLIM == "TRUE") || (input$GLM == "TRUE") ||
@@ -1410,21 +1411,19 @@ function(input, output, session) {
       ext3 <<- input$edtextend3
       ext2 <<- input$edtextend2
       ext4 <<- input$edtextend4
-      occur.data.coord <<-occur.data.coord
+      occur.data.coord <<- occur.data.coord
       map <- leaflet(occur.data.coord) %>%
         addTiles() %>%
         addMarkers(clusterOptions = markerClusterOptions()) %>%
         addMarkers(~Longitude, ~Latitude) %>%
-        addRectangles(
-          input$edtextend1,
+        addRectangles(input$edtextend1,
           input$edtextend3, input$edtextend2, input$edtextend4, color = "red",
-          fill = TRUE, dashArray = "5,5", weight = 3
-        )
+          fill = TRUE, dashArray = "5,5", weight = 3)
       map
     }
   })
   
-  ## Geographic Projection Extent
+  ## Geographic projection extent
   output$mapapontosextend2 <- renderLeaflet({
     input$btnapagar
     input$btneliminarduplicatas
@@ -1437,16 +1436,15 @@ function(input, output, session) {
       ext32 <<- input$edtextend32
       ext22 <<- input$edtextend22
       ext42 <<- input$edtextend42
-      occur.data.coord <<-occur.data.coord
+      occur.data.coord <<- occur.data.coord
       map <- leaflet(occur.data.coord) %>%
         addTiles() %>%
         addMarkers(clusterOptions = markerClusterOptions()) %>%
         addMarkers(~Longitude, ~ Latitude) %>%
-        addRectangles(
-          input$edtextend12, input$edtextend32,
-          input$edtextend22, input$edtextend42, color = "green", fill = TRUE, dashArray = "5,5",
-          weight = 3
-        )
+        addRectangles(input$edtextend12, input$edtextend32,
+                      input$edtextend22, input$edtextend42, 
+                      color = "green", fill = TRUE, dashArray = "5,5",
+                      weight = 3)
       map
     }
   })
@@ -1546,7 +1544,7 @@ function(input, output, session) {
           
           # Future
           if (input$forecasting_wc  == 'future_wc') {
-            path_future <- paste0( getwd(),
+            path_future <- paste0(getwd(),
               "/ex/clima/",
               input$future_dates_wc,
               "/",
@@ -1745,19 +1743,19 @@ function(input, output, session) {
         pred_nf2 <<- crop(predictors, ext2)
         
         if (length(envdata_timeproj) > 1) {
-          predictorsfuturo <<- stack(envdata_timeproj)
+          predictorsfuturo <- stack(envdata_timeproj)
           pred_nffuturo <<- crop(predictorsfuturo, ext)
         }
         
         presvals <- raster::extract(pred_nf, occur.data.coord)
         backgr <- randomPoints(pred_nf, 300)
         colnames(backgr) <- c("Longitude", "Latitude")
-        absvals <- raster::extract(pred_nf, backgr)
+        absvals <- raster::extract (pred_nf, backgr)
         
         if (length(env_data) > 1) {
           sdmdata <- data.frame(cbind(absvals))
           output$grafico_correlacao <- renderPlot({
-            if (is.null(env_data) | length(env_data) <= 1)
+            if (is.null(env_data) | length (env_data) <= 1)
               return (NULL)
             else {
               pairs(sdmdata,
@@ -1782,7 +1780,6 @@ function(input, output, session) {
     input$btnAtualizaSelecaoVariaveis
     if (is.null(env_data))
       return(NULL) else plot(pred_nf)
-    
   })
   
   # UPDATE SPECIES OCCURENCE DATA --------------------------------------------------------

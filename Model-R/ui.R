@@ -706,12 +706,13 @@ body <- dashboardBody(
               tabPanel("Binary and continuous models",
                 column(width = 12,
                   htmlOutput("ui"))),
+              
               tabPanel("Stats",
                 column(width = 12,
                   dataTableOutput('dbgridresultado')
                 )),
-              tabPanel(
-                "Output files",
+              
+              tabPanel("Output files",
                 column(width = 12,
                   column(width = 2,
                     box(width = NULL,
