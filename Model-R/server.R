@@ -170,11 +170,11 @@ getOccurences_jabot <- function(spname) {
   pTaxon <- gsub(" ", "_", spname)
   json_file <- paste0("http://jabot.jbrj.gov.br/v2/ws/server.php?coordenada=S&taxon=", pTaxon)
   json_data <- fromJSON(file = json_file, method = "C")
-    final_data <- do.call(rbind, json_data)
-    jabot_data <- final_data[, c("taxoncompleto", "longitude", "latitude")]
-    occur.data <- cbind(as.character(jabot_data[, 1]),as.numeric(jabot_data[, 2]), as.numeric(jabot_data[, 3]))
-    colnames(occur.data) <- c("Name", "Longitude", "Latitude")
-    return(occur.data)
+  final_data <- do.call(rbind, json_data)
+  jabot_data <- final_data[, c("taxoncompleto", "longitude", "latitude")]
+  occur.data <- cbind(as.character(jabot_data[, 1]),as.numeric(jabot_data[, 2]), as.numeric(jabot_data[, 3]))
+  colnames(occur.data) <- c("Name", "Longitude", "Latitude")
+  return(occur.data)
 }
 
 options(shiny.maxRequestSize = 100 * 1024 ^ 2)
@@ -474,8 +474,8 @@ function(input, output, session) {
             ma_bin <- ma_cont > tma
             ma_mult <- ma_bin * ma_cont_invert
             ma_mult <- ma_mult/maxValue(ma_mult)
-           
-             if (future.model == T) {
+            
+            if (future.model == T) {
               names(future.raster) = names(pred_nf)
               ma_future <- predict(future.raster, ma, progress = "text")
               ma_future_invert <- ma_future + (-1 * minValue(ma_future))
@@ -824,8 +824,8 @@ function(input, output, session) {
         ### Saving validation files (evaluate.txt)
         cat(paste("Saving validation files...", sp, i, "\n"))
         sink(file = paste0("./www/", projeto, "/models/evaluate_", sp, ".txt"), split = T, append = T)
-       
-         if (Bioclim == T) {
+        
+        if (Bioclim == T) {
           print(paste(sp, spname, i, "BioClim", round(ebc@auc, 3), round(bcTSS,
             3), round(tbc, 3), round(threshold(ebc)$kappa, 3), round(threshold(ebc)$equal_sens_spec,
               3), round(threshold(ebc)$no_omission, 3), round(threshold(ebc)$prevalence,
@@ -880,11 +880,11 @@ function(input, output, session) {
                 3), round(threshold(ema)$sensitivity, 3), ema@np, ema@na, round(ema@cor,
                   3), sep = ","))
         }
-       
-         sink()
+        
+        sink()
         
         sink(file = paste0("./www/", projeto, "/models/evaluate_ALL_models.txt"), split = T, append = T)
-       
+        
         if (Bioclim == T) {
           print(paste(sp, spname, i, "BioClim", round(ebc@auc, 3), round(
             bcTSS,
@@ -894,7 +894,7 @@ function(input, output, session) {
                   3),round(threshold(ebc)$sensitivity, 
                     3), ebc@np, ebc@na, round(ebc@cor,
                       3), sep = ","))
-         }
+        }
         
         if (Domain == T) {
           print(paste(sp, spname, i, "Domain", round(edo@auc, 3), round(doTSS,
@@ -989,8 +989,8 @@ function(input, output, session) {
         points(occur.data.coord, bg = "red", cex = 1, pch = 21)
         dev.off()
       }
-     
-       if (input$GLM == TRUE) {
+      
+      if (input$GLM == TRUE) {
         conta_alg = conta_alg + 1
         algoritmos <- paste(algoritmos, "GLM")
         glm_arquivos <- list.files(paste0("./www/", projeto, "/models/"), full.names = T,
@@ -1012,7 +1012,7 @@ function(input, output, session) {
         ensemble.rf <- mean(rf_raster, rf_raster)
         writeRaster(ensemble.rf, 
           filename = paste0("www/", projeto, "/final/",
-          "rf_ensemble.tif"),
+            "rf_ensemble.tif"),
           format = "GTiff",
           overwrite = T)
         png(filename = paste0("./www/", projeto, "/jpg/rf_ensemble", ".jpg"))
@@ -1088,8 +1088,8 @@ function(input, output, session) {
       ensemble_arquivos <-list.files (paste0("./www/", projeto, "/final/"),
         full.names = T,
         pattern = paste0("ensemble.tif"))
-     
-       if (conta_alg > 1) {
+      
+      if (conta_alg > 1) {
         ensemble_raster <- stack(ensemble_arquivos)
         ensemble.geral <- mean(ensemble_raster, ensemble_raster)
         writeRaster(ensemble.geral,
@@ -1136,22 +1136,22 @@ function(input, output, session) {
           dev.off()
         }
       }
-        
-        # Geographic proj.
-        if (write.projecao == T) {
-          ensemble_arquivos_projecao <- list.files(paste0("./www/", projeto, "/proj/"),
-            full.names = T, pattern = paste0("proj.tif"))
-          ensemble_raster_projecao <- stack(ensemble_arquivos_projecao)
-          ensemble.projecao <- mean(ensemble_raster_projecao, ensemble_raster_projecao)
-          writeRaster(ensemble.projecao, 
-            filename = paste0("www/", projeto, "/final/","proj_ensemble.tif"), 
-            format = "GTiff", 
-            overwrite = T)
-          png(filename = paste0("./www/", projeto, "/jpg/ensemble_projecao", ".jpg"))
-          plot(ensemble.projecao, main = paste("Ensemble - Geo. proj."))
-          dev.off()
-        }
-      })
+      
+      # Geographic proj.
+      if (write.projecao == T) {
+        ensemble_arquivos_projecao <- list.files(paste0("./www/", projeto, "/proj/"),
+          full.names = T, pattern = paste0("proj.tif"))
+        ensemble_raster_projecao <- stack(ensemble_arquivos_projecao)
+        ensemble.projecao <- mean(ensemble_raster_projecao, ensemble_raster_projecao)
+        writeRaster(ensemble.projecao, 
+          filename = paste0("www/", projeto, "/final/","proj_ensemble.tif"), 
+          format = "GTiff", 
+          overwrite = T)
+        png(filename = paste0("./www/", projeto, "/jpg/ensemble_projecao", ".jpg"))
+        plot(ensemble.projecao, main = paste("Ensemble - Geo. proj."))
+        dev.off()
+      }
+    })
     
     # Select partitions TSS
     library("data.table")
@@ -1300,7 +1300,7 @@ function(input, output, session) {
         lng <-as.numeric(lng[[1]])
         lat <- c(occur.data.coord[,1])
         lat <- as.numeric(lat[[1]])
-         map <- leaflet() %>% addTiles %>%
+        map <- leaflet() %>% addTiles %>%
           addRasterImage (r, colors = pal, opacity = 0.7) %>%
           addLegend(pal = pal, values = values(r), title = model_title) %>%
           addCircles (color = "red", lat = lat, lng = lng) %>%
@@ -1438,8 +1438,8 @@ function(input, output, session) {
     })
   }) 
   
- 
-   # GROUPING ALL MODELING PROCESSES BY CLICKING THE EXECUTE BUTTON -------------
+  
+  # GROUPING ALL MODELING PROCESSES BY CLICKING THE EXECUTE BUTTON -------------
   observeEvent(input$btnModelar,{
     if ((input$DOMAIN == "TRUE") || (input$MAXENT == "TRUE") ||
         (input$BIOCLIM == "TRUE") || (input$GLM == "TRUE") ||
@@ -1533,7 +1533,7 @@ function(input, output, session) {
           checkfiles <- c(checkfiles, file.exists(layer))
         }
         
-        # Check/Download layers - Current data
+        # Check/Download layers - Current conditions
         if (length(vars_selection) >= 1 && any(checkfiles == F)) {
           if (input$resolution != "30s") {
             
@@ -1569,31 +1569,23 @@ function(input, output, session) {
               'bio19')
             
             if (any(group1 %in% input$pred_vars_wc)) {
-              download.file(
-                "http://biogeo.ucdavis.edu/data/climate/worldclim/1_4/grid/cur/bio1-9_30s_bil.zip",
+              download.file("http://biogeo.ucdavis.edu/data/climate/worldclim/1_4/grid/cur/bio1-9_30s_bil.zip",
                 "bio_30s1.zip",
-                mode = "wb"
-              )
+                mode = "wb")
               unzip("bio_30s1.zip", exdir = path_current)
               unlink("bio_30s1.zip")
             }
             if (any(group2 %in% input$pred_vars_wc)) {
-              download.file(
-                "http://biogeo.ucdavis.edu/data/climate/worldclim/1_4/grid/cur/bio10-19_30s_bil.zip",
+              download.file("http://biogeo.ucdavis.edu/data/climate/worldclim/1_4/grid/cur/bio10-19_30s_bil.zip",
                 "bio_30s2.zip",
-                mode = "wb"
-              )
+                mode = "wb")
               unzip("bio_30s2.zip", exdir = path_current)
               unlink("bio_30s2.zip")
             }
             files <-paste0(path_current, "/", list.files(path_current))
-            file.rename(from = files,
-              to = sub(pattern = "bio_",
-                replacement = "bio",
-                files))
+            file.rename(from = files, to = sub(pattern = "bio_", replacement = "bio", files))
           }
         }
-        
         
         ### Future/Past conditions ###
         if (input$forecasting_wc != 'current_wc') {
@@ -1602,7 +1594,7 @@ function(input, output, session) {
           
           # Future
           if (input$forecasting_wc  == 'future_wc') {
-           timescale<<- "Future"
+            timescale<<- "Future"
             path_future <- paste0(getwd(),
               "/ex/clima/",
               input$future_dates_wc,
@@ -1616,7 +1608,6 @@ function(input, output, session) {
             year <- sub (".*(\\d+{2}).*$", "\\1", input$future_dates_wc)
             
             for (i in c(1:length(input$pred_vars_wc))) {
-              
               nbi <- sub ("bio", "" , vars_selection[i])
               layer <-paste0 (path_future,
                 "/",
@@ -1736,23 +1727,15 @@ function(input, output, session) {
               "_",
               vars_selection[i])
             
-            environmental_data$data_timeproj <-
-              c(
-                environmental_data$data_timeproj,
-                load_layers(
-                  layer_code_future,
-                  rasterstack = FALSE,
-                  datadir = path_future
-                )
-              )
+            environmental_data$data_timeproj <-c(environmental_data$data_timeproj,
+              load_layers( layer_code_future,
+                rasterstack = FALSE,
+                datadir = path_future))
             layer_code <- paste0("BO_", vars_selection[i])
-            environmental_data$data_current <-
-              c(
-                environmental_data$data_current,
-                load_layers(layer_code,
-                  rasterstack = FALSE,
-                  datadir = path_current)
-              )
+            environmental_data$data_current <- c(environmental_data$data_current,
+              load_layers(layer_code,
+                rasterstack = FALSE,
+                datadir = path_current) )
           }
           
         } else {
@@ -1760,12 +1743,10 @@ function(input, output, session) {
           vars_selection <<- paste(input$pred_vars_bo)
           for (i in c(1:length(vars_selection))) {
             layer_code <- paste0("BO_", vars_selection[i])
-            environmental_data$data_current <-
-              c(environmental_data$data_current,
-                load_layers(layer_code,
-                  rasterstack = FALSE,
-                  datadir = path_current)
-              )
+            environmental_data$data_current <- c(environmental_data$data_current,
+              load_layers(layer_code,
+                rasterstack = FALSE,
+                datadir = path_current))
           }
         }
       }
@@ -1844,7 +1825,6 @@ function(input, output, session) {
     if (exists("occur.data.coord")) {
       switch("occur.data.coord", occur.data.coord = occur.data.coord)
     }
-    
   })
   
   #####  DATA CLEANING --------------------------------------------------------------
@@ -1881,6 +1861,7 @@ function(input, output, session) {
           occur.data.coord$id = 1:nrow(occur.data.coord)
           occur.data.coord
         })
+        
         occur.data.coord
       }
     }
@@ -1907,17 +1888,14 @@ function(input, output, session) {
         map
       }
     } else {
-      showModal(modalDialog(
-        title = "Error!",
+      showModal(modalDialog(title = "Error!",
         "Please inform occurrence data",
-        easyClose = TRUE
-      ))
+        easyClose = TRUE))
     }
   })
   
   #####  LOAD SPECIES OCCURENCE DATASET ----------------------------------------------
-  
-   loadspdata <- eventReactive(input$btnsearch_spdata, {
+  loadspdata <- eventReactive(input$btnsearch_spdata, {
     ETAPA <<- 1
     
     if(input$bio_datasource == "gbif"){
@@ -2245,10 +2223,10 @@ function(input, output, session) {
           # List time projected files
           output$uiarquivosprojecaofuturo <- renderUI({
             list_timeproj <- list.files(
-                paste0("www/", projeto, "proj_time"),
-                full.names = F,
-                pattern = paste0(".tif")
-              )
+              paste0("www/", projeto, "proj_time"),
+              full.names = F,
+              pattern = paste0(".tif")
+            )
             lapply(1:length(sort(list_timeproj)), function(i) {
               tags$div(tags$a(href = paste0(home, projeto, "/proj_time/", list_timeproj [i]),
                 paste0(list_timeproj [i]),
