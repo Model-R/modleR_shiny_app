@@ -1366,7 +1366,6 @@ function(input, output, session) {
     })
     
     # Display results at the Outputs tab ---------------------------
-    
     output$uiarquivosmodelos <- renderUI({
       lista_models <- list.files(paste0("www/", projeto, "/models"), full.names = F,
         pattern = paste0("pre_"))
@@ -1509,7 +1508,7 @@ function(input, output, session) {
     }
   })
   
-  # EVIRONMENTAL VARIABLES -----------------------------------------------------
+  # ENVIRONMENTAL VARIABLES -----------------------------------------------------
   observeEvent(input$btnAtualizaSelecaoVariaveis,{
     withProgress(message = '', value = 0, {
       n <- 3
@@ -1524,7 +1523,6 @@ function(input, output, session) {
       
       
       if (input$tipodadoabiotico == "CLIMA") {
-        
         vars_selection <<- paste(input$pred_vars_wc)
         path_current <- paste0 (getwd(), "/ex/clima/current/", input$resolution)
         checkfiles <- list()
