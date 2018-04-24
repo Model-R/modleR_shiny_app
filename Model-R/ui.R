@@ -281,8 +281,8 @@ body <- dashboardBody(
                   width = NULL,
                   height = "600px",
                   selected = "Study area extent", 
-                 
-                   tabPanel("Projection extent",
+                  
+                  tabPanel("Projection extent",
                     box(width=12,
                       status = "warning",
                       checkboxInput('project_ext', 'Design on another extension', value = FALSE),
@@ -485,10 +485,10 @@ body <- dashboardBody(
                             selectInput("future_dates_wc",  "Choose period: ", future_dates_wc),
                             selectInput("rcp_wc", "Emission Scenarios (RCP)",
                               c("rcp26" = "26",
-                              "rcp45" = "45",
-                              "rcp60" = "60",
-                              "rcp85" = "85")
-                              ),
+                                "rcp45" = "45",
+                                "rcp60" = "60",
+                                "rcp85" = "85")
+                            ),
                             selectInput("gcm_future_wc","General Circulation Models (GCM)", gcm_future_wc, selected = "bc")
                           ),
                           
