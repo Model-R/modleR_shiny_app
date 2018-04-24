@@ -72,6 +72,7 @@ rm(list = setdiff(ls(), lsf.str()))
 
 home <- "/"
 
+t <- 7
 ext1 <- -90
 ext2 <- -33
 ext3 <- -32
@@ -130,27 +131,27 @@ mkdirs <- function(fp) {
 }
 
 limparResultadosAnteriores <- function() ({
-  lista <- list.files(paste0("www/", projeto, "/models/", full.names = T, pattern = paste0(".")))
-  if (length(lista > 0)) {
-    file.remove(paste0("www/", projeto, "/models/", lista))
-  }
-  lista <- list.files(paste0("www/", projeto, "/final/", full.names = T, pattern = paste0(".")))
-  if (length(lista > 0)) {
-    file.remove(paste0("www/", projeto, "/final/", lista))
-  }
-  lista <- list.files(paste0("www/", projeto, "/proj/", full.names = T, pattern = paste0(".")))
-  if (length(lista > 0)) {
-    file.remove(paste0("www/", projeto, "/proj/", lista))
-  }
-  lista <- list.files(paste0("www/", projeto, "/proj_time/", full.names = T, pattern = paste0(".")))
-  if (length(lista > 0)) {
-    file.remove(paste0("www/", projeto, "/proj_time/", lista))
-  }
-  lista <- list.files(paste0("www/", projeto, "/jpg/", full.names = T, pattern = paste0(".jpg")))
-  if (length(lista > 0)) {
-    file.remove(paste0("www/", projeto, "/jpg/", lista))
-  }
-})
+    lista <- list.files(paste0("www/", projeto, "/models/", full.names = T, pattern = paste0(".")))
+    if (length(lista > 0)) {
+      file.remove(paste0("www/", projeto, "/models/", lista))
+    }
+    lista <- list.files(paste0("www/", projeto, "/final/", full.names = T, pattern = paste0(".")))
+    if (length(lista > 0)) {
+      file.remove(paste0("www/", projeto, "/final/", lista))
+    }
+    lista <- list.files(paste0("www/", projeto, "/proj/", full.names = T, pattern = paste0(".")))
+    if (length(lista > 0)) {
+      file.remove(paste0("www/", projeto, "/proj/", lista))
+    }
+    lista <- list.files(paste0("www/", projeto, "/proj_time/", full.names = T, pattern = paste0(".")))
+    if (length(lista > 0)) {
+      file.remove(paste0("www/", projeto, "/proj_time/", lista))
+    }
+    lista <- list.files(paste0("www/", projeto, "/jpg/", full.names = T, pattern = paste0(".jpg")))
+    if (length(lista > 0)) {
+      file.remove(paste0("www/", projeto, "/jpg/", lista))
+    }
+  })
 
 getOccurences_gbif <- function(spname) {
   key <- name_backbone(name = spname)$speciesKey
@@ -185,7 +186,7 @@ getOccurences_jabot <- function(spname) {
 options(shiny.maxRequestSize = 100 * 1024^2)
 dirColors <- c(`1` = "#595490", `2` = "#527525", `3` = "#A93F35", `4` = "#BA48AA")
 
-function(input, output, session) 
+function(input, output, session) {
   occur.data.coord <<- NULL
   library(maps)
   library(rgdal)
@@ -194,37 +195,36 @@ function(input, output, session)
   library(rgbif)
   library(XML)
   library(leaflet)
-  
+
   dismo.mod <- function(
-    # Biotic and abitic data
-    sp,
-    occs = spp.filt,
-    var = expl,
-    var2 = expl2,
-    # Algorithms
-    maxent = F,
-    Bioclim = F,
-    GLM = F,
-    RF = F,
-    SVM = F,
-    Mahal = F,
-    Domain = F,
-    SVM2 = F,
-    # Set model parameters
-    part = 3,
-    numpontos  = 500,
-    seed = 123,
-    write.cont = T,
-    bin = T,
-    write.bin = T,
-    mult = T,
-    write.mult = T,
-    TSS.value  =  0.2,
-    
-    future.model = F,
-    future.raster = newdata,
-    write.future = F,
-    write.projecao = F) {
+                          sp,
+                          occs = spp.filt,
+                          var = expl,
+                          var2 = expl2,
+
+                          maxent = F,
+                          Bioclim = F,
+                          GLM = F,
+                          RF = F,
+                          SVM = F,
+                          Mahal = F,
+                          Domain = F,
+                          SVM2 = F,
+
+                          part = 3,
+                          numpontos  = 500,
+                          seed = 123,
+                          write.cont = T,
+                          bin = T,
+                          write.bin = T,
+                          mult = T,
+                          write.mult = T,
+                          TSS.value  =  0.2,
+
+                          future.model = F,
+                          future.raster = newdata,
+                          write.future = F,
+                          write.projecao = F) {
     library(dismo)
     library(randomForest)
     library(kernlab)
@@ -232,50 +232,50 @@ function(input, output, session)
     library(raster)
     library(rgdal)
     library(maps)
-    
+
     unlink(paste0("www/", projeto, "/models/evaluate_.txt"), recursive = TRUE)
     unlink(paste0("www/", projeto, "/models/statsALL.txt"), recursive = TRUE)
     unlink(paste0("www/", projeto, "/models/evaluate_ALL_models.txt"), recursive = TRUE)
-    
+
     isolate({
       print(date())
       cat(paste("Modeling", sp, "...", "\n"))
-      
+
       ## PREPARING SDM DATA -----------------------------------------------------
       coord <- occur.data.coord
       n <- nrow(coord)
-      
+
       ## Extracting variables at presence points
       presvals <- raster::extract(var, coord)
-      
+
       ## Fixing seed to ensure the same random points
       set.seed(seed)
-      
+
       ## Generating random pseudo-absences
       backgr <- randomPoints(var, numpontos)
       colnames(backgr) <- c("Longitude", "Latitude")
-      
+
       ## Extracting variables at background points
       absvals <- raster::extract(var, backgr)
-      
+
       ## Creating vector corresponding to presence (1) and pseudo-absences (0) points respectively.
       pre_abs <- c(rep(1, nrow(presvals)), rep(0, nrow(absvals)))
-      
+
       ## Number of partitions
       if (n < 10) {
         part <- n
       } else {
         part <- part
       }
-      
+
       ## Setting seed to distribute the presences always to the same partitions
       set.seed(seed)
-      
+
       ## Separating presences and pseudo-absences in groups of partitions
       group_pre <- kfold(coord, part)
       set.seed(seed)
       group_abs <- kfold(backgr, part)
-      
+
       ## Grouping sdm data in a single data.frame
       append_1 <- append(group_pre, group_abs)
       cbind_1 <- cbind(coord, presvals)
@@ -283,22 +283,22 @@ function(input, output, session)
       rbind_1 <- rbind(cbind_1, cbind_2)
       sdmdata <- data.frame(cbind(append_1, pre_abs, rbind_1))
       colnames(sdmdata)[1] <- "group"
-      
+
       # Fitting a model per partition
       for (i in unique(group_pre)) {
         progress$set(message = paste("Processing models", i), value = 0)
-        
+
         ## Separate the sdmdata between test and train groups
         sdmdata_train <- subset(sdmdata, group != i)
         sdmdata_teste <- subset(sdmdata, group == i)
-        
+
         # Preparing sdmdata train to build model
         envtrain <- subset(sdmdata_train, select = c(-group, -Longitude, -Latitude))
-        
+
         # Prepring test data to evaluate both presence only and presence/absence models
         envtest_pre <- subset(sdmdata_teste, pre_abs == 1, select = c(-group, -Latitude, -Latitude, -pre_abs))
         envtest_abs <- subset(sdmdata_teste, pre_abs == 0, select = c(-group, -Latitude, -Latitude, -pre_abs))
-        
+
         # Separating the data (only coordinates) to run presence only algorithms
         coord_pres_train <- subset(sdmdata_train, pre_abs == 1, select = c(
           Longitude,
@@ -316,8 +316,8 @@ function(input, output, session)
           Longitude,
           Latitude
         ))
-        
-        #### Fitting a model per partition ####
+
+        ## FITTING THE MODELS -------------------------------------------------------------
         cat(paste("Modeling...", sp, "Partition", i, "\n"))
         if (Bioclim == T) {
           cat(paste("Bioclim", "\n"))
@@ -330,22 +330,22 @@ function(input, output, session)
           bc_bin <- bc_cont > tbc
           bc_mult <- bc_bin * bc_cont
           bc_mult <- bc_mult / maxValue(bc_mult)
-          
+
           if (future.model == T) {
             names(future.raster) <- names(pred_nf)
             bc_future <- predict(future.raster, bc, progress = "text")
-            
+
             if (bin == T) {
               bc_future_bin <- bc_future > tbc
             }
-            
+
             if (mult == T) {
               bc_future_mult <- bc_future_bin * bc_future
               bc_future_mult <- bc_future_mult / maxValue(bc_future_mult)
             }
           }
         }
-        
+
         if (Domain == T) {
           cat(paste("Domain", "\n"))
           do <- domain(var, coord_pres_train)
@@ -369,7 +369,7 @@ function(input, output, session)
             }
           }
         }
-        
+
         if (maxent == T) {
           cat(paste("maxent", "\n"))
           mx <- maxent(var, coord_pres_train)
@@ -393,7 +393,7 @@ function(input, output, session)
             }
           }
         }
-        
+
         if (GLM == T) {
           cat(paste("GLM", "\n"))
           mglm <- glm(pre_abs ~ ., data = envtrain)
@@ -417,7 +417,7 @@ function(input, output, session)
             }
           }
         }
-        
+
         if (RF == T) {
           cat(paste("RF", "\n"))
           rf1 <- randomForest
@@ -442,7 +442,7 @@ function(input, output, session)
             }
           }
         }
-        
+
         if (SVM == T) {
           cat(paste("SVM", "\n"))
           msvm <- ksvm(pre_abs ~ ., data = envtrain)
@@ -466,7 +466,7 @@ function(input, output, session)
             }
           }
         }
-        
+
         if (Mahal == T) {
           cat(paste("Mahal", "\n"))
           condicao_Mahal <- nrow(coord_pres_train) > length(names(var))
@@ -481,7 +481,7 @@ function(input, output, session)
             ma_bin <- ma_cont > tma
             ma_mult <- ma_bin * ma_cont_invert
             ma_mult <- ma_mult / maxValue(ma_mult)
-            
+
             if (future.model == T) {
               names(future.raster) <- names(pred_nf)
               ma_future <- predict(future.raster, ma, progress = "text")
@@ -494,13 +494,14 @@ function(input, output, session)
                 ma_future_mult <- ma_future_mult / maxValue(ma_future_mult)
               }
             }
-          } 
+          } else {
+          }
         }
-        
-        #### WRITING THE MODELS ####
+
+        ### WRITING THE MODELS -----------------------------------------------------
         if (write.cont == T) {
           cat(paste("Saving models...", sp, i, "\n"))
-          
+
           if (Bioclim == T) {
             writeRaster(
               x = bc_cont,
@@ -510,7 +511,7 @@ function(input, output, session)
             png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_bc_con", ".jpg"))
             plot(bc_cont, main = paste("BioClim - ", i))
             dev.off()
-            
+
             if (write.projecao == T) {
               writeRaster(
                 x = bc_cont_proj,
@@ -518,7 +519,7 @@ function(input, output, session)
                 overwrite = T
               )
             }
-            
+
             if (write.future == T) {
               writeRaster(
                 x = bc_future,
@@ -530,7 +531,7 @@ function(input, output, session)
               dev.off()
             }
           }
-          
+
           if (Domain == T) {
             writeRaster(
               x = do_cont,
@@ -540,7 +541,7 @@ function(input, output, session)
             png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_do_con", ".jpg"))
             plot(do_cont, main = paste("Domain - ", i))
             dev.off()
-            
+
             if (write.projecao == T) {
               writeRaster(
                 x = do_cont_proj,
@@ -548,7 +549,7 @@ function(input, output, session)
                 overwrite = T
               )
             }
-            
+
             if (write.future == T) {
               writeRaster(
                 x = do_future,
@@ -560,7 +561,7 @@ function(input, output, session)
               dev.off()
             }
           }
-          
+
           if (maxent == T) {
             writeRaster(
               x = mx_cont,
@@ -570,6 +571,7 @@ function(input, output, session)
             png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_mx_con", ".jpg"))
             plot(mx_cont, main = paste("maxent - ", i))
             dev.off()
+
             if (write.projecao == T) {
               writeRaster(
                 x = mx_cont_proj,
@@ -577,7 +579,7 @@ function(input, output, session)
                 overwrite = T
               )
             }
-            
+
             if (write.future == T) {
               writeRaster(
                 x = mx_future,
@@ -589,7 +591,7 @@ function(input, output, session)
               dev.off()
             }
           }
-          
+
           if (GLM == T) {
             writeRaster(
               x = glm_cont,
@@ -627,7 +629,7 @@ function(input, output, session)
               dev.off()
             }
           }
-          
+
           if (RF == T) {
             writeRaster(x = rf1_cont, filename = paste0(
               "./www/", projeto,
@@ -658,7 +660,7 @@ function(input, output, session)
               dev.off()
             }
           }
-          
+
           if (SVM == T) {
             writeRaster(x = svm_cont, filename = paste0(
               "./www/", projeto,
@@ -689,7 +691,7 @@ function(input, output, session)
               dev.off()
             }
           }
-          
+
           if (Mahal == T && condicao_Mahal == TRUE) {
             writeRaster(x = ma_cont, filename = paste0(
               "./www/", projeto,
@@ -721,11 +723,11 @@ function(input, output, session)
             }
           }
         }
-        
-        # Write Binary models
+
+        # Binary models
         if (write.bin == T) {
           cat(paste("Saving binary models...", sp, i, "\n"))
-          
+
           if (Bioclim == T) {
             writeRaster(
               x = bc_bin,
@@ -735,7 +737,7 @@ function(input, output, session)
             png(filename = paste0("./www/", projeto, "/jpg/pre_", i, "_bc_bin", ".jpg"))
             plot(bc_bin, main = paste("Bioclim - Bin ", i))
             dev.off()
-            
+
             if (write.future == T) {
               writeRaster(
                 x = bc_future_bin,
@@ -744,7 +746,7 @@ function(input, output, session)
               )
             }
           }
-          
+
           if (Domain == T) {
             writeRaster(x = do_bin, filename = paste0(
               "./www/", projeto,
@@ -764,7 +766,7 @@ function(input, output, session)
               )
             }
           }
-          
+
           if (maxent == T) {
             writeRaster(x = mx_bin, filename = paste0(
               "./www/", projeto,
@@ -784,7 +786,7 @@ function(input, output, session)
               )
             }
           }
-          
+
           if (GLM == T) {
             writeRaster(x = glm_bin, filename = paste0(
               "./www/", projeto,
@@ -801,7 +803,7 @@ function(input, output, session)
               )
             }
           }
-          
+
           if (RF == T) {
             writeRaster(x = rf1_bin, filename = paste0(
               "./www/", projeto,
@@ -821,7 +823,7 @@ function(input, output, session)
               )
             }
           }
-          
+
           if (SVM == T) {
             writeRaster(x = svm_bin, filename = paste0(
               "./www/", projeto,
@@ -841,7 +843,7 @@ function(input, output, session)
               )
             }
           }
-          
+
           if (Mahal == T && condicao_Mahal == TRUE) {
             writeRaster(x = ma_bin, filename = paste0(
               "./www/", projeto,
@@ -862,31 +864,21 @@ function(input, output, session)
             }
           }
         }
-        
-        ## Write Mult. models
+
+        ## Mult models
         if (write.mult == T) {
-          
           if (Bioclim == T) {
-            writeRaster(
-              x = bc_mult,
-              filename = paste0("./www/", projeto,
-                                "/models/pre_", i, "_bc_mult", ".tif"),
-              overwrite = T)
+            writeRaster(x = bc_mult, filename = paste0(
+              "./www/", projeto,
+              "/models/pre_", i, "_bc_mult", ".tif"
+            ), overwrite = T)
             if (write.future == T) {
-              writeRaster(
-                x = bc_future_mult,
-                filename = paste0(
-                  "./www/",
-                  projeto,
-                  "/proj_time/",
-                  timescale,
-                  i,
-                  "_bc_mult",
-                  ".tif"),
-                overwrite = T)
+              writeRaster(x = bc_future_mult, filename = paste0(
+                "./www/",
+                projeto, "/proj_time/", timescale, i, "_bc_mult", ".tif"
+              ), overwrite = T)
             }
           }
-          
           if (Domain == T) {
             writeRaster(x = do_mult, filename = paste0(
               "./www/", projeto,
@@ -960,177 +952,247 @@ function(input, output, session)
             }
           }
         }
-        
-        #### Saving validation files (evaluate.txt) ####
+
+        ### Saving validation files (evaluate.txt)
         cat(paste("Saving validation files...", sp, i, "\n"))
-        
-        sink(file = paste0("./www/", projeto, "/models/evaluate_ALL_models.txt"),
-             split = T,
-             append = T)
-        
+        sink(file = paste0("./www/", projeto, "/models/evaluate_", sp, ".txt"), split = T, append = T)
+
         if (Bioclim == T) {
-          print(
-            paste(
-              sp,
-              spname,
-              i,
-              "BioClim",
-              round(ebc@auc, 3),
-              round(bcTSS,3),
-              round(tbc, 3),
-              round(threshold(ebc)$kappa, 3),
-              round(threshold(ebc)$equal_sens_spec,3),
-              round(threshold(ebc)$no_omission,3),
-              round(threshold(ebc)$prevalence,3),
-              round(threshold(ebc)$sensitivity,3),
-              ebc@np,
-              ebc@na,
-              round(ebc@cor,3),
-              sep = ","
-            )
-          )
+          print(paste(sp, spname, i, "BioClim", round(ebc@auc, 3), round(
+            bcTSS,
+            3
+          ), round(tbc, 3), round(threshold(ebc)$kappa, 3), round(
+            threshold(ebc)$equal_sens_spec,
+            3
+          ), round(threshold(ebc)$no_omission, 3), round(
+            threshold(ebc)$prevalence,
+            3
+          ), round(threshold(ebc)$sensitivity, 3), ebc@np, ebc@na, round(
+            ebc@cor,
+            3
+          ), sep = ","))
         }
-        
+
         if (Domain == T) {
-          print(
-            paste(
-              sp,
-              spname,
-              i,
-              "Domain",
-              round(edo@auc, 3),
-              round(doTSS,3),
-              round(tdo, 3),
-              round(threshold(edo)$kappa, 3),
-              round(threshold(edo)$equal_sens_spec,3),
-              round(threshold(edo)$no_omission, 3),
-              round(threshold(edo)$prevalence,3),
-              round(threshold(edo)$sensitivity, 3),
-              edo@np,
-              edo@na,
-              round(edo@cor,3),
-              sep = ","
-            )
-          )
+          print(paste(sp, spname, i, "Domain", round(edo@auc, 3), round(
+            doTSS,
+            3
+          ), round(tdo, 3), round(threshold(edo)$kappa, 3), round(
+            threshold(edo)$equal_sens_spec,
+            3
+          ), round(threshold(edo)$no_omission, 3), round(
+            threshold(edo)$prevalence,
+            3
+          ), round(threshold(edo)$sensitivity, 3), edo@np, edo@na, round(
+            edo@cor,
+            3
+          ), sep = ","))
         }
-        
+
         if (maxent == T) {
-          print(
-            paste(
-              sp,
-              spname,
-              i,
-              "maxent",
-              round(emx@auc, 3),
-              round(mxTSS,3),
-              round(tmx, 3),
-              round(threshold(emx)$kappa, 3),
-              round(threshold(emx)$equal_sens_spec, 3),
-              round(threshold(emx)$no_omission, 3),
-              round(threshold(emx)$prevalence,3),
-              round(threshold(emx)$sensitivity, 3),
-              emx@np,
-              emx@na,
-              round(emx@cor,3),
-              sep = ","
-            )
-          )
+          print(paste(sp, spname, i, "maxent", round(emx@auc, 3), round(
+            mxTSS,
+            3
+          ), round(tmx, 3), round(threshold(emx)$kappa, 3), round(
+            threshold(emx)$equal_sens_spec,
+            3
+          ), round(threshold(emx)$no_omission, 3), round(
+            threshold(emx)$prevalence,
+            3
+          ), round(threshold(emx)$sensitivity, 3), emx@np, emx@na, round(
+            emx@cor,
+            3
+          ), sep = ","))
         }
-        
+
         if (GLM == T) {
-          print(
-            paste(
-              sp,
-              spname,
-              i,
-              "GLM",
-              round(eglm@auc, 3),
-              round(glmTSS,3),
-              round(tglm, 3),
-              round(threshold(eglm)$kappa, 3),
-              round(threshold(eglm)$equal_sens_spec,3),
-              round(threshold(eglm)$no_omission, 3),
-              round(threshold(eglm)$prevalence,3),
-              round(threshold(eglm)$sensitivity, 3),
-              eglm@np,
-              eglm@na,
-              round(eglm@cor,3),
-              sep = ","
-            )
-          )
+          print(paste(sp, spname, i, "GLM", round(eglm@auc, 3), round(
+            glmTSS,
+            3
+          ), round(tglm, 3), round(threshold(eglm)$kappa, 3), round(
+            threshold(eglm)$equal_sens_spec,
+            3
+          ), round(threshold(eglm)$no_omission, 3), round(
+            threshold(eglm)$prevalence,
+            3
+          ), round(threshold(eglm)$sensitivity, 3), eglm@np, eglm@na, round(
+            eglm@cor,
+            3
+          ), sep = ","))
         }
-        
+
         if (RF == T) {
-          print(
-            paste(
-              sp,
-              spname,
-              i,
-              "RF",
-              round(erf1@auc, 3),
-              round(rfTSS1, 3),
-              round(trf1, 3),
-              round(threshold(erf1)$kappa, 3),
-              round(threshold(erf1)$equal_sens_spec, 3),
-              round(threshold(erf1)$no_omission, 3),
-              round(threshold(erf1)$prevalence, 3),
-              round(threshold(erf1)$sensitivity, 3),
-              erf1@np,
-              erf1@na,
-              round(erf1@cor, 3),
-              sep = ","
-            )
-          )
+          print(paste(sp, spname, i, "RF", round(erf1@auc, 3), round(
+            rfTSS1,
+            3
+          ), round(trf1, 3), round(threshold(erf1)$kappa, 3), round(
+            threshold(erf1)$equal_sens_spec,
+            3
+          ), round(threshold(erf1)$no_omission, 3), round(
+            threshold(erf1)$prevalence,
+            3
+          ), round(threshold(erf1)$sensitivity, 3), erf1@np, erf1@na, round(
+            erf1@cor,
+            3
+          ), sep = ","))
         }
-        
+
         if (SVM == T) {
-          print(
-            paste(
-              sp,
-              spname,
-              i,
-              "SVM",
-              round(esvm@auc, 3),
-              round(svmTSS, 3),
-              round(tsvm, 3),
-              round(threshold(esvm)$kappa, 3),
-              round(threshold(esvm)$equal_sens_spec, 3),
-              round(threshold(esvm)$no_omission, 3),
-              round(threshold(esvm)$prevalence, 3),
-              round(threshold(esvm)$sensitivity, 3),
-              esvm@np,
-              esvm@na,
-              round(esvm@cor, 3),
-              sep = ","
-            )
-          )
+          print(paste(sp, spname, i, "SVM", round(esvm@auc, 3), round(
+            svmTSS,
+            3
+          ), round(tsvm, 3), round(threshold(esvm)$kappa, 3), round(
+            threshold(esvm)$equal_sens_spec,
+            3
+          ), round(threshold(esvm)$no_omission, 3), round(
+            threshold(esvm)$prevalence,
+            3
+          ), round(threshold(esvm)$sensitivity, 3), esvm@np, esvm@na, round(
+            esvm@cor,
+            3
+          ), sep = ","))
         }
-        
+
         if (Mahal == T && condicao_Mahal == TRUE) {
-          print(
-            paste(
-              sp,
-              spname,
-              i,
-              "Mahal",
-              round(ema@auc, 3),
-              round(maTSS, 3),
-              round(tma, 3),
-              round(threshold(ema)$kappa, 3),
-              round(threshold(ema)$equal_sens_spec, 3),
-              round(threshold(ema)$no_omission, 3),
-              round(threshold(ema)$prevalence, 3),
-              round(threshold(ema)$sensitivity, 3),
-              ema@np,
-              ema@na,
-              round(ema@cor, 3),
-              sep = ","
-            )
-          )
+          print(paste(sp, sp, i, "Mahal", round(ema@auc, 3), round(maTSS, 3),
+            round(tma, 3), round(threshold(ema)$kappa, 3), round(
+              threshold(ema)$equal_sens_spec,
+              3
+            ), round(threshold(ema)$no_omission, 3), round(
+              threshold(ema)$prevalence,
+              3
+            ), round(threshold(ema)$sensitivity, 3), ema@np, ema@na, round(
+              ema@cor,
+              3
+            ),
+            sep = ","
+          ))
         }
-        
+
         sink()
-        
+
+        sink(file = paste0("./www/", projeto, "/models/evaluate_ALL_models.txt"), split = T, append = T)
+
+        if (Bioclim == T) {
+          print(paste(sp, spname, i, "BioClim", round(ebc@auc, 3), round(
+            bcTSS,
+            3
+          ), round(tbc, 3), round(threshold(ebc)$kappa, 3), round(
+            threshold(ebc)$equal_sens_spec,
+            3
+          ), round(
+            threshold(ebc)$no_omission,
+            3
+          ), round(
+            threshold(ebc)$prevalence,
+            3
+          ), round(
+            threshold(ebc)$sensitivity,
+            3
+          ), ebc@np, ebc@na, round(
+            ebc@cor,
+            3
+          ), sep = ","))
+        }
+
+        if (Domain == T) {
+          print(paste(sp, spname, i, "Domain", round(edo@auc, 3), round(
+            doTSS,
+            3
+          ), round(tdo, 3), round(threshold(edo)$kappa, 3), round(
+            threshold(edo)$equal_sens_spec,
+            3
+          ), round(threshold(edo)$no_omission, 3), round(
+            threshold(edo)$prevalence,
+            3
+          ), round(threshold(edo)$sensitivity, 3), edo@np, edo@na, round(
+            edo@cor,
+            3
+          ), sep = ","))
+        }
+
+        if (maxent == T) {
+          print(paste(sp, spname, i, "maxent", round(emx@auc, 3), round(
+            mxTSS,
+            3
+          ), round(tmx, 3), round(threshold(emx)$kappa, 3), round(
+            threshold(emx)$equal_sens_spec,
+            3
+          ), round(threshold(emx)$no_omission, 3), round(
+            threshold(emx)$prevalence,
+            3
+          ), round(threshold(emx)$sensitivity, 3), emx@np, emx@na, round(
+            emx@cor,
+            3
+          ), sep = ","))
+        }
+
+        if (GLM == T) {
+          print(paste(sp, spname, i, "GLM", round(eglm@auc, 3), round(
+            glmTSS,
+            3
+          ), round(tglm, 3), round(threshold(eglm)$kappa, 3), round(
+            threshold(eglm)$equal_sens_spec,
+            3
+          ), round(threshold(eglm)$no_omission, 3), round(
+            threshold(eglm)$prevalence,
+            3
+          ), round(threshold(eglm)$sensitivity, 3), eglm@np, eglm@na, round(
+            eglm@cor,
+            3
+          ), sep = ","))
+        }
+
+        if (RF == T) {
+          print(paste(sp, spname, i, "RF", round(erf1@auc, 3), round(
+            rfTSS1,
+            3
+          ), round(trf1, 3), round(threshold(erf1)$kappa, 3), round(
+            threshold(erf1)$equal_sens_spec,
+            3
+          ), round(threshold(erf1)$no_omission, 3), round(
+            threshold(erf1)$prevalence,
+            3
+          ), round(threshold(erf1)$sensitivity, 3), erf1@np, erf1@na, round(
+            erf1@cor,
+            3
+          ), sep = ","))
+        }
+
+        if (SVM == T) {
+          print(paste(sp, spname, i, "SVM", round(esvm@auc, 3), round(
+            svmTSS,
+            3
+          ), round(tsvm, 3), round(threshold(esvm)$kappa, 3), round(
+            threshold(esvm)$equal_sens_spec,
+            3
+          ), round(threshold(esvm)$no_omission, 3), round(
+            threshold(esvm)$prevalence,
+            3
+          ), round(threshold(esvm)$sensitivity, 3), esvm@np, esvm@na, round(
+            esvm@cor,
+            3
+          ), sep = ","))
+        }
+
+        if (Mahal == T && condicao_Mahal == TRUE) {
+          print(paste(sp, spname, i, "Mahal", round(ema@auc, 3), round(
+            maTSS,
+            3
+          ), round(tma, 3), round(threshold(ema)$kappa, 3), round(
+            threshold(ema)$equal_sens_spec,
+            3
+          ), round(threshold(ema)$no_omission, 3), round(
+            threshold(ema)$prevalence,
+            3
+          ), round(threshold(ema)$sensitivity, 3), ema@np, ema@na, round(
+            ema@cor,
+            3
+          ), sep = ","))
+        }
+
+        sink()
+
         stats <- read.delim(
           file = paste0("./www/", projeto, "/models/evaluate_ALL_models.txt"),
           header = F,
@@ -1142,30 +1204,29 @@ function(input, output, session)
             "No_omission", "Prevalence", "Sensitivity", "np", "na", "Cor"
           )
         )
-        
-        stats$Sensitivity <- as.numeric(
-          sub(pattern = "\"", "", stats$Sensitivity)
-        )
+
+        stats$Sensitivity <- as.numeric(sub(pattern = "\"", "", stats$Sensitivity))
         stats20 <- stats[order(stats$sp, stats$algorithm, stats$part), -1]
         write.table(stats20, paste0("./www/", projeto, "/models/statsALL.txt"))
-        
+
         output$dbgridresultado <- renderDataTable({
           stats20
         }, options = list(lengthMenu = c(5, 30, 50), pageLength = 10))
       }
-      
+
       output$dbgridresultado <- renderDataTable({
         cat(c(date(), "Exhibiting stats20 results", "\n", "\n"))
         stats20
       }, options = list(lengthMenu = c(5, 30, 50), pageLength = 10))
-      
+
       # The sinked files are re-read and transformed into a proper data frame...
-      
-      cat(c(date(), " == ==  END == ==  ", "\n", "\n"))
-      
-      #### Joining partitions ####
+
+      cat(c(date(), " == ==  FIM == ==  ", "\n", "\n"))
+
+      # WRITING ENSEMBLE FILES -------------------------------------------------
       conta_alg <- 0
       algoritmos <- ""
+
       if (input$BIOCLIM == TRUE) {
         conta_alg <- conta_alg + 1
         algoritmos <- paste(algoritmos, "Bioclim")
@@ -1179,13 +1240,13 @@ function(input, output, session)
         points(occur.data.coord, bg = "red", cex = 1, pch = 21)
         dev.off()
       }
-      
+
       if (input$GLM == TRUE) {
         conta_alg <- conta_alg + 1
         algoritmos <- paste(algoritmos, "GLM")
         glm_arquivos <- list.files(paste0("./www/", projeto, "/models/"),
-                                   full.names = T,
-                                   pattern = paste0("glm_con.tif")
+          full.names = T,
+          pattern = paste0("glm_con.tif")
         )
         glm_raster <- stack(glm_arquivos)
         ensemble.glm <- mean(glm_raster, glm_raster)
@@ -1198,7 +1259,6 @@ function(input, output, session)
         points(occur.data.coord, bg = "red", cex = 1, pch = 21)
         dev.off()
       }
-      
       if (input$RF == TRUE) {
         conta_alg <- conta_alg + 1
         algoritmos <- paste(algoritmos, "RF")
@@ -1206,24 +1266,24 @@ function(input, output, session)
         rf_raster <- stack(rf_arquivos)
         ensemble.rf <- mean(rf_raster, rf_raster)
         writeRaster(ensemble.rf,
-                    filename = paste0(
-                      "www/", projeto, "/final/",
-                      "rf_ensemble.tif"
-                    ),
-                    format = "GTiff",
-                    overwrite = T
+          filename = paste0(
+            "www/", projeto, "/final/",
+            "rf_ensemble.tif"
+          ),
+          format = "GTiff",
+          overwrite = T
         )
         png(filename = paste0("./www/", projeto, "/jpg/rf_ensemble", ".jpg"))
         plot(ensemble.rf, main = paste("RF - Ensemble"))
         points(occur.data.coord, bg = "red", cex = 1, pch = 21)
         dev.off()
       }
-      
+
       if (input$DOMAIN == TRUE) {
         conta_alg <- conta_alg + 1
         algoritmos <- paste(algoritmos, "Domain")
         domain_arquivos <- list.files(paste0("./www/", projeto, "/models/"),
-                                      full.names = T, pattern = paste0("do_con.tif")
+          full.names = T, pattern = paste0("do_con.tif")
         )
         do_raster <- stack(domain_arquivos)
         ensemble.do <- mean(do_raster, do_raster)
@@ -1236,13 +1296,13 @@ function(input, output, session)
         points(occur.data.coord, bg = "red", cex = 1, pch = 21)
         dev.off()
       }
-      
+
       if (input$MAHALANOBIS == TRUE) {
         conta_alg <- conta_alg + 1
         algoritmos <- paste(algoritmos, "Mahalanobis")
         maha_arquivos <- list.files(paste0("./www/", projeto, "/models/"),
-                                    full.names = T,
-                                    pattern = paste0("ma_con.tif")
+          full.names = T,
+          pattern = paste0("ma_con.tif")
         )
         ma_raster <- stack(maha_arquivos)
         ensemble.ma <- mean(ma_raster, ma_raster)
@@ -1255,13 +1315,13 @@ function(input, output, session)
         points(occur.data.coord, bg = "red", cex = 1, pch = 21)
         dev.off()
       }
-      
+
       if (input$SVM == TRUE) {
         conta_alg <- conta_alg + 1
         algoritmos <- paste(algoritmos, "SVM")
         svm_arquivos <- list.files(paste0("./www/", projeto, "/models/"),
-                                   full.names = T,
-                                   pattern = paste0("svm_con.tif")
+          full.names = T,
+          pattern = paste0("svm_con.tif")
         )
         svm_raster <- stack(svm_arquivos)
         ensemble.svm <- mean(svm_raster, svm_raster)
@@ -1274,104 +1334,104 @@ function(input, output, session)
         points(occur.data.coord, bg = "red", cex = 1, pch = 21)
         dev.off()
       }
-      
+
       if (input$MAXENT == TRUE) {
         conta_alg <- conta_alg + 1
         algoritmos <- paste(algoritmos, "maxent")
         mx_arquivos <- list.files(paste0("./www/", projeto, "/models/"),
-                                  full.names = T,
-                                  pattern = paste0("mx_con.tif")
+          full.names = T,
+          pattern = paste0("mx_con.tif")
         )
         mx_raster <- stack(mx_arquivos)
         ensemble.mx <- mean(mx_raster, mx_raster)
         writeRaster(ensemble.mx,
-                    filename = paste0("www/", projeto, "/final/", "mx_ensemble.tif"),
-                    format = "GTiff",
-                    overwrite = T
+          filename = paste0("www/", projeto, "/final/", "mx_ensemble.tif"),
+          format = "GTiff",
+          overwrite = T
         )
         png(filename = paste0("./www/", projeto, "/jpg/mx_ensemble", ".jpg"))
         plot(ensemble.mx, main = paste("MAXENT - Ensemble"))
         points(occur.data.coord, bg = "red", cex = 1, pch = 21)
         dev.off()
       }
-      
+
       # Final Ensemble
       ensemble_arquivos <- list.files(paste0("./www/", projeto, "/final/"),
-                                      full.names = T,
-                                      pattern = paste0("ensemble.tif")
+        full.names = T,
+        pattern = paste0("ensemble.tif")
       )
-      
+
       if (conta_alg > 1) {
         ensemble_raster <- stack(ensemble_arquivos)
         ensemble.geral <- mean(ensemble_raster, ensemble_raster)
         writeRaster(ensemble.geral,
-                    filename = paste0("www/", projeto, "/final/", "ensemble_geral.tif"),
-                    format = "GTiff",
-                    overwrite = T
+          filename = paste0("www/", projeto, "/final/", "ensemble_geral.tif"),
+          format = "GTiff",
+          overwrite = T
         )
         png(filename = paste0("./www/", projeto, "/jpg/ensemble_geral", ".jpg"))
         plot(ensemble.geral, main = paste("Ensemble ", algoritmos))
         points(occur.data.coord, bg = "red", cex = 1, pch = 21)
         dev.off()
       }
-      
-      # Include future/Past projections
+
+      # Future/Past proj.
       if (future.model == T) {
         ensemble_futuro_arquivos <- list.files(paste0("./www/", projeto, "/proj_time/"),
-                                               full.names = T,
-                                               pattern = paste0("Fut.*_con")
+          full.names = T,
+          pattern = paste0("Fut.*_con")
         )
-        
+
         ensemble_past_arquivos <- list.files(paste0("./www/", projeto, "/proj_time/"),
-                                             full.names = T,
-                                             pattern = paste0("Past.*_con")
+          full.names = T,
+          pattern = paste0("Past.*_con")
         )
-        
+
         if (length(ensemble_futuro_arquivos) > 0) {
           ensemble_futuro_raster <- stack(ensemble_futuro_arquivos)
           ensemble_futuro.geral <- mean(ensemble_futuro_raster, ensemble_futuro_raster)
           writeRaster(ensemble_futuro.geral,
-                      filename = paste0("www/", projeto, "/final/", "ensemble_futuro_geral.tif"),
-                      format = "GTiff",
-                      overwrite = T
+            filename = paste0("www/", projeto, "/final/", "ensemble_futuro_geral.tif"),
+            format = "GTiff",
+            overwrite = T
           )
           png(filename = paste0("./www/", projeto, "/jpg/ensemble_future", ".jpg"))
           plot(ensemble_futuro.geral, main = paste("Ensemble - Future proj."))
           dev.off()
         }
-        
+
         if (length(ensemble_past_arquivos) > 0) {
           ensemble_past_raster <- stack(ensemble_past_arquivos)
           ensemble_past.geral <- mean(ensemble_past_raster, ensemble_past_raster)
           writeRaster(ensemble_past.geral,
-                      filename = paste0("www/", projeto, "/final/", "ensemble_past_geral.tif"),
-                      format = "GTiff",
-                      overwrite = T
+            filename = paste0("www/", projeto, "/final/", "ensemble_past_geral.tif"),
+            format = "GTiff",
+            overwrite = T
           )
           png(filename = paste0("./www/", projeto, "/jpg/ensemble_past", ".jpg"))
           plot(ensemble_past.geral, main = paste("Ensemble - Past  proj."))
           dev.off()
         }
       }
-      
-      # Include geographic projection
+
+      # Geographic proj.
       if (write.projecao == T) {
         ensemble_arquivos_projecao <- list.files(paste0("./www/", projeto, "/proj/"),
-                                                 full.names = T, pattern = paste0("proj.tif")
+          full.names = T, pattern = paste0("proj.tif")
         )
         ensemble_raster_projecao <- stack(ensemble_arquivos_projecao)
         ensemble.projecao <- mean(ensemble_raster_projecao, ensemble_raster_projecao)
         writeRaster(ensemble.projecao,
-                    filename = paste0("www/", projeto, "/final/", "proj_ensemble.tif"),
-                    format = "GTiff",
-                    overwrite = T
+          filename = paste0("www/", projeto, "/final/", "proj_ensemble.tif"),
+          format = "GTiff",
+          overwrite = T
         )
         png(filename = paste0("./www/", projeto, "/jpg/ensemble_projecao", ".jpg"))
         plot(ensemble.projecao, main = paste("Ensemble - Geo. proj."))
         dev.off()
       }
     })
-    
+
     # Select partitions TSS
     library("data.table")
     cat(paste("Reading evaluation files", "\n"))
@@ -1380,7 +1440,7 @@ function(input, output, session)
     for (i in 1:length(evall3)) {
       lista3[[i]] <- read.table(file = evall3[i], header = T, row.names = 1)
     }
-    
+
     stats3 <- rbindlist(lista3)
     stats3 <- as.data.frame(stats3)
     algoritmos <- unique(stats3$algorithm)
@@ -1407,7 +1467,7 @@ function(input, output, session)
       if (algo == "Domain") {
         algo <- "do"
       }
-      
+
       part <- nrow(stats2)
       cat(paste("Reading models from .tif files", "\n"))
       modelos <- list.files(
@@ -1416,24 +1476,24 @@ function(input, output, session)
       )
       mod <- stack(modelos) # (0)
       names(mod) <- paste0("Partition", 1:part)
-      
+
       # Binary by TSSth and Cut
       bin <- mod > stats2[, names(stats2) == "Equal_sens_spec"] # stack
       cut <- bin * mod # stack
       sel.index <- which(stats2[, "TSS"] >= TSS.value)
       mod.sel <- mod[[sel.index]]
-      
+
       if (length(sel.index) == 0) {
         cat(paste("No partition was selected for", "\n"))
       }
-      
+
       if (length(sel.index) > 0) {
         mod.sel <- mod[[sel.index]] # (1)
         bin.sel <- mod.sel > stats2[, names(stats2) == "Equal_sens_spec"][sel.index] # (5)
         cut.sel <- bin.sel * mod.sel # (8)
         th.mean <- mean(stats2[, names(stats2) == "Equal_sens_spec"][sel.index])
       }
-      
+
       # In case just one partition is selected, several models are the same
       if (length(sel.index) == 1) {
         cat(paste(length(sel.index), "partition was selected for", sp))
@@ -1449,7 +1509,7 @@ function(input, output, session)
           "7_Final_mean_bin_", "8_Final_inter_bin_", "9_Mean_cut_sel_", "10_inter_cut_sel_"
         )
       }
-      
+
       if (length(sel.index) > 1) {
         cat(paste(length(sel.index), "partitions were selected for"))
         final.cont.mean <- mean(mod.sel) # (2)
@@ -1467,7 +1527,7 @@ function(input, output, session)
           "2_Final.cont.mean_", "3_Final.bin.mean_", "4_Final.cut.mean_",
           "7_Final.mean.bin_", "8_Final.inter.bin_", "9_Mean.cut.sel_", "10_inter.cut.sel_"
         )
-        
+
         writeRaster(x = final.cont.mean, filename = paste0(
           "./www/", projeto,
           "/final", "/2_Final_cont_mean_", algo
@@ -1507,220 +1567,220 @@ function(input, output, session)
       }
     }
   }
-  
+
   # MODELING FUNCTION ----------------------------------------------------------
   modelagem <- function() ({
-    limparResultadosAnteriores()
-    library(raster)
-    
-    write.projecao <- FALSE
-    if (input$project_ext == T) {
-      write.projecao <- T
-    }
-    
-    future.model <- FALSE
-    if (write_timeproj == T) {
-      future.model <- TRUE
-    }
-    
-    dismo.mod(
-      "", occur.data.coord, pred_nf, pred_nf2,
-      input$MAXENT, input$BIOCLIM, input$GLM, input$RF, input$SVM, input$MAHALANOBIS, input$DOMAIN, input$SVM2,
-      input$edtnumgrupo, input$edtnumpontos, 123, T, T, T, F, F, input$edtTSS,
-      future.model, pred_nffuturo, future.model,
-      write.projecao
-    )
-    
-    progress$set(message = "Saving output data...", value = 0)
-    
-    ## Function to plot model ensemble map of selected algorithm
-    maparesultado_model <- function(
-      model_ensemble = model_ensemble,
-      model_title = model_title) {
-      if (file.exists(paste0("www/", projeto, "/final/", model_ensemble, ".tif"))) {
-        r <- raster::raster(paste0("www/", projeto, "/final/", model_ensemble, ".tif"))
-        pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(r), na.color = "transparent")
-        lng <- c(occur.data.coord[, 1])
-        lng <- as.numeric(lng[[1]])
-        lat <- c(occur.data.coord[, 1])
-        lat <- as.numeric(lat[[1]])
-        map <- leaflet() %>%
-          addTiles() %>%
-          addRasterImage(r, colors = pal, opacity = 0.7) %>%
-          addLegend(pal = pal, values = values(r), title = model_title) %>%
-          addCircles(color = "red", lat = lat, lng = lng) %>%
-          addRectangles(ext1, ext3, ext2, ext4, color = "red", fill = FALSE, dashArray = "5,5", weight = 2)
+      limparResultadosAnteriores()
+      library(raster)
+
+      write.projecao <- FALSE
+      if (input$project_ext == T) {
+        write.projecao <- T
       }
-    }
-    
-    ## Function to plot geographic projection of the ensemble maps
-    maparesultado_model_proj <- function() {
-      if (file.exists(paste0("www/", projeto, "/final/proj_ensemble.tif")) && input$project_ext == TRUE) {
-        rproj <- raster::raster(paste0("www/", projeto, "/final/proj_ensemble.tif"))
-        palproj <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(rproj), na.color = "transparent")
-        lng <- c(occur.data.coord[, 1])
-        lng <- as.numeric(lng[[1]])
-        lat <- c(occur.data.coord[, 1])
-        lat <- as.numeric(lat[[1]])
-        map_proj <- leaflet() %>%
-          addTiles() %>%
-          addRasterImage(rproj, colors = palproj, opacity = 0.7) %>%
-          addLegend(pal = palproj, values = values(rproj), title = "") %>%
-          addCircles(color = "red", lat = occur.data.coord[, 2], lng = occur.data.coord[, 1]) %>%
-          addRectangles(ext12, ext32, ext22, ext42, color = "green", fill = FALSE, dashArray = "5,5", weight = 2)
+
+      future.model <- FALSE
+      if (write_timeproj == T) {
+        future.model <- TRUE
       }
-    }
-    
-    output$maparesultadomax <- renderLeaflet({
-      input$btnModelar
-      maparesultado_model(model_ensemble = "mx_ensemble", model_title = "Maxent")
-    })
-    
-    output$maparesultadosvm <- renderLeaflet({
-      input$btnModelar
-      maparesultado_model(model_ensemble = "svm_ensemble", model_title = "SVM")
-    })
-    
-    output$maparesultadomh <- renderLeaflet({
-      input$btnModelar
-      maparesultado_model(model_ensemble = "ma_ensemble", model_title = "Mahal")
-    })
-    
-    output$maparesultadorf <- renderLeaflet({
-      input$btnModelar
-      maparesultado_model(model_ensemble = "rf_ensemble", model_title = "RF")
-    })
-    
-    output$maparesultadoglm <- renderLeaflet({
-      input$btnModelar
-      maparesultado_model(model_ensemble = "glm_ensemble", model_title = "GLM")
-    })
-    
-    output$maparesultadobc <- renderLeaflet({
-      input$btnModelar
-      maparesultado_model(model_ensemble = "bc_ensemble", model_title = "BioClim")
-    })
-    
-    output$maparesultadodo <- renderLeaflet({
-      input$btnModelar
-      maparesultado_model(model_ensemble = "do_ensemble", model_title = "Domain")
-    })
-    
-    #### Exhibit geo. projected model ensemble ####
-    output$maparesultado_proj <- renderLeaflet({
-      input$btnModelar
-      maparesultado_model_proj()
-    })
-    
-    #### Display results at the Outputs tab ####
-    output$uiarquivosmodelos <- renderUI({
-      lista_models <- list.files(paste0("www/", projeto, "/models"),
-                                 full.names = F,
-                                 pattern = paste0("pre_")
+
+      dismo.mod(
+        "", occur.data.coord, pred_nf, pred_nf2,
+        input$MAXENT, input$BIOCLIM, input$GLM, input$RF, input$SVM, input$MAHALANOBIS, input$DOMAIN, input$SVM2,
+        input$edtnumgrupo, input$edtnumpontos, 123, T, T, T, F, F, input$edtTSS,
+        future.model, pred_nffuturo, future.model,
+        write.projecao
       )
-      lapply(1:length(sort(lista_models)), function(i) {
-        tags$div(tags$a(
-          href = paste0(home, projeto, "/models/", lista_models[i]),
-          paste0(lista_models[i])
-        ))
+
+      progress$set(message = "Saving output data...", value = 0)
+
+      ## Function to plot model ensemble map of selected algorithm
+      maparesultado_model <- function(
+                                            model_ensemble = model_ensemble,
+                                            model_title = model_title) {
+        if (file.exists(paste0("www/", projeto, "/final/", model_ensemble, ".tif"))) {
+          r <- raster::raster(paste0("www/", projeto, "/final/", model_ensemble, ".tif"))
+          pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(r), na.color = "transparent")
+          lng <- c(occur.data.coord[, 1])
+          lng <- as.numeric(lng[[1]])
+          lat <- c(occur.data.coord[, 1])
+          lat <- as.numeric(lat[[1]])
+          map <- leaflet() %>%
+            addTiles() %>%
+            addRasterImage(r, colors = pal, opacity = 0.7) %>%
+            addLegend(pal = pal, values = values(r), title = model_title) %>%
+            addCircles(color = "red", lat = lat, lng = lng) %>%
+            addRectangles(ext1, ext3, ext2, ext4, color = "red", fill = FALSE, dashArray = "5,5", weight = 2)
+        }
+      }
+
+      ## Function to plot geographic projection of the ensemble maps
+      maparesultado_model_proj <- function() {
+        if (file.exists(paste0("www/", projeto, "/final/proj_ensemble.tif")) && input$project_ext == TRUE) {
+          rproj <- raster::raster(paste0("www/", projeto, "/final/proj_ensemble.tif"))
+          palproj <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(rproj), na.color = "transparent")
+          lng <- c(occur.data.coord[, 1])
+          lng <- as.numeric(lng[[1]])
+          lat <- c(occur.data.coord[, 1])
+          lat <- as.numeric(lat[[1]])
+          map_proj <- leaflet() %>%
+            addTiles() %>%
+            addRasterImage(rproj, colors = palproj, opacity = 0.7) %>%
+            addLegend(pal = palproj, values = values(rproj), title = "") %>%
+            addCircles(color = "red", lat = occur.data.coord[, 2], lng = occur.data.coord[, 1]) %>%
+            addRectangles(ext12, ext32, ext22, ext42, color = "green", fill = FALSE, dashArray = "5,5", weight = 2)
+        }
+      }
+
+      output$maparesultadomax <- renderLeaflet({
+        input$btnModelar
+        maparesultado_model(model_ensemble = "mx_ensemble", model_title = "Maxent")
+      })
+
+      output$maparesultadosvm <- renderLeaflet({
+        input$btnModelar
+        maparesultado_model(model_ensemble = "svm_ensemble", model_title = "SVM")
+      })
+
+      output$maparesultadomh <- renderLeaflet({
+        input$btnModelar
+        maparesultado_model(model_ensemble = "ma_ensemble", model_title = "Mahal")
+      })
+
+      output$maparesultadorf <- renderLeaflet({
+        input$btnModelar
+        maparesultado_model(model_ensemble = "rf_ensemble", model_title = "RF")
+      })
+
+      output$maparesultadoglm <- renderLeaflet({
+        input$btnModelar
+        maparesultado_model(model_ensemble = "glm_ensemble", model_title = "GLM")
+      })
+
+      output$maparesultadobc <- renderLeaflet({
+        input$btnModelar
+        maparesultado_model(model_ensemble = "bc_ensemble", model_title = "BioClim")
+      })
+
+      output$maparesultadodo <- renderLeaflet({
+        input$btnModelar
+        maparesultado_model(model_ensemble = "do_ensemble", model_title = "Domain")
+      })
+
+      #### Exhibit geo. projected model ensemble ####
+      output$maparesultado_proj <- renderLeaflet({
+        input$btnModelar
+        maparesultado_model_proj()
+      })
+
+      #### Display results at the Outputs tab ####
+      output$uiarquivosmodelos <- renderUI({
+        lista_models <- list.files(paste0("www/", projeto, "/models"),
+          full.names = F,
+          pattern = paste0("pre_")
+        )
+        lapply(1:length(sort(lista_models)), function(i) {
+          tags$div(tags$a(
+            href = paste0(home, projeto, "/models/", lista_models[i]),
+            paste0(lista_models[i])
+          ))
+        })
+      })
+
+      output$ui <- renderUI({
+        lista_jpg <- list.files(paste0("www/", projeto, "/jpg"),
+          full.names = F,
+          pattern = paste0(".jpg")
+        )
+        lapply(1:length(order(lista_jpg)), function(i) {
+          tags$a(href = paste0(home, projeto, "/jpg/", lista_jpg[i]), tags$img(src = paste0(
+            projeto,
+            "/jpg/", lista_jpg[i]
+          ), height = "200px"), target = "_blank")
+        })
+      })
+
+      output$uiscript <- renderUI({
+        lista_txt <- list.files(paste0("www/", projeto, "/"), full.names = F, pattern = paste0("script.R"))
+        lapply(1:length(lista_txt), function(i) {
+          tags$div(tags$a(
+            href = paste0(home, projeto, "/", lista_txt[i]), paste0(lista_txt[i]),
+            target = "_blank"
+          ))
+        })
+      })
+
+      output$uiestatistica <- renderUI({
+        lista_txt <- list.files(paste0("www/", projeto, "/models"),
+          full.names = F,
+          pattern = paste0("statsALL.txt")
+        )
+        lapply(1:length(lista_txt), function(i) {
+          tags$div(tags$a(
+            href = paste0(home, projeto, "/models/", lista_txt[i]),
+            paste0(lista_txt[i]), target = "_blank"
+          ))
+        })
+      })
+
+      output$uiarquivosdados <- renderUI({
+        lista_csv <- list.files(paste0("www/", projeto, "/csv"),
+          full.names = F,
+          pattern = paste0(".csv")
+        )
+        lapply(1:length(lista_csv), function(i) {
+          tags$div(tags$a(
+            href = paste0(home, projeto, "/csv/", lista_csv[i]),
+            paste0(lista_csv[i]), target = "_blank"
+          ))
+        })
+      })
+
+      output$uiarquivosensemble <- renderUI({
+        lista_final <- list.files(paste0("www/", projeto, "/final"),
+          full.names = F,
+          pattern = paste0(".tif")
+        )
+        lapply(1:length(sort(lista_final)), function(i) {
+          tags$div(tags$a(
+            href = paste0(home, projeto, "/final/", lista_final[i]),
+            paste0(lista_final[i]), target = "_blank"
+          ))
+        })
+      })
+
+      output$uiarquivosprojecao <- renderUI({
+        lista_proj <- list.files(paste0("www/", projeto, "/proj"),
+          full.names = F,
+          pattern = paste0(".tif")
+        )
+        lapply(1:length(sort(lista_proj)), function(i) {
+          tags$div(tags$a(
+            href = paste0(home, projeto, "/proj/", lista_proj[i]),
+            paste0(lista_proj[i]), target = "_blank"
+          ))
+        })
+      })
+
+      output$uiarquivosprojecaofuturo <- renderUI({
+        lista_futuro <- list.files(paste0("www/", projeto, "/proj_time"),
+          full.names = F,
+          pattern = paste0(".tif")
+        )
+        lapply(1:length(sort(lista_futuro)), function(i) {
+          tags$div(tags$a(
+            href = paste0(home, projeto, "/proj_time/", lista_futuro[i]),
+            paste0(lista_futuro[i]), target = "_blank"
+          ))
+        })
       })
     })
-    
-    output$ui <- renderUI({
-      lista_jpg <- list.files(paste0("www/", projeto, "/jpg"),
-                              full.names = F,
-                              pattern = paste0(".jpg")
-      )
-      lapply(1:length(order(lista_jpg)), function(i) {
-        tags$a(href = paste0(home, projeto, "/jpg/", lista_jpg[i]), tags$img(src = paste0(
-          projeto,
-          "/jpg/", lista_jpg[i]
-        ), height = "200px"), target = "_blank")
-      })
-    })
-    
-    output$uiscript <- renderUI({
-      lista_txt <- list.files(paste0("www/", projeto, "/"), full.names = F, pattern = paste0("script.R"))
-      lapply(1:length(lista_txt), function(i) {
-        tags$div(tags$a(
-          href = paste0(home, projeto, "/", lista_txt[i]), paste0(lista_txt[i]),
-          target = "_blank"
-        ))
-      })
-    })
-    
-    output$uiestatistica <- renderUI({
-      lista_txt <- list.files(paste0("www/", projeto, "/models"),
-                              full.names = F,
-                              pattern = paste0("statsALL.txt")
-      )
-      lapply(1:length(lista_txt), function(i) {
-        tags$div(tags$a(
-          href = paste0(home, projeto, "/models/", lista_txt[i]),
-          paste0(lista_txt[i]), target = "_blank"
-        ))
-      })
-    })
-    
-    output$uiarquivosdados <- renderUI({
-      lista_csv <- list.files(paste0("www/", projeto, "/csv"),
-                              full.names = F,
-                              pattern = paste0(".csv")
-      )
-      lapply(1:length(lista_csv), function(i) {
-        tags$div(tags$a(
-          href = paste0(home, projeto, "/csv/", lista_csv[i]),
-          paste0(lista_csv[i]), target = "_blank"
-        ))
-      })
-    })
-    
-    output$uiarquivosensemble <- renderUI({
-      lista_final <- list.files(paste0("www/", projeto, "/final"),
-                                full.names = F,
-                                pattern = paste0(".tif")
-      )
-      lapply(1:length(sort(lista_final)), function(i) {
-        tags$div(tags$a(
-          href = paste0(home, projeto, "/final/", lista_final[i]),
-          paste0(lista_final[i]), target = "_blank"
-        ))
-      })
-    })
-    
-    output$uiarquivosprojecao <- renderUI({
-      lista_proj <- list.files(paste0("www/", projeto, "/proj"),
-                               full.names = F,
-                               pattern = paste0(".tif")
-      )
-      lapply(1:length(sort(lista_proj)), function(i) {
-        tags$div(tags$a(
-          href = paste0(home, projeto, "/proj/", lista_proj[i]),
-          paste0(lista_proj[i]), target = "_blank"
-        ))
-      })
-    })
-    
-    output$uiarquivosprojecaofuturo <- renderUI({
-      lista_futuro <- list.files(paste0("www/", projeto, "/proj_time"),
-                                 full.names = F,
-                                 pattern = paste0(".tif")
-      )
-      lapply(1:length(sort(lista_futuro)), function(i) {
-        tags$div(tags$a(
-          href = paste0(home, projeto, "/proj_time/", lista_futuro[i]),
-          paste0(lista_futuro[i]), target = "_blank"
-        ))
-      })
-    })
-  })
-  
+
   #### GROUPING ALL MODELING PROCESSES BY CLICKING THE EXECUTE BUTTON ####
   observeEvent(input$btnModelar, {
     if ((input$DOMAIN == "TRUE") || (input$MAXENT == "TRUE") ||
-        (input$BIOCLIM == "TRUE") || (input$GLM == "TRUE") ||
-        (input$RF == "TRUE") || (input$SVM == "TRUE") ||
-        (input$GLM == "TRUE")) {
+      (input$BIOCLIM == "TRUE") || (input$GLM == "TRUE") ||
+      (input$RF == "TRUE") || (input$SVM == "TRUE") ||
+      (input$GLM == "TRUE")) {
       if (ETAPA > 1) {
         if (exists("occur.data.coord")) {
           progress <<- shiny::Progress$new()
@@ -1731,14 +1791,14 @@ function(input, output, session)
       }
     }
   })
-  
-  #### SET MODEL EXTENT ####
+
+  #### Model Extent ####
   output$mapapontosextend <- renderLeaflet({
     input$btnapagar
     input$btneliminarduplicatas
     input$btnsearch_spdatacsv
     input$btnsearch_spdata
-    
+
     if (!is.null(occur.data.coord)) {
       ext1 <<- input$edtextend1
       ext3 <<- input$edtextend3
@@ -1750,21 +1810,21 @@ function(input, output, session)
         addMarkers(clusterOptions = markerClusterOptions()) %>%
         addMarkers(~ Longitude, ~ Latitude) %>%
         addRectangles(input$edtextend1,
-                      input$edtextend3, input$edtextend2, input$edtextend4,
-                      color = "red",
-                      fill = TRUE, dashArray = "5,5", weight = 3
+          input$edtextend3, input$edtextend2, input$edtextend4,
+          color = "red",
+          fill = TRUE, dashArray = "5,5", weight = 3
         )
       map
     }
   })
-  
-  #### SET GEOGRAPHIC PROJECTION EXTENT ####
+
+  #### Geographic projection extent ####
   output$mapapontosextend2 <- renderLeaflet({
     input$btnapagar
     input$btneliminarduplicatas
     input$btnsearch_spdatacsv
     input$btnsearch_spdata
-    
+
     if (!is.null(occur.data.coord)) {
       ext12 <<- input$edtextend12
       ext32 <<- input$edtextend32
@@ -1776,42 +1836,42 @@ function(input, output, session)
         addMarkers(clusterOptions = markerClusterOptions()) %>%
         addMarkers(~ Longitude, ~ Latitude) %>%
         addRectangles(input$edtextend12, input$edtextend32,
-                      input$edtextend22, input$edtextend42,
-                      color = "green", fill = TRUE, dashArray = "5,5",
-                      weight = 3
+          input$edtextend22, input$edtextend42,
+          color = "green", fill = TRUE, dashArray = "5,5",
+          weight = 3
         )
       map
     }
   })
-  
+
   ######### ENVIRONMENTAL VARIABLES #########
   observeEvent(input$btnAtualizaSelecaoVariaveis, {
     withProgress(message = "", value = 0, {
       n <- 3
-      
+
       ######## SELECT/LOAD PREDICTORS  ########
       incProgress(1 / n, detail = paste0("Loading variables..."))
       ETAPA <<- 3
-      
+
       environmental_data <- reactiveValues(
         any_selection = FALSE,
         write_timeproj = FALSE,
         data_current = list(),
         data_timeproj = list()
       )
-      
+
       #### Use WorldClim variables ####
       if (input$tipodadoabiotico == "CLIMA") {
         vars_selection <<- paste(input$pred_vars_wc)
         path_current <- paste0(getwd(), "/ex/clima/current/", input$resolution)
         checkfiles <- list()
-        
+
         for (i in c(1:length(input$pred_vars_wc))) {
           layer <- paste0(path_current, "/", vars_selection[i], ".bil")
           environmental_data$data_current <- c(environmental_data$data_current, layer)
           checkfiles <- c(checkfiles, file.exists(layer))
         }
-        
+
         # Check/Download layers - Current conditions
         if (length(vars_selection) >= 1 && any(checkfiles == F)) {
           if (input$resolution != "30s") {
@@ -1824,7 +1884,7 @@ function(input, output, session)
             unzip(zip_current, exdir = path_current)
             unlink(zip_current)
           }
-          
+
           if (input$resolution == "30s") {
             group1 <- c(
               "bio1",
@@ -1849,34 +1909,34 @@ function(input, output, session)
               "bio18",
               "bio19"
             )
-            
+
             if (any(group1 %in% input$pred_vars_wc)) {
               download.file("http://biogeo.ucdavis.edu/data/climate/worldclim/1_4/grid/cur/bio1-9_30s_bil.zip",
-                            "bio_30s1.zip",
-                            mode = "wb"
+                "bio_30s1.zip",
+                mode = "wb"
               )
               unzip("bio_30s1.zip", exdir = path_current)
               unlink("bio_30s1.zip")
             }
             if (any(group2 %in% input$pred_vars_wc)) {
               download.file("http://biogeo.ucdavis.edu/data/climate/worldclim/1_4/grid/cur/bio10-19_30s_bil.zip",
-                            "bio_30s2.zip",
-                            mode = "wb"
+                "bio_30s2.zip",
+                mode = "wb"
               )
               unzip("bio_30s2.zip", exdir = path_current)
               unlink("bio_30s2.zip")
             }
-            
+
             files <- paste0(path_current, "/", list.files(path_current))
             file.rename(from = files, to = sub(pattern = "bio_", replacement = "bio", files))
           }
         }
-        
+
         ### Include time projections ###
         if (input$forecasting_wc != "current_wc") {
           environmental_data$write_timeproj <- TRUE
           checkfiles_timeproj <- list()
-          
+
           ## Include future projection
           if (input$forecasting_wc == "future_wc") {
             timescale <<- "Future"
@@ -1891,9 +1951,9 @@ function(input, output, session)
               "/",
               input$rcp_wc
             )
-            
+
             year <- sub(".*(\\d+{2}).*$", "\\1", input$future_dates_wc)
-            
+
             for (i in c(1:length(input$pred_vars_wc))) {
               nbi <- sub("bio", "", vars_selection[i])
               layer <- paste0(
@@ -1910,19 +1970,19 @@ function(input, output, session)
               checkfiles_timeproj <- c(checkfiles_timeproj, file.exists(layer))
             }
           }
-          
+
           ## Include paleo projection
           if (input$forecasting_wc == "past_wc") {
             timescale <<- "Past"
-            
+
             if (input$past_dates_wc == "mid") {
               gcm_past <- input$gcm_past_wc_mid
             }
-            
+
             if (input$past_dates_wc == "lgm") {
               gcm_past <- input$gcm_past_wc_lgm
             }
-            
+
             path_past <- paste0(
               getwd(), "/ex/clima/",
               input$past_dates_wc,
@@ -1931,7 +1991,7 @@ function(input, output, session)
               "/",
               gcm_past
             )
-            
+
             for (i in c(1:length(input$pred_vars_wc))) {
               nbi <- sub("bio", "", vars_selection[i])
               layer <- paste0(
@@ -1947,10 +2007,10 @@ function(input, output, session)
               checkfiles_timeproj <- c(checkfiles_timeproj, file.exists(layer))
             }
           }
-          
+
           ### Check/Download layers - Future/Paleo Conditions ###
           if (any(checkfiles_timeproj == F)) {
-            
+
             # Download future layers
             if (input$forecasting_wc == "future_wc") {
               zip <- paste0(input$gcm_future_wc, input$rcp_wc, "bi", year, ".zip")
@@ -1961,7 +2021,7 @@ function(input, output, session)
                   zip
                 )
               }
-              
+
               if (input$resolution != "2-5m") {
                 url <- paste0(
                   "http://biogeo.ucdavis.edu/data/climate/cmip5/",
@@ -1970,12 +2030,12 @@ function(input, output, session)
                   zip
                 )
               }
-              
+
               download.file(url, zip, mode = "wb")
               unzip(zip, exdir = path_future)
               unlink(zip)
             }
-            
+
             # Download paleo layers
             if (input$forecasting_wc == "past_wc") {
               zip <- paste0(
@@ -1998,18 +2058,18 @@ function(input, output, session)
           }
         }
       }
-      
+
       #### Use bio-ORACLE variables ####
       if (input$tipodadoabiotico == "BIOORACLE") {
-        
+
         # Inform path of predictor layers (current conditions)
         path_current <- paste0(getwd(), "/ex/biooracle/current")
-        
+
         ## Include future projections ##
         if (input$forecasting_bo == "future_bo") {
           timescale <<- "Future"
           environmental_data$write_timeproj <- TRUE
-          
+
           if (input$future_dates_bo == "2100") {
             scenario_bo <- input$scenario_bo_2100
           }
@@ -2018,7 +2078,7 @@ function(input, output, session)
           }
           path_future <- paste0(getwd(), "/ex/biooracle/", input$future_dates_bo, "/", scenario_bo)
           vars_selection <<- paste(input$pred_vars_bo_fut)
-          
+
           # Group predictor layers
           for (i in c(1:length(vars_selection))) {
             # Future layers
@@ -2028,18 +2088,17 @@ function(input, output, session)
             layer_code <- paste0("BO_", vars_selection[i])
             environmental_data$data_current <- c(environmental_data$data_current, load_layers(layer_code, rasterstack = FALSE, datadir = path_current))
           }
-          
+
           ## Do not include future projections ##
         } else {
           vars_selection <<- paste(input$pred_vars_bo)
           for (i in c(1:length(vars_selection))) {
-            # Current layers
             layer_code <- paste0("BO_", vars_selection[i])
             environmental_data$data_current <- c(environmental_data$data_current, load_layers(layer_code, rasterstack = FALSE, datadir = path_current))
           }
         }
       }
-      
+
       #### Browse predictors from local files ####
       if (input$tipodadoabiotico == "Others") {
         path_current <- paste(getwd(), "/ex/outros/", sep = "")
@@ -2049,37 +2108,36 @@ function(input, output, session)
           environmental_data$data_current <- c(environmental_data$data_current, layer)
         }
       }
-      
-      #### Prepare predictors dataset ####
+
       if (!is.null(vars_selection)) {
         environmental_data$any_selection <- TRUE
       }
-      
+
       check_selected <- environmental_data$any_selection
       env_data <<- environmental_data$data_current
       write_timeproj <<- environmental_data$write_timeproj
       envdata_timeproj <<- environmental_data$data_timeproj
-      
+
       if (!is.null(env_data) && exists("occur.data.coord") && check_selected == TRUE) {
-        
+
         # Stack and crop predictors
-        ## Crop predictor layers - Model extent
+        ## Cropped predictor layers - Model extent
         predictors <- stack(env_data)
         ext <- extent(ext1, ext2, ext3, ext4)
         pred_nf <<- crop(predictors, ext)
-        
-        ## Crop Future/Past predictor layers for time projections - Model extent
+
+        ## Cropped Future/Past predictor layers for time projections - Model extent
         if (length(envdata_timeproj) >= 1) {
           predictorsfuturo <- stack(envdata_timeproj)
           pred_nffuturo <<- crop(predictorsfuturo, ext)
         }
-        
-        ## Crop predictor layers - Geographic projection extent
+
+        ## Cropped predictor layers - Geographic projection extent
         ext2 <- extent(ext12, ext22, ext32, ext42)
         pred_nf2 <<- crop(predictors, ext2)
-        
+
         ######## CHECK CORRELATION BETWEEN VARIABLES ########
-        
+
         # Calculate correlation between selected predictors (current conditions only)
         if (length(env_data) > 1) {
           incProgress(2 / n, detail = paste0("Calculating corelation..."))
@@ -2088,22 +2146,21 @@ function(input, output, session)
           colnames(backgr) <- c("Longitude", "Latitude")
           absvals <- raster::extract(pred_nf, backgr)
           sdmdata <- data.frame(cbind(absvals))
-          
+
           # Plot correlation panel
           output$grafico_correlacao <- renderPlot({
             if (is.null(env_data) | length(env_data) <= 1) {
               return(NULL)
             } else {
               pairs(sdmdata,
-                    cex = 0.1,
-                    fig = TRUE,
-                    lower.panel = panel.reg,
-                    diag.panel = panel.hist,
-                    upper.panel = panel.cor
+                cex = 0.1,
+                fig = TRUE,
+                lower.panel = panel.reg,
+                diag.panel = panel.hist,
+                upper.panel = panel.cor
               )
-              
+
               # Exhibit correlation matrix
-              incProgress(3 / n, detail = paste0("Ploting correlation..."))
               output$dgbriddadoscorrelacao <- renderDataTable({
                 round(cor(sdmdata), 2)
               }, options = list(
@@ -2115,11 +2172,10 @@ function(input, output, session)
           })
         }
       }
+      incProgress(3 / n, detail = paste0("Ploting correlation..."))
     })
   })
-  
-  
-  #### PLOT PREDICTOR LAYERS ####
+
   output$mapaabiotico <- renderPlot({
     input$btnAtualizaSelecaoVariaveis
     if (is.null(env_data)) {
@@ -2128,27 +2184,27 @@ function(input, output, session)
       plot(pred_nf)
     }
   })
-  
+
   # Update species occurence dataset
   datasetInput <- reactive({
     if (exists("occur.data.coord")) {
       switch("occur.data.coord", occur.data.coord = occur.data.coord)
     }
   })
-  
+
   #####  DATA CLEANING #####
   output$dgbriddadosdatacleaning <- renderDataTable({
     input$btnapagar
     input$btneliminarduplicatas
     input$btnsearch_spdatacsv
     input$btnsearch_spdata
-    
+
     if (is.null(occur.data.coord)) {
       n <- 0
     }
-    
+
     n <- nrow(occur.data.coord)
-    
+
     if (n > 0) {
       if (exists("occur.data.coord")) {
         if (input$btneliminarduplicatas > 0) {
@@ -2157,7 +2213,7 @@ function(input, output, session)
           on.exit(progress$close())
           occur.data.coord <<- unique(occur.data.coord)
         }
-        
+
         isolate({
           input$edtelemento
           if (input$edtelemento != "0") {
@@ -2173,13 +2229,13 @@ function(input, output, session)
       }
     }
   }, options = list(searching = FALSE, lengthMenu = c(5, 30, 50), pageLength = 5))
-  
+
   output$mapadistribuicaodatacleaning <- renderLeaflet({
     input$btnapagar
     input$btneliminarduplicatas
     input$btnsearch_spdatacsv
     input$btnsearch_spdata
-    
+
     if (!is.null(occur.data.coord)) {
       if (exists("occur.data.coord")) {
         rownames(occur.data.coord) <- NULL
@@ -2199,8 +2255,8 @@ function(input, output, session)
       ))
     }
   })
-  
-  
+
+
   #####  IMPORT SPECIES OCCURENCE DATASET #####
   # Load species occurence dataset from gbif/jabot databases
   loadspdata <- eventReactive(input$btnsearch_spdata, {
@@ -2220,8 +2276,8 @@ function(input, output, session)
     }
     occur.data.coord
   })
-  
-  # Browse species occurence dataset from local csv file
+
+  # Browse occurence dataset from local csv file
   loadspdata_csv <- eventReactive(input$btnsearch_spdatacsv, {
     ETAPA <<- 1
     inFile <<- input$file1
@@ -2234,7 +2290,7 @@ function(input, output, session)
         sep = input$sep,
         quote = input$quote
       )
-      
+
       arquivo_path <- inFile$datapath
       arquivo_header <- input$header
       arquivo_sep <- input$sep
@@ -2244,9 +2300,9 @@ function(input, output, session)
     }
     occur.data.coord
   })
-  
+
   #####  DISPLAY OCCURENCE DATA #####
-  
+
   # Exhibit table with occurence records
   output$spdata_table <- DT::renderDataTable({
     progress <- shiny::Progress$new()
@@ -2254,7 +2310,7 @@ function(input, output, session)
     on.exit(progress$close())
     input$btnsearch_spdatacsv
     input$btnsearch_spdata
-    
+
     if (input$bio_datasource == "csv") {
       loadspdata_csv()
     } else {
@@ -2262,16 +2318,16 @@ function(input, output, session)
     }
     occur.data.coord
   }, options = list(lengthMenu = c(5, 30, 50), pageLength = 5))
-  
-  # Display map with occurence records
+
+  # Display map with loaded occurence records
   output$mapadistribuicao <- renderLeaflet({
     input$btnsearch_spdatacsv
     input$btnsearch_spdata
-    
+
     progress <- shiny::Progress$new()
     progress$set(message = "Updating species occurence map...", value = 0)
     on.exit(progress$close())
-    
+
     if (!is.null(occur.data.coord)) {
       if (input$bio_datasource == "csv") {
         map <- leaflet(occur.data.coord) %>%
@@ -2279,7 +2335,7 @@ function(input, output, session)
           addCircles(color = "red", lat = ~ Latitude, lng = ~ Longitude) %>%
           setView(lng = -31.5, lat = -13.4, zoom = 3)
       }
-      
+
       if (input$bio_datasource == "gbif") {
         map <- leaflet(occur.data.coord) %>%
           addTiles() %>%
@@ -2287,7 +2343,7 @@ function(input, output, session)
           addMarkers(clusterOptions = markerClusterOptions()) %>%
           setView(lng = -31.5, lat = -13.4, zoom = 3)
       }
-      
+
       if (input$bio_datasource == "jabot") {
         map <- leaflet(occur.data.coord) %>%
           addTiles() %>%
@@ -2295,8 +2351,8 @@ function(input, output, session)
           setView(lng = -31.5, lat = -13.4, zoom = 3)
       }
       map
-      
-      # In case the occurence dataset is not informed, exihibit error message
+    
+      # In case no occurence dataset is informed, exihibit error message
     } else {
       showModal(modalDialog(
         title = "Error!",
@@ -2305,14 +2361,14 @@ function(input, output, session)
       ))
     }
   })
-  
+
   ##### CREATE NEW/LOAD PROJECT #####
   observeEvent(input$btnrefreshprojeto, {
-    
+
     # Create new project
     if (input$select_project == "new_proj") {
       projeto <- paste0("projeto/", input$edtprojeto.create)
-      
+
       # If left in blank, exhibit error message
       if (projeto == "projeto/") {
         showModal(modalDialog(
@@ -2321,9 +2377,9 @@ function(input, output, session)
           easyClose = TRUE
         ))
       }
-      
+
       if (projeto != "projeto/") {
-        
+
         # If the project name already exists in the directory, exhibit error message
         if (file.exists(paste0(getwd(), "/www/", projeto)) == TRUE) {
           showModal(modalDialog(
@@ -2332,44 +2388,44 @@ function(input, output, session)
             easyClose = TRUE
           ))
         }
-        
-        # Create project folder and sub-directories
+
+        # If the inserted name is does not exist in the directory, create project folder and sub-directories
         if (file.exists(paste0(getwd(), "/www/", projeto)) != TRUE) {
           projeto <<- paste0("projeto/", input$edtprojeto.create)
-          
+
           # Exhibit progress messages
           withProgress(message = "", value = 0, {
             n <- 7
-            
+
             mkdirs(paste0("www/", projeto))
             incProgress(1 / n, detail = paste0("Creating directory ", projeto))
             Sys.sleep(0.2)
-            
+
             mkdirs(paste0("www/", projeto, "/final"))
             incProgress(2 / n, detail = paste0("Creating directory ", projeto, "/final"))
             Sys.sleep(0.2)
-            
+
             mkdirs(paste0("www/", projeto, "/proj_time"))
             incProgress(3 / n, detail = paste0("Creating directory ", projeto, "/proj_time"))
             Sys.sleep(0.2)
-            
+
             mkdirs(paste0("www/", projeto, "/jpg"))
             incProgress(4 / n, detail = paste0("Creating directory ", projeto, "/jpg"))
             Sys.sleep(0.2)
-            
+
             mkdirs(paste0("www/", projeto, "/models"))
             incProgress(5 / n, detail = paste0("Creating directory ", projeto, "/models"))
             Sys.sleep(0.2)
-            
+
             mkdirs(paste0("www/", projeto, "/proj"))
             incProgress(6 / n, detail = paste0("Creating directory ", projeto, "/proj"))
             Sys.sleep(0.2)
-            
+
             mkdirs(paste0("www/", projeto, "/csv"))
             incProgress(7 / n, detail = paste0("Creating directory ", projeto, "/csv"))
             Sys.sleep(0.2)
           })
-          
+
           # Exhibit success message
           showModal(modalDialog(
             title = "Project succesfully created!",
@@ -2379,20 +2435,20 @@ function(input, output, session)
         }
       }
     }
-    
+
     # Load output files from a previous project
     if (input$select_project == "load_proj") {
       projeto <- paste0("projeto/", input$edtprojeto.load)
-      
+
       # If any of the listed projects is selected, load output results
       if (projeto != "projeto/") {
         if (file.exists(paste0(getwd(), "/www/", projeto)) == TRUE) {
-          
+
           # Display Stats results
           output$dbgridresultado <- renderDataTable({
             read.table(paste0("./www/", projeto, "/models/statsALL.txt"))
           }, options = list(lengthMenu = c(5, 30, 50), pageLength = 10))
-          
+
           # Display continuous/binary jpg files
           output$ui <- renderUI({
             lista_jpg <- list.files(
@@ -2408,7 +2464,7 @@ function(input, output, session)
               )
             })
           })
-          
+
           # list final models
           output$uifinal <- renderUI({
             lista_modelsfinal <- list.files(
@@ -2424,7 +2480,7 @@ function(input, output, session)
               )
             })
           })
-          
+
           # List models
           output$uiarquivosmodelos <- renderUI({
             lista_models <- list.files(
@@ -2439,12 +2495,12 @@ function(input, output, session)
               ))
             })
           })
-          
+
           # List jpeg files
           output$ui <- renderUI({
             lista_jpg <- list.files(paste0("www/", projeto, "/jpg"),
-                                    full.names = F,
-                                    pattern = paste0(".jpg")
+              full.names = F,
+              pattern = paste0(".jpg")
             )
             lapply(1:length(order(lista_jpg)), function(i) {
               tags$a(
@@ -2454,7 +2510,7 @@ function(input, output, session)
               )
             })
           })
-          
+
           # List script files
           output$uiscript <- renderUI({
             lista_txt <- list.files(
@@ -2469,7 +2525,7 @@ function(input, output, session)
               ))
             })
           })
-          
+
           # List statistics files
           output$uiestatistica <- renderUI({
             lista_txt <- list.files(
@@ -2485,7 +2541,7 @@ function(input, output, session)
               ))
             })
           })
-          
+
           # List species occurence dataset file (.csv)
           output$uiarquivosdados <- renderUI({
             lista_csv <- list.files(
@@ -2501,7 +2557,7 @@ function(input, output, session)
               ))
             })
           })
-          
+
           # List ensemble files
           output$uiarquivosensemble <- renderUI({
             lista_final <- list.files(
@@ -2517,7 +2573,7 @@ function(input, output, session)
               ))
             })
           })
-          
+
           # List "geographic projection" files
           output$uiarquivosprojecao <- renderUI({
             lista_proj <- list.files(
@@ -2533,7 +2589,7 @@ function(input, output, session)
               ))
             })
           })
-          
+
           # List "time projection" files
           output$uiarquivosprojecaofuturo <- renderUI({
             list_timeproj <- list.files(
@@ -2549,7 +2605,7 @@ function(input, output, session)
               ))
             })
           })
-          
+
           showModal(modalDialog(
             title = paste0("Project ", input$edtprojeto.load, " succefully loaded!"),
             paste0("Output files are dispalyed at the 'Outputs' tab."),
@@ -2558,7 +2614,7 @@ function(input, output, session)
           projeto <<- paste0("projeto/", input$edtprojeto.load)
         }
       }
-      
+
       # In case none of the listed projects is selected, exhibit error dialog
       if (projeto == "projeto/") {
         showModal(modalDialog(
