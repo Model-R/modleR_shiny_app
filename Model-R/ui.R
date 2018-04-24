@@ -185,15 +185,26 @@ body <- dashboardBody(
                     height = "600px",
                     id = "tabset1",
                     
+                    
+                    tabPanel("View occurrence map",
+                      column(width = 12,
+                        box(width = NULL,
+                          solidHeader = TRUE,
+                          leafletOutput('mapadistribuicao'),
+                          height = 500)
+                      )),
+                    
+                    
+                    
                     tabPanel("Load occurrence dataset",
                       column(width = 8,
                         box(width = NULL,
-                          dataTableOutput('spdata_table'))),
+                          DT::dataTableOutput('spdata_table'))),
                       
                       column(width = 4,
                         box(width = NULL, status = "warning",
                           
-                          helpText('Select species occurence database or browse .csv dataset'),
+                          helpText('Select species occurence database or browse csv dataset'),
                           
                           selectInput("bio_datasource", "Occurence data", bio_datasource, selected = "jabot"),
                           
@@ -217,26 +228,16 @@ body <- dashboardBody(
                           ),
                           
                           conditionalPanel("input.bio_datasource != 'csv' ",
-                            helpText('Insert Species Scientific Name'),
+                            helpText('Insert species scientific Name'),
                             textInput("edtespecie", label = "Species name:", value = "Caesalpinia echinata"),
                             actionButton("btnsearch_spdata", "Search", icon = icon("search"))
                           )
                         )
                       )
-                    ),
-                    
-                    tabPanel("View occurrence map",
-                      column(width = 12,
-                        box(width = NULL,
-                          solidHeader = TRUE,
-                          leafletOutput('mapadistribuicao'),
-                          height = 500)
-                      ))
-                    
+                    )
                   ))),
               
               tabPanel("Data Cleaning",
-                
                 column(width = 6,
                   box(width = NULL,
                     solidHeader = TRUE,
@@ -246,8 +247,7 @@ body <- dashboardBody(
                 column(width = 6,
                   box(width = NULL,
                     status = "warning",
-                    numericInput(
-                      "edtelemento",
+                    numericInput("edtelemento",
                       "Occurence record ID:",
                       min = 0,
                       max = 100,
@@ -258,7 +258,7 @@ body <- dashboardBody(
                   ),
                   
                   box(width = NULL,
-                    dataTableOutput('dgbriddadosdatacleaning')
+                    DT::dataTableOutput('dgbriddadosdatacleaning')
                   )
                 )
                 
@@ -479,16 +479,16 @@ body <- dashboardBody(
                         box(width=NULL,
                           collapsible = T,
                           collapsed = T,
-                          title = "Set forecasting parameters",
+                          title = "Set time projetion parameters",
                           
                           conditionalPanel("input.forecasting_wc == 'future_wc' ",
                             selectInput("future_dates_wc",  "Choose period: ", future_dates_wc),
-                            selectInput("rcp_wc", "Emission Scenarios (RCP)", c(
-                              "rcp26" = "26",
+                            selectInput("rcp_wc", "Emission Scenarios (RCP)",
+                              c("rcp26" = "26",
                               "rcp45" = "45",
                               "rcp60" = "60",
-                              "rcp85" = "85"
-                            )),
+                              "rcp85" = "85")
+                              ),
                             selectInput("gcm_future_wc","General Circulation Models (GCM)", gcm_future_wc, selected = "bc")
                           ),
                           
@@ -497,18 +497,17 @@ body <- dashboardBody(
                             conditionalPanel("input.past_dates_wc == 'mid'",
                               selectInput("gcm_past_wc_mid", "General Circulation Models (GCM)", gcm_past_wc_mid)
                             ),
+                            
                             conditionalPanel("input.past_dates_wc == 'lgm' ",
                               selectInput("gcm_past_wc_lgm","General Circulation Models (GCM)", gcm_past_wc_lgm)
                             )
                           )
                           
                         )
-                        
                       ),
                       
                       checkboxGroupInput("pred_vars_wc", "Select variables: ",
-                        choices = c(
-                          '(Bio1) Annual Mean Temperature' = 'bio1',
+                        choices = c('(Bio1) Annual Mean Temperature' = 'bio1',
                           '(Bio2) Mean Diurnal Range' = 'bio2',
                           '(Bio3) Isothermality' = 'bio3',
                           '(Bio4) Temperature Seasonality' = 'bio4',
@@ -526,8 +525,7 @@ body <- dashboardBody(
                           '(Bio16) Precipitation of Wettest Quarter' = 'bio16',
                           '(Bio17) Precipitation of Driest Quarter' = 'bio17',
                           '(Bio18) Precipitation of Warmest Quarter' = 'bio18',
-                          '(Bio19) Precipitation of Coldest Quarter' = 'bio19'
-                        )
+                          '(Bio19) Precipitation of Coldest Quarter' = 'bio19')
                       )
                     )
                   )
@@ -542,7 +540,7 @@ body <- dashboardBody(
                     ), 
                     tabPanel("Check correlation",
                       plotOutput(outputId = "grafico_correlacao", width = "100%", height="400px"),
-                      dataTableOutput('dgbriddadoscorrelacao')
+                      DT::dataTableOutput('dgbriddadoscorrelacao')
                     )
                   )
                 )
@@ -676,7 +674,7 @@ body <- dashboardBody(
               
               tabPanel("Stats",
                 column(width = 12,
-                  dataTableOutput('dbgridresultado')
+                  DT::dataTableOutput('dbgridresultado')
                 )),
               
               tabPanel("Output files",
