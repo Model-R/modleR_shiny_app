@@ -1853,8 +1853,7 @@ function(input, output, session) {
       incProgress(1 / n, detail = paste0("Loading variables..."))
       ETAPA <<- 3
 
-      environmental_data <- reactiveValues(
-        any_selection = FALSE,
+      environmental_data <<- reactiveValues(
         write_timeproj = FALSE,
         data_current = list(),
         data_timeproj = list()
@@ -2109,16 +2108,11 @@ function(input, output, session) {
         }
       }
 
-      if (!is.null(vars_selection)) {
-        environmental_data$any_selection <- TRUE
-      }
-
-      check_selected <- environmental_data$any_selection
       env_data <<- environmental_data$data_current
       write_timeproj <<- environmental_data$write_timeproj
       envdata_timeproj <<- environmental_data$data_timeproj
 
-      if (!is.null(env_data) && exists("occur.data.coord") && check_selected == TRUE) {
+      if (!is.null(env_data) && exists("occur.data.coord")) {
 
         # Stack and crop predictors
         ## Cropped predictor layers - Model extent
