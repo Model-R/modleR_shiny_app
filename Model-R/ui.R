@@ -731,31 +731,8 @@ body <- dashboardBody(
             )
           )),
         ########################################################################
-        tabPanel("About",
-          column(width = 2,
-            img(src = "Logoenbtpequeno.gif")
-          ),
-          column(width = 10,
-            h4('Instituto de Pesquisas Jardim Bot??nico do Rio de Janeiro'),
-            h4('Escola Nacional de Bot??nica Tropical'),
-            h4('Model-R: A Framework for Scalable and Reproducible Ecological Niche Modeling'),
-            h4('https://github.com/Model-R/Model-R'),
-            h5('The shiny app was written as Rafael Oliveira Lima dissertation: '),
-            h5('Programa de Mestrado Profissional: Biodiversidade em Unidades de Conserva????o'),
-            h5(
-              'Projeto de Trabalho de Conclus??o de Curso de Mestrado Profissional - 2015'
-            ),
-            h5('T??tulo: Desenvolvimento de programas para automatiza????o de processos em an??lises espaciais e ecol??gicas no ambiente R.'
-            ),
-            h5('Aluno: Rafael Oliveira Lima'),
-            h5('Orientador: Marinez Ferreira de Siqueira'),
-            h5('Coorientador: Luis Alexandre da Silva Estev??o'),
-            h5('The backend code was written by: Andrea S??nchez Tapia, Felipe Sodr?? Barros, Guilherme Gall'),
-            h5('Please cite `dismo()` package: Robert J. Hijmans, Steven Phillips, John Leathwick and Jane Elith (2017). dismo: Species Distribution Modeling. R package version 1.1-4. http://CRAN.R-project.org/package=dismo'),
-            h5('Cite also randomForest() if you fit random forests, and `kernlab() if you fit SVM'
-            )
+        tabPanel("Help"
           )
-        )
         ########################################################################
       ) 
     ) 
