@@ -90,7 +90,7 @@ future_bo_dates<-c("2100"='2100',
 
 
 ################################################################################
-header <- dashboardHeader(title = "Model-R v")
+header <- dashboardHeader(title = "Model-R 2.0")
 body <- dashboardBody(
   fluidRow(
     tags$head(
@@ -105,21 +105,26 @@ body <- dashboardBody(
         id = "tabset1",
         
         ########################################################################
+        
         tabPanel("Welcome",
           column(width = 12,
             id = "tabset1",
             tabPanel("", column(width = 9,
               box(width = NULL,
-                column (width = 2,
+                column (width = 6,
                   br(),
-                  img (src = "logo.png", width = 90)),
+                  img (src = "logo.png", width = 200)),
                 column (width = 9,
-                  h2("Model-R"),
+
                   h4("A workflow to perform Environmental Niche Modeling based on dismo")
                 ),
                 column (width = 12,
                   br(),
-                  p("Please cite..."),
+                  p("Please cite:"),
+                  br(),
+                  p(
+                    "Sánchez-Tapia, Andrea ; de Siqueira, Marinez Ferreira ; Lima, Rafael Oliveira ; Barros, Felipe Sodré M. ; Gall, Guilherme M. ; Gadelha, Luiz M. R. ; da Silva, Luís Alexandre E. ; Osthoff, Carla . Model-R: A Framework for Scalable and Reproducible Ecological Niche Modeling. Communications in Computer and Information Science. 1ed.: Springer International Publishing, 2018, v. 796, p. 218-232."
+                  ),
                   br(),
                   p("...ABSTRACT..."))
               )

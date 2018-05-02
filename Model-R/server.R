@@ -1604,7 +1604,7 @@ function(input, output, session) {
       }
 
       occur.data.coord <<- clean(occur.data.coord, pred_nf[[1]])
-      write.csv(occur.data.coord, file=paste0(getwd(),"/www/",projeto, "/csv/occur.data.coord.csv"), row.names = FALSE)
+      write.csv(occur.data.coord, file=paste0(getwd(),"/www/",projeto, "/csv/OccurenceDataset.csv"), row.names = FALSE)
       
       dismo.mod(
         "", occur.data.coord, pred_nf, pred_nf2,
