@@ -183,6 +183,26 @@ getOccurences_jabot <- function(spname) {
   return(occur.data)
 }
 
+clean <- function(coord, abio) {
+  if (dim(coord)[2] == 2) {
+    if (exists("abio")) {
+      # selecionar os pontos únicos e sem NA
+      mask = abio[[1]]
+      # Selecionar pontos espacialmente únicos #
+      cell <- cellFromXY(mask, coord)  # get the cell number for each point
+      dup <- duplicated(cell)
+      pts1 <- coord[!dup, ]  # select the records that are not duplicated
+      pts1 <- pts1[!is.na(raster::extract(mask, pts1)), ]  #selecionando apenas pontos que tem valor de raster
+      cat(dim(coord)[1] - dim(pts1)[1], "points removed\n")
+      cat(dim(pts1)[1], "spatially unique points\n")
+      names(pts1) = c("Longitude", "Latitude")#
+      return(pts1)
+    } else (cat("Indicate the object with the predictive variables"))
+  } else (stop("Coordinate table has more than two columns.\nThis table should only have longitude and latitude in this order."))
+}
+
+
+
 options(shiny.maxRequestSize = 100 * 1024^2)
 dirColors <- c(`1` = "#595490", `2` = "#527525", `3` = "#A93F35", `4` = "#BA48AA")
 
@@ -1583,6 +1603,9 @@ function(input, output, session) {
         future.model <- TRUE
       }
 
+      occur.data.coord <<- clean(occur.data.coord, pred_nf[[1]])
+      write.csv(occur.data.coord, file=paste0(getwd(),"/www/",projeto, "/csv/occur.data.coord.csv"), row.names = FALSE)
+      
       dismo.mod(
         "", occur.data.coord, pred_nf, pred_nf2,
         input$MAXENT, input$BIOCLIM, input$GLM, input$RF, input$SVM, input$MAHALANOBIS, input$DOMAIN, input$SVM2,
