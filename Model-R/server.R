@@ -174,7 +174,7 @@ getOccurences_gbif <- function(spname) {
 getOccurences_jabot <- function(spname) {
   library("rjson")
   pTaxon <- gsub(" ", "_", spname)
-  json_file <- paste0("http://jabot.jbrj.gov.br/v2/ws/server.php?coordenada=S&taxon=", pTaxon)
+  json_file <- paste0 ("https://model-r.jbrj.gov.br/execjabot.php?especie=", pTaxon)
   json_data <- fromJSON(file = json_file, method = "C")
   final_data <- do.call(rbind, json_data)
   jabot_data <- final_data[, c("taxoncompleto", "longitude", "latitude")]
@@ -1602,7 +1602,7 @@ function(input, output, session) {
           pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(r), na.color = "transparent")
           lng <- c(occur.data.coord[, 1])
           lng <- as.numeric(lng[[1]])
-          lat <- c(occur.data.coord[, 1])
+          lat <- c(occur.data.coord[, 2])
           lat <- as.numeric(lat[[1]])
           map <- leaflet() %>%
             addTiles() %>%
@@ -1617,16 +1617,16 @@ function(input, output, session) {
       maparesultado_model_proj <- function() {
         if (file.exists(paste0("www/", projeto, "/final/proj_ensemble.tif")) && input$project_ext == TRUE) {
           rproj <- raster::raster(paste0("www/", projeto, "/final/proj_ensemble.tif"))
-          palproj <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(rproj), na.color = "transparent")
-          lng <- c(occur.data.coord[, 1])
-          lng <- as.numeric(lng[[1]])
-          lat <- c(occur.data.coord[, 1])
-          lat <- as.numeric(lat[[1]])
+          palproj <- colorNumeric (c("#FFFFFF", "#FDBB84", "#31A354"), values(rproj), na.color = "transparent")
+          lng_timeproj <- c(occur.data.coord[, 1])
+          lng_timeproj <- as.numeric(lng_timeproj[[1]])
+          lat_timeproj <- c(occur.data.coord[, 2])
+          lat_timeproj <- as.numeric(lat_timeproj[[1]])
           map_proj <- leaflet() %>%
             addTiles() %>%
             addRasterImage(rproj, colors = palproj, opacity = 0.7) %>%
             addLegend(pal = palproj, values = values(rproj), title = "") %>%
-            addCircles(color = "red", lat = occur.data.coord[, 2], lng = occur.data.coord[, 1]) %>%
+            addCircles(color = "red", lat = lat_timeproj, lng = lng_timeproj) %>%
             addRectangles(ext12, ext32, ext22, ext42, color = "green", fill = FALSE, dashArray = "5,5", weight = 2)
         }
       }
