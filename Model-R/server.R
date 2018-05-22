@@ -73,15 +73,15 @@ rm(list = setdiff(ls(), lsf.str()))
 home <- "/"
 
 t <- 7
-# ext1 <- -90
-# ext2 <- -33
-# ext3 <- -32
-# ext4 <- 23
-# 
-# ext12 <- -90
-# ext22 <- -33
-# ext32 <- -32
-# ext42 <- 23
+ext1 <- -90
+ext2 <- -33
+ext3 <- -32
+ext4 <- 23
+
+ext12 <- -90
+ext22 <- -33
+ext32 <- -32
+ext42 <- 23
 
 ETAPA <- 0
 
@@ -186,9 +186,7 @@ getOccurences_jabot <- function(spname) {
 clean <- function(coord, abio) {
   if (dim(coord)[2] == 2) {
     if (exists("abio")) {
-      # selecionar os pontos únicos e sem NA
       mask = abio[[1]]
-      # Selecionar pontos espacialmente únicos #
       cell <- cellFromXY(mask, coord)  # get the cell number for each point
       dup <- duplicated(cell)
       pts1 <- coord[!dup, ]  # select the records that are not duplicated
@@ -198,7 +196,7 @@ clean <- function(coord, abio) {
       names(pts1) = c("Longitude", "Latitude")#
       return(pts1)
     } else (cat("Indicate the object with the predictive variables"))
-  } else (stop("Coordinate table has more than two columns.\nThis table should only have longitude and latitude in this order."))
+  } else (stop("Coordinate table has more than two columns.\n This table should only have longitude and latitude in this order."))
 }
 
 
@@ -1602,9 +1600,9 @@ function(input, output, session) {
       if (write_timeproj == T) {
         future.model <- TRUE
       }
-
-      occur.data.coord <<- clean(occur.data.coord, pred_nf[[1]])
-      write.csv(occur.data.coord, file=paste0(getwd(),"/www/",projeto, "/csv/OccurenceDataset.csv"), row.names = FALSE)
+      occ_points <<- coordinates(occur.data.coord)
+      occur.data.coord <<- clean(occ_points, pred_nf[[1]])
+      write.csv(occur.data.coord, file=paste0(getwd(),"/www/",projeto,"/csv/OccurenceDataset.csv"), row.names = FALSE)
       
       dismo.mod(
         "", occur.data.coord, pred_nf, pred_nf2,
@@ -1623,15 +1621,14 @@ function(input, output, session) {
         if (file.exists(paste0("www/", projeto, "/final/", model_ensemble, ".tif"))) {
           r <- raster::raster(paste0("www/", projeto, "/final/", model_ensemble, ".tif"))
           pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(r), na.color = "transparent")
-          lng <- c(occur.data.coord[, 1])
-          lng <- as.numeric(lng[[1]])
-          lat <- c(occur.data.coord[, 2])
-          lat <- as.numeric(lat[[1]])
+          occ_points <<- coordinates(occur.data.coord)
+          lng <<- occ_points[,1]
+          lat <<-  occ_points[,2]
           map <- leaflet() %>%
             addTiles() %>%
             addRasterImage(r, colors = pal, opacity = 0.7) %>%
             addLegend(pal = pal, values = values(r), title = model_title) %>%
-            addCircles(color = "red", lat = lat, lng = lng) %>%
+            addCircles(color = "red",lat = lat, lng =lng, weight = 2, fill = TRUE) %>%
             addRectangles(ext1, ext3, ext2, ext4, color = "red", fill = FALSE, dashArray = "5,5", weight = 2)
         }
       }
@@ -1641,15 +1638,13 @@ function(input, output, session) {
         if (file.exists(paste0("www/", projeto, "/final/proj_ensemble.tif")) && input$project_ext == TRUE) {
           rproj <- raster::raster(paste0("www/", projeto, "/final/proj_ensemble.tif"))
           palproj <- colorNumeric (c("#FFFFFF", "#FDBB84", "#31A354"), values(rproj), na.color = "transparent")
-          lng_timeproj <- c(occur.data.coord[, 1])
-          lng_timeproj <- as.numeric(lng_timeproj[[1]])
-          lat_timeproj <- c(occur.data.coord[, 2])
-          lat_timeproj <- as.numeric(lat_timeproj[[1]])
+          lng<- c(occur.data.coord[, 1])
+          lat<- c(occur.data.coord[, 2])
           map_proj <- leaflet() %>%
             addTiles() %>%
             addRasterImage(rproj, colors = palproj, opacity = 0.7) %>%
             addLegend(pal = palproj, values = values(rproj), title = "") %>%
-            addCircles(color = "red", lat = lat_timeproj, lng = lng_timeproj) %>%
+            addCircles(color = "red", lat = lat, lng = lng, weight = 2, fill = TRUE) %>%
             addRectangles(ext12, ext32, ext22, ext42, color = "green", fill = FALSE, dashArray = "5,5", weight = 2)
         }
       }
