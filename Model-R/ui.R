@@ -88,6 +88,10 @@ future_bo_dates<-c("2100"='2100',
   "2200"='2200'
 )
 
+library(raster)
+Country <<- getData('GADM', country='BRA', level=1)
+states<<- Country$NAME_1
+
 
 ################################################################################
 header <- dashboardHeader(title = "Model-R 2.0")
@@ -300,6 +304,8 @@ body <- dashboardBody(
                         
                         box(width = 4,
                           solidHeader = TRUE,
+                          selectInput("choose_state2", "Estado", c("", states), selected = ""),
+                          actionButton("btn_crop_extent2", "Crop state extent", icon = icon("map")),
                           numericInput(
                             "edtextend12",
                             "Longitude left:",
@@ -342,7 +348,10 @@ body <- dashboardBody(
                       solidHeader = TRUE,
                       box(width = NULL,
                         status = "warning",
-                        numericInput(
+                        selectInput("choose_state", "Estado", c("", states), selected = ""),
+                        actionButton("btn_crop_extent", "Crop state extent", icon = icon("map")),
+                      
+                         numericInput(
                           "edtextend1",
                           "Longitude left:",
                           min = -180,
@@ -374,6 +383,7 @@ body <- dashboardBody(
                           value = -33,
                           step = 1
                         )
+                      
                       )
                     )
                   )

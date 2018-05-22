@@ -73,15 +73,15 @@ rm(list = setdiff(ls(), lsf.str()))
 home <- "/"
 
 t <- 7
-ext1 <- -90
-ext2 <- -33
-ext3 <- -32
-ext4 <- 23
-
-ext12 <- -90
-ext22 <- -33
-ext32 <- -32
-ext42 <- 23
+# ext1 <- -90
+# ext2 <- -33
+# ext3 <- -32
+# ext4 <- 23
+# 
+# ext12 <- -90
+# ext22 <- -33
+# ext32 <- -32
+# ext42 <- 23
 
 ETAPA <- 0
 
@@ -1816,6 +1816,16 @@ function(input, output, session) {
   })
 
   #### Model Extent ####
+  state.ext <- eventReactive(input$btn_crop_extent, {
+    Country<-getData('GADM', country='BRA', level=1)
+    State <- subset(Country, NAME_1 == input$choose_state)
+    State.ext <- extent(State)
+    updateNumericInput(session, inputId = "edtextend1", value = State.ext@xmin)
+    updateNumericInput(session, inputId = "edtextend2", value = State.ext@xmax)
+    updateNumericInput(session, inputId = "edtextend3", value = State.ext@ymin)
+    updateNumericInput(session, inputId = "edtextend4", value = State.ext@ymax)
+  })
+  
   output$mapapontosextend <- renderLeaflet({
     input$btnapagar
     input$btneliminarduplicatas
@@ -1827,21 +1837,35 @@ function(input, output, session) {
       ext3 <<- input$edtextend3
       ext2 <<- input$edtextend2
       ext4 <<- input$edtextend4
+      
+      if(input$choose_state!="" && input$btn_crop_extent!=0 ){
+        state.ext()
+      } 
+      
       occur.data.coord <<- occur.data.coord
       map <- leaflet(occur.data.coord) %>%
         addTiles() %>%
         addMarkers(clusterOptions = markerClusterOptions()) %>%
         addMarkers(~ Longitude, ~ Latitude) %>%
-        addRectangles(input$edtextend1,
-          input$edtextend3, input$edtextend2, input$edtextend4,
-          color = "red",
-          fill = TRUE, dashArray = "5,5", weight = 3
-        )
+        addRectangles(ext1,
+                      ext3, ext2, ext4,
+                      color = "red",
+                      fill = TRUE, dashArray = "5,5", weight = 3)
       map
     }
   })
-
+  
   #### Geographic projection extent ####
+  state.ext2 <- eventReactive(input$btn_crop_extent2, {
+    Country<-getData('GADM', country='BRA', level=1)
+    State <- subset(Country, NAME_1 == input$choose_state2)
+    State.ext <- extent(State)
+    updateNumericInput(session, inputId = "edtextend12", value = State.ext@xmin)
+    updateNumericInput(session, inputId = "edtextend22", value = State.ext@xmax)
+    updateNumericInput(session, inputId = "edtextend32", value = State.ext@ymin)
+    updateNumericInput(session, inputId = "edtextend42", value = State.ext@ymax)
+  })
+  
   output$mapapontosextend2 <- renderLeaflet({
     input$btnapagar
     input$btneliminarduplicatas
@@ -1853,6 +1877,11 @@ function(input, output, session) {
       ext32 <<- input$edtextend32
       ext22 <<- input$edtextend22
       ext42 <<- input$edtextend42
+      
+    if(input$choose_state2!= "" && input$btn_crop_extent2!=0){
+        state.ext2()
+      } 
+      
       occur.data.coord <<- occur.data.coord
       map <- leaflet(occur.data.coord) %>%
         addTiles() %>%
