@@ -1638,8 +1638,9 @@ function(input, output, session) {
         if (file.exists(paste0("www/", projeto, "/final/proj_ensemble.tif")) && input$project_ext == TRUE) {
           rproj <- raster::raster(paste0("www/", projeto, "/final/proj_ensemble.tif"))
           palproj <- colorNumeric (c("#FFFFFF", "#FDBB84", "#31A354"), values(rproj), na.color = "transparent")
-          lng<- c(occur.data.coord[, 1])
-          lat<- c(occur.data.coord[, 2])
+          occ_points <<- coordinates(occur.data.coord)
+          lng <<- occ_points[,1]
+          lat <<- occ_points[,2]
           map_proj <- leaflet() %>%
             addTiles() %>%
             addRasterImage(rproj, colors = palproj, opacity = 0.7) %>%
