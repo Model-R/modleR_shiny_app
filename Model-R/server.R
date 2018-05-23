@@ -73,17 +73,17 @@ rm(list = setdiff(ls(), lsf.str()))
 home <- "/"
 
 t <- 7
-ext1 <- -90
-ext2 <- -33
-ext3 <- -32
-ext4 <- 23
+ext11 <- -90
+ext21 <- -33
+ext31 <- -32
+ext41 <- 23
 
-ext12 <- -90
-ext22 <- -33
-ext32 <- -32
-ext42 <- 23
+ext12 <- ext11
+ext22 <- ext21
+ext32 <- ext31
+ext42 <- ext41
 
-ETAPA <- 0
+ETAPA <<- 0
 
 spname <<- ""
 
@@ -193,7 +193,7 @@ clean <- function(coord, abio) {
       pts1 <- pts1[!is.na(raster::extract(mask, pts1)), ]  #selecionando apenas pontos que tem valor de raster
       cat(dim(coord)[1] - dim(pts1)[1], "points removed\n")
       cat(dim(pts1)[1], "spatially unique points\n")
-      names(pts1) = c("Longitude", "Latitude")#
+      names(pts1) = c("Longitude", "Latitude")
       return(pts1)
     } else (cat("Indicate the object with the predictive variables"))
   } else (stop("Coordinate table has more than two columns.\n This table should only have longitude and latitude in this order."))
@@ -1600,8 +1600,8 @@ function(input, output, session) {
       if (write_timeproj == T) {
         future.model <- TRUE
       }
-      occ_points <<- coordinates(occur.data.coord)
-      occur.data.coord <<- clean(occ_points, pred_nf[[1]])
+      occ_points <- coordinates(occur.data.coord)
+      occur.data.coord <- clean(coord=occ_points, abio = pred_nf)
       write.csv(occur.data.coord, file=paste0(getwd(),"/www/",projeto,"/csv/OccurenceDataset.csv"), row.names = FALSE)
       
       dismo.mod(
@@ -1629,7 +1629,7 @@ function(input, output, session) {
             addRasterImage(r, colors = pal, opacity = 0.7) %>%
             addLegend(pal = pal, values = values(r), title = model_title) %>%
             addCircles(color = "red",lat = lat, lng =lng, weight = 2, fill = TRUE) %>%
-            addRectangles(ext1, ext3, ext2, ext4, color = "red", fill = FALSE, dashArray = "5,5", weight = 2)
+            addRectangles(ext11, ext31, ext21, ext41, color = "red", fill = FALSE, dashArray = "5,5", weight = 2)
         }
       }
 
@@ -1797,15 +1797,22 @@ function(input, output, session) {
   #### GROUPING ALL MODELING PROCESSES BY CLICKING THE EXECUTE BUTTON ####
   observeEvent(input$btnModelar, {
     if ((input$DOMAIN == "TRUE") || (input$MAXENT == "TRUE") ||
-      (input$BIOCLIM == "TRUE") || (input$GLM == "TRUE") ||
-      (input$RF == "TRUE") || (input$SVM == "TRUE") ||
-      (input$GLM == "TRUE")) {
+        (input$BIOCLIM == "TRUE") || (input$GLM == "TRUE") ||
+        (input$RF == "TRUE") || (input$SVM == "TRUE") ||
+        (input$GLM == "TRUE")) {
+      
       if (ETAPA > 1) {
         if (exists("occur.data.coord")) {
           progress <<- shiny::Progress$new()
           progress$set(message = "Processing...", value = 0)
-          on.exit(progress$close())
+          on.exit(progress$close()) 
           modelagem()
+        }else{
+          showModal(modalDialog(
+            title = "Error!",
+            "Please inform species occurrence data.",
+            easyClose = TRUE
+          ))
         }
       }
     }
@@ -1820,6 +1827,11 @@ function(input, output, session) {
     updateNumericInput(session, inputId = "edtextend2", value = State.ext@xmax)
     updateNumericInput(session, inputId = "edtextend3", value = State.ext@ymin)
     updateNumericInput(session, inputId = "edtextend4", value = State.ext@ymax)
+   
+     updateNumericInput(session, inputId ="edtextend12", value = State.ext@xmin)
+    updateNumericInput(session, inputId = "edtextend22", value = State.ext@xmax)
+    updateNumericInput(session, inputId = "edtextend32", value = State.ext@ymin)
+    updateNumericInput(session, inputId = "edtextend42", value = State.ext@ymax)
   })
   
   output$mapapontosextend <- renderLeaflet({
@@ -1829,10 +1841,15 @@ function(input, output, session) {
     input$btnsearch_spdata
 
     if (!is.null(occur.data.coord)) {
-      ext1 <<- input$edtextend1
-      ext3 <<- input$edtextend3
-      ext2 <<- input$edtextend2
-      ext4 <<- input$edtextend4
+      ext11 <<- input$edtextend1
+      ext31 <<- input$edtextend3
+      ext21 <<- input$edtextend2
+      ext41 <<- input$edtextend4
+      
+      ext12 <<- input$edtextend1
+      ext32 <<- input$edtextend3
+      ext22 <<- input$edtextend2
+      ext42 <<- input$edtextend4
       
       if(input$choose_state!="" && input$btn_crop_extent!=0 ){
         state.ext()
@@ -1843,50 +1860,48 @@ function(input, output, session) {
         addTiles() %>%
         addMarkers(clusterOptions = markerClusterOptions()) %>%
         addMarkers(~ Longitude, ~ Latitude) %>%
-        addRectangles(ext1,
-                      ext3, ext2, ext4,
+        addRectangles(ext11,
+                      ext31, ext21, ext41,
                       color = "red",
                       fill = TRUE, dashArray = "5,5", weight = 3)
       map
     }
   })
   
-  #### Geographic projection extent ####
-  state.ext2 <- eventReactive(input$btn_crop_extent2, {
-    Country<-getData('GADM', country='BRA', level=1)
-    State <- subset(Country, NAME_1 == input$choose_state2)
-    State.ext <- extent(State)
-    updateNumericInput(session, inputId = "edtextend12", value = State.ext@xmin)
-    updateNumericInput(session, inputId = "edtextend22", value = State.ext@xmax)
-    updateNumericInput(session, inputId = "edtextend32", value = State.ext@ymin)
-    updateNumericInput(session, inputId = "edtextend42", value = State.ext@ymax)
-  })
+  #### Geographic projection area ####
+ 
+  #  state.ext2 <- eventReactive(input$btn_crop_extent2, {
+  #   Country<-getData('GADM', country='BRA', level=1)
+  #   State <- subset(Country, NAME_1 == input$choose_state2)
+  #   State.ext <- extent(State)
+  #   updateNumericInput(session, inputId = "edtextend12", value = ext1)
+  #   updateNumericInput(session, inputId = "edtextend22", value = ext2)
+  #   updateNumericInput(session, inputId = "edtextend32", value = ext3)
+  #   updateNumericInput(session, inputId = "edtextend42", value = ext4)
+  # })
   
   output$mapapontosextend2 <- renderLeaflet({
     input$btnapagar
     input$btneliminarduplicatas
     input$btnsearch_spdatacsv
     input$btnsearch_spdata
-
+   
+    
     if (!is.null(occur.data.coord)) {
       ext12 <<- input$edtextend12
       ext32 <<- input$edtextend32
       ext22 <<- input$edtextend22
       ext42 <<- input$edtextend42
       
-    if(input$choose_state2!= "" && input$btn_crop_extent2!=0){
-        state.ext2()
-      } 
-      
       occur.data.coord <<- occur.data.coord
       map <- leaflet(occur.data.coord) %>%
         addTiles() %>%
         addMarkers(clusterOptions = markerClusterOptions()) %>%
         addMarkers(~ Longitude, ~ Latitude) %>%
-        addRectangles(input$edtextend12, input$edtextend32,
-          input$edtextend22, input$edtextend42,
-          color = "green", fill = TRUE, dashArray = "5,5",
-          weight = 3
+        addRectangles(ext12,
+                      ext32, ext22, ext42,
+                      color = "green", fill = TRUE, dashArray = "5,5",
+                      weight = 3
         )
       map
     }
@@ -1897,11 +1912,11 @@ function(input, output, session) {
     withProgress(message = "", value = 0, {
       n <- 3
 
-      ######## SELECT/LOAD PREDICTORS  ########
+      ######## SELECT/LOAD VARIABLES  ########
       incProgress(1 / n, detail = paste0("Loading variables..."))
       ETAPA <<- 3
 
-      environmental_data <<- reactiveValues(
+      environmental_data <- reactiveValues(
         write_timeproj = FALSE,
         data_current = list(),
         data_timeproj = list()
@@ -2165,7 +2180,7 @@ function(input, output, session) {
         # Stack and crop predictors
         ## Cropped predictor layers - Model extent
         predictors <- stack(env_data)
-        ext <- extent(ext1, ext2, ext3, ext4)
+        ext <- extent(ext11, ext21, ext31, ext41)
         pred_nf <<- crop(predictors, ext)
 
         ## Cropped Future/Past predictor layers for time projections - Model extent
@@ -2240,7 +2255,7 @@ function(input, output, session) {
     input$btneliminarduplicatas
     input$btnsearch_spdatacsv
     input$btnsearch_spdata
-
+    ETAPA<<-2
     if (is.null(occur.data.coord)) {
       n <- 0
     }
@@ -2343,8 +2358,6 @@ function(input, output, session) {
     occur.data.coord
   })
 
-  #####  DISPLAY OCCURENCE DATA #####
-
   # Exhibit table with occurence records
   output$spdata_table <- DT::renderDataTable({
     progress <- shiny::Progress$new()
@@ -2406,11 +2419,9 @@ function(input, output, session) {
 
   ##### CREATE NEW/LOAD PROJECT #####
   observeEvent(input$btnrefreshprojeto, {
-
     # Create new project
     if (input$select_project == "new_proj") {
       projeto <- paste0("projeto/", input$edtprojeto.create)
-
       # If left in blank, exhibit error message
       if (projeto == "projeto/") {
         showModal(modalDialog(
