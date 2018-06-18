@@ -261,6 +261,7 @@ body <- dashboardBody(
                       min = 0,
                       max = 100,
                       value = 0),
+                    actionButton("btncentroide", "Delete municipality centroids", icon = icon("trash")),
                     actionButton("btnapagar", "Delete selected ID", icon = icon("trash")),
                     actionButton('btneliminarduplicatas', 'Delete duplicates', icon = icon("cubes")),
                     downloadButton('downloadData', 'Download data')

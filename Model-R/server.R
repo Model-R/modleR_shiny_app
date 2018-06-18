@@ -159,8 +159,9 @@ getOccurences_gbif <- function(spname) {
     gbif_data <- occ_search(taxonKey = key, return = "data", limit = 1000)
     gbif_data <- subset(gbif_data, !is.na(decimalLongitude) & !is.na(decimalLatitude))
     gbif_data <- subset(gbif_data, (decimalLongitude != 0) & (decimalLatitude != 0))
-    occur.data <- gbif_data[, c(1, 4, 3)]
+    occur.data <- cbind(gbif_data$name, gbif_data$decimalLongitude, gbif_data$decimalLatitude)
     colnames(occur.data) <- c("Name", "Longitude", "Latitude")
+    occur.data <- as.data.frame(occur.data)
     return(occur.data)
   } else {
     showModal(modalDialog(
@@ -175,12 +176,19 @@ getOccurences_jabot <- function(spname) {
   library("rjson")
   pTaxon <- gsub(" ", "_", spname)
   json_file <- paste0 ("https://model-r.jbrj.gov.br/execjabot.php?especie=", pTaxon)
-  json_data <- fromJSON(file = json_file, method = "C")
+  json_data <- fromJSON(file = json_file, method = "C", nullValue = ']')
   final_data <- do.call(rbind, json_data)
   jabot_data <- final_data[, c("taxoncompleto", "longitude", "latitude")]
   occur.data <- cbind(as.character(jabot_data[, 1]), as.numeric(jabot_data[, 2]), as.numeric(jabot_data[, 3]))
   colnames(occur.data) <- c("Name", "Longitude", "Latitude")
   return(occur.data)
+  # else {
+  #   showModal(modalDialog(
+  #     title = "No results!",
+  #     paste0("Please insert a valid species scientific name."),
+  #     easyClose = TRUE
+  #   ))
+  # }
 }
 
 clean <- function(coord, abio) {
@@ -1601,7 +1609,7 @@ function(input, output, session) {
         future.model <- TRUE
       }
       occ_points <- coordinates(occur.data.coord)
-      occur.data.coord <- clean(coord=occ_points, abio = pred_nf)
+      occur.data.coord <- clean(coord=occ_points, abio = pred_nf[[1]])
       write.csv(occur.data.coord, file=paste0(getwd(),"/www/",projeto,"/csv/OccurenceDataset.csv"), row.names = FALSE)
       
       dismo.mod(
@@ -2277,6 +2285,7 @@ function(input, output, session) {
             if (input$btnapagar == 0) {
               return()
             }
+           
             occur.data.coord <<- occur.data.coord[-input$edtelemento, ]
           }
           rownames(occur.data.coord) <- NULL
@@ -2384,25 +2393,29 @@ function(input, output, session) {
     on.exit(progress$close())
 
     if (!is.null(occur.data.coord)) {
+      latitude<-as.character(occur.data.coord$Latitude)
+      latitude<-as.numeric(latitude)
+      longitude<-as.character(occur.data.coord$Longitude)
+      longitude<-as.numeric(longitude)
       if (input$bio_datasource == "csv") {
         map <- leaflet(occur.data.coord) %>%
           addTiles() %>%
-          addCircles(color = "red", lat = ~ Latitude, lng = ~ Longitude) %>%
+          addCircles(color = "red", lat = ~ latitude, lng = ~ longitude) %>%
           setView(lng = -31.5, lat = -13.4, zoom = 3)
       }
 
       if (input$bio_datasource == "gbif") {
         map <- leaflet(occur.data.coord) %>%
           addTiles() %>%
-          addCircles(color = "red", lat = ~ Latitude, lng = ~ Longitude) %>%
-          addMarkers(clusterOptions = markerClusterOptions()) %>%
+          addCircles(color = "red", lat = ~ latitude, lng = longitude) %>%
+          #addMarkers(clusterOptions = markerClusterOptions()) %>%
           setView(lng = -31.5, lat = -13.4, zoom = 3)
       }
 
       if (input$bio_datasource == "jabot") {
         map <- leaflet(occur.data.coord) %>%
           addTiles() %>%
-          addCircles(color = "red", lat = ~ Latitude, lng = ~ Longitude) %>%
+          addCircles(color = "red", lat = ~ latitude, lng = ~ longitude) %>%
           setView(lng = -31.5, lat = -13.4, zoom = 3)
       }
       map
