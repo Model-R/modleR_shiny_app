@@ -2342,18 +2342,20 @@ function(input, output, session) {
   # Exhibit table with occurrence records
   output$spdata_table <- DT::renderDataTable({
     
+    if (exists("occurrences")) {
+    occurrences
+    }
     observeEvent(input$btnsearch_spdatacsv,{
       loadspdata_csv()
+      occurrences<<-occurrences
     })
      
     observeEvent(input$btnsearch_spdata,{
       loadspdata()
+      occurrences<<-occurrences
     })
     
-    if (exists("occurrences")) {
-    }
     
-    occurrences
     
     
     # else {
