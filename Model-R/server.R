@@ -213,7 +213,7 @@ options(shiny.maxRequestSize = 100 * 1024^2)
 dirColors <- c(`1` = "#595490", `2` = "#527525", `3` = "#A93F35", `4` = "#BA48AA")
 
 function(input, output, session) {
-  occur.data.coord <<- NULL
+  occurrences <<- NULL
   library(maps)
   library(rgdal)
   library(raster)
@@ -268,7 +268,7 @@ function(input, output, session) {
       cat(paste("Modeling", sp, "...", "\n"))
       
       ## PREPARING SDM DATA -----------------------------------------------------
-      coord <- occur.data.coord
+      coord <- occurrences
       n <- nrow(coord)
       
       ## Extracting variables at presence points
@@ -1263,7 +1263,7 @@ function(input, output, session) {
         png(filename = paste0("./www/", projeto, "/jpg/bc_ensemble", ".jpg"))
         #dev.off()
         plot(ensemble.bc, main = paste("Bioclim - Ensemble"))
-        points(occur.data.coord, bg = "red", cex = 1, pch = 21)
+        points(occurrences, bg = "red", cex = 1, pch = 21)
         dev.off()
       }
       if (input$GLM == TRUE) {
@@ -1281,7 +1281,7 @@ function(input, output, session) {
         ), format = "GTiff", overwrite = T)
         png(filename = paste0("./www/", projeto, "/jpg/glm_ensemble", ".jpg"))
         plot(ensemble.glm, main = paste("GLM - Ensemble "))
-        points(occur.data.coord, bg = "red", cex = 1, pch = 21)
+        points(occurrences, bg = "red", cex = 1, pch = 21)
         dev.off()
       }
       if (input$RF == TRUE) {
@@ -1300,7 +1300,7 @@ function(input, output, session) {
         )
         png(filename = paste0("./www/", projeto, "/jpg/rf_ensemble", ".jpg"))
         plot(ensemble.rf, main = paste("RF - Ensemble"))
-        points(occur.data.coord, bg = "red", cex = 1, pch = 21)
+        points(occurrences, bg = "red", cex = 1, pch = 21)
         dev.off()
       }
       if (input$DOMAIN == TRUE) {
@@ -1317,7 +1317,7 @@ function(input, output, session) {
         ), format = "GTiff", overwrite = T)
         png(filename = paste0("./www/", projeto, "/jpg/do_ensemble", ".jpg"))
         plot(ensemble.do, main = paste("Domain - Ensemble"))
-        points(occur.data.coord, bg = "red", cex = 1, pch = 21)
+        points(occurrences, bg = "red", cex = 1, pch = 21)
         dev.off()
       }
       if (input$MAHALANOBIS == TRUE) {
@@ -1335,7 +1335,7 @@ function(input, output, session) {
         ), format = "GTiff", overwrite = T)
         png(filename = paste0("./www/", projeto, "/jpg/ma_ensemble", ".jpg"))
         plot(ensemble.ma, main = paste("MAHALANOBIS - Ensemble"))
-        points(occur.data.coord, bg = "red", cex = 1, pch = 21)
+        points(occurrences, bg = "red", cex = 1, pch = 21)
         dev.off()
       }
       if (input$SVM == TRUE) {
@@ -1353,7 +1353,7 @@ function(input, output, session) {
         ), format = "GTiff", overwrite = T)
         png(filename = paste0("./www/", projeto, "/jpg/svm_ensemble", ".jpg"))
         plot(ensemble.svm, main = paste("SVM - Ensemble"))
-        points(occur.data.coord, bg = "red", cex = 1, pch = 21)
+        points(occurrences, bg = "red", cex = 1, pch = 21)
         dev.off()
       }
       if (input$MAXENT == TRUE) {
@@ -1372,7 +1372,7 @@ function(input, output, session) {
         )
         png(filename = paste0("./www/", projeto, "/jpg/mx_ensemble", ".jpg"))
         plot(ensemble.mx, main = paste("MAXENT - Ensemble"))
-        points(occur.data.coord, bg = "red", cex = 1, pch = 21)
+        points(occurrences, bg = "red", cex = 1, pch = 21)
         dev.off()
       }
       
@@ -1392,7 +1392,7 @@ function(input, output, session) {
         )
         png(filename = paste0("./www/", projeto, "/jpg/ensemble_geral", ".jpg"))
         plot(ensemble.geral, main = paste("Ensemble ", algoritmos))
-        points(occur.data.coord, bg = "red", cex = 1, pch = 21)
+        points(occurrences, bg = "red", cex = 1, pch = 21)
         dev.off()
       }
       
@@ -1603,12 +1603,12 @@ function(input, output, session) {
     if (write_timeproj == T) {
       future.model <- TRUE
     }
-    occ_points <- coordinates(occur.data.coord)
-    occur.data.coord <- clean(coord=occ_points, abio = pred_nf[[1]])
-    write.csv(occur.data.coord, file=paste0(getwd(),"/www/",projeto,"/csv/OccurenceDataset.csv"), row.names = FALSE)
+    occ_points <- coordinates(occurrences)
+    occurrences <- clean(coord=occ_points, abio = pred_nf[[1]])
+    write.csv(occurrences, file=paste0(getwd(),"/www/",projeto,"/csv/occurrences.csv"), row.names = FALSE)
     
     dismo.mod(
-      "", occur.data.coord, pred_nf, pred_nf2,
+      "", occurrences, pred_nf, pred_nf2,
       input$MAXENT, input$BIOCLIM, input$GLM, input$RF, input$SVM, input$MAHALANOBIS, input$DOMAIN, input$SVM2,
       input$edtnumgrupo, input$edtnumpontos, 123, T, T, T, F, F, input$edtTSS,
       future.model, pred_nffuturo, future.model,
@@ -1624,7 +1624,7 @@ function(input, output, session) {
       if (file.exists(paste0("www/", projeto, "/final/", model_ensemble, ".tif"))) {
         r <- raster::raster(paste0("www/", projeto, "/final/", model_ensemble, ".tif"))
         pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(r), na.color = "transparent")
-        occ_points <<- coordinates(occur.data.coord)
+        occ_points <<- coordinates(occurrences)
         lng <<- occ_points[,1]
         lat <<-  occ_points[,2]
         map <- leaflet() %>%
@@ -1641,7 +1641,7 @@ function(input, output, session) {
       if (file.exists(paste0("www/", projeto, "/final/proj_ensemble.tif")) && input$project_ext == TRUE) {
         rproj <- raster::raster(paste0("www/", projeto, "/final/proj_ensemble.tif"))
         palproj <- colorNumeric (c("#FFFFFF", "#FDBB84", "#31A354"), values(rproj), na.color = "transparent")
-        occ_points <<- coordinates(occur.data.coord)
+        occ_points <<- coordinates(occurrences)
         lng <<- occ_points[,1]
         lat <<- occ_points[,2]
         map_proj <- leaflet() %>%
@@ -1805,7 +1805,7 @@ function(input, output, session) {
         (input$GLM == "TRUE")) {
       
       if (ETAPA > 1) {
-        if (exists("occur.data.coord")) {
+        if (exists("occurrences")) {
           progress <<- shiny::Progress$new()
           progress$set(message = "Processing...", value = 0)
           on.exit(progress$close()) 
@@ -1829,7 +1829,7 @@ function(input, output, session) {
     input$btnsearch_spdatacsv
     input$btnsearch_spdata
     
-    if (!is.null(occur.data.coord)) {
+    if (!is.null(occurrences)) {
       ext11 <<- input$edtextend1
       ext31 <<- input$edtextend3
       ext21 <<- input$edtextend2
@@ -1840,8 +1840,8 @@ function(input, output, session) {
       ext22 <<- input$edtextend2
       ext42 <<- input$edtextend4
       
-      occur.data.coord <<- occur.data.coord
-      map <- leaflet(occur.data.coord) %>%
+      occurrences <<- occurrences
+      map <- leaflet(occurrences) %>%
         addTiles() %>%
         addMarkers(clusterOptions = markerClusterOptions()) %>%
         addMarkers(~ Longitude, ~ Latitude) %>%
@@ -1860,14 +1860,14 @@ function(input, output, session) {
     input$btneliminarduplicatas
     input$btnsearch_spdatacsv
     input$btnsearch_spdata
-    if (!is.null(occur.data.coord)) {
+    if (!is.null(occurrences)) {
       ext12 <<- input$edtextend12
       ext32 <<- input$edtextend32
       ext22 <<- input$edtextend22
       ext42 <<- input$edtextend42
       
-      occur.data.coord <<- occur.data.coord
-      map <- leaflet(occur.data.coord) %>%
+      occurrences <<- occurrences
+      map <- leaflet(occurrences) %>%
         addTiles() %>%
         addMarkers(clusterOptions = markerClusterOptions()) %>%
         addMarkers(~ Longitude, ~ Latitude) %>%
@@ -2154,7 +2154,7 @@ function(input, output, session) {
         write_timeproj <<- environmental_data$write_timeproj
         envdata_timeproj <<- environmental_data$data_timeproj
         
-        if (!is.null(env_data) && exists("occur.data.coord")) {
+        if (!is.null(env_data) && exists("occurrences")) {
           
           # Stack and crop environmental layers
           predictors <- stack(env_data)
@@ -2170,7 +2170,7 @@ function(input, output, session) {
           # Calculate correlation between selected variables (current conditions only)
           if (length(env_data) > 1) {
             incProgress(2 / n, detail = paste0("Calculating corelation..."))
-            presvals <- raster::extract(pred_nf, occur.data.coord)
+            presvals <- raster::extract(pred_nf, occurrences)
             backgr <- randomPoints(pred_nf, 300)
             colnames(backgr) <- c("Longitude", "Latitude")
             absvals <- raster::extract(pred_nf, backgr)
@@ -2218,8 +2218,8 @@ function(input, output, session) {
   
   # Update species occurrence dataset
   datasetInput <- reactive({
-    if (exists("occur.data.coord")) {
-      switch("occur.data.coord", occur.data.coord = occur.data.coord)
+    if (exists("occurrences")) {
+      switch("occurrences", occurrences = occurrences)
     }
   })
   
@@ -2230,19 +2230,18 @@ function(input, output, session) {
     input$btnsearch_spdatacsv
     input$btnsearch_spdata
     ETAPA<<-2
-    if (is.null(occur.data.coord)) {
+    if (is.null(occurrences)) {
       n <- 0
     }
     
-    n <- nrow(occur.data.coord)
-    
+    n <- nrow(occurrences)
     if (n > 0) {
-      if (exists("occur.data.coord")) {
+      if (exists("occurrences")) {
         if (input$btneliminarduplicatas > 0) {
           progress <- shiny::Progress$new()
           progress$set(message = "Excluding duplicates...", value = 0)
           on.exit(progress$close())
-          occur.data.coord <<- unique(occur.data.coord)
+          occurrences <<- unique(occurrences)
         }
         
         isolate({
@@ -2252,15 +2251,20 @@ function(input, output, session) {
               return()
             }
             
-            occur.data.coord <<- occur.data.coord[-input$edtelemento, ]
+            occurrences <<- occurrences[-input$edtelemento, ]
+            
           }
-          rownames(occur.data.coord) <- NULL
-          occur.data.coord$id <- 1:nrow(occur.data.coord)
+          rownames(occurrences) <- NULL
+          occurrences$id <- 1:nrow(occurrences)
         })
-        occur.data.coord
+        occurrences
       }
     }
   }, options = list(searching = FALSE, lengthMenu = c(5, 30, 50), pageLength = 5))
+  
+  observeEvent(input$saveDataset, {
+    write.csv(occurrences, file=paste0(getwd(),"/www/",projeto,"/csv/occurrences.csv"), row.names = FALSE)
+    })
   
   output$mapadistribuicaodatacleaning <- renderLeaflet({
     input$btnapagar
@@ -2268,11 +2272,11 @@ function(input, output, session) {
     input$btnsearch_spdatacsv
     input$btnsearch_spdata
     
-    if (!is.null(occur.data.coord)) {
-      if (exists("occur.data.coord")) {
-        rownames(occur.data.coord) <- NULL
-        occur.data.coord$id <- 1:nrow(occur.data.coord)
-        map <- leaflet(occur.data.coord) %>%
+    if (!is.null(occurrences)) {
+      if (exists("occurrences")) {
+        rownames(occurrences) <- NULL
+        occurrences$id <- 1:nrow(occurrences)
+        map <- leaflet(occurrences) %>%
           addTiles() %>%
           addCircles(color = "red", lat = ~ Latitude, lng = ~ Longitude) %>%
           addMarkers(clusterOptions = markerClusterOptions()) %>%
@@ -2288,14 +2292,14 @@ function(input, output, session) {
     }
   })
   
-  #####  IMPORT SPECIES occurrence DATASET #####
+  #####  IMPORT SPECIES OCCURRENCE DATASET #####
   # Load species occurrence dataset from gbif/jabot databases
   loadspdata <- eventReactive(input$btnsearch_spdata, {
     ETAPA <<- 1
     if (input$bio_datasource == "gbif") {
       occur.data <- getOccurrences_gbif(input$edtespecie)
       occur.data_gbif <- occur.data [, c(2, 3)]
-      occur.data.coord <<- occur.data_gbif
+      occurrences <<- occur.data_gbif
     }
     if (input$bio_datasource == "jabot") {
       occur.data <- getOccurrences_jabot(input$edtespecie)
@@ -2303,9 +2307,9 @@ function(input, output, session) {
       occur.data_jabot <- occur.data[, c(2, 3)]
       occur.data_jabot[, 1] <- as.numeric(occur.data_jabot[, 1])
       occur.data_jabot[, 2] <- as.numeric(occur.data_jabot[, 2])
-      occur.data.coord <<- occur.data_jabot
+      occurrences <<- occur.data_jabot
     }
-    occur.data.coord
+    occurrences
   })
   
   # Browse occurrence dataset from local csv file
@@ -2327,9 +2331,9 @@ function(input, output, session) {
       arquivo_sep <- input$sep
       arquivo_quote <- input$quote
       sp_data_csv <- sp_data [, 2:3]
-      occur.data.coord <<- sp_data_csv
+      occurrences <<- sp_data_csv
     }
-    occur.data.coord
+    occurrences
   })
   
   # Exhibit table with occurrence records
@@ -2345,7 +2349,7 @@ function(input, output, session) {
     } else {
       loadspdata()
     }
-    occur.data.coord
+    occurrences
   }, options = list(lengthMenu = c(5, 30, 50), pageLength = 5))
   
   # Display map with loaded occurrence records
@@ -2357,20 +2361,20 @@ function(input, output, session) {
     progress$set(message = "Updating species occurrence map...", value = 0)
     on.exit(progress$close())
     
-    if (!is.null(occur.data.coord)) {
-      latitude<-as.character(occur.data.coord$Latitude)
+    if (!is.null(occurrences)) {
+      latitude<-as.character(occurrences$Latitude)
       latitude<-as.numeric(latitude)
-      longitude<-as.character(occur.data.coord$Longitude)
+      longitude<-as.character(occurrences$Longitude)
       longitude<-as.numeric(longitude)
       if (input$bio_datasource == "csv") {
-        map <- leaflet(occur.data.coord) %>%
+        map <- leaflet(occurrences) %>%
           addTiles() %>%
           addCircles(color = "red", lat = ~ latitude, lng = ~ longitude) %>%
           setView(lng = -31.5, lat = -13.4, zoom = 3)
       }
       
       if (input$bio_datasource == "gbif") {
-        map <- leaflet(occur.data.coord) %>%
+        map <- leaflet(occurrences) %>%
           addTiles() %>%
           addCircles(color = "red", lat = ~ latitude, lng = longitude) %>%
           #addMarkers(clusterOptions = markerClusterOptions()) %>%
@@ -2378,7 +2382,7 @@ function(input, output, session) {
       }
       
       if (input$bio_datasource == "jabot") {
-        map <- leaflet(occur.data.coord) %>%
+        map <- leaflet(occurrences) %>%
           addTiles() %>%
           addCircles(color = "red", lat = ~ latitude, lng = ~ longitude) %>%
           setView(lng = -31.5, lat = -13.4, zoom = 3)
@@ -2578,7 +2582,7 @@ function(input, output, session) {
             lista_csv <- list.files(
               paste0("www/", projeto, "/csv"),
               full.names = F,
-              pattern = paste0(".csv")
+              pattern = paste0("occurrences.csv")
             )
             lapply(1:length(lista_csv), function(i) {
               tags$div(tags$a(

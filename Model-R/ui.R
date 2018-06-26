@@ -13,40 +13,35 @@
 
 # Thanks to Steven Worthington for function ipak https://gist.github.com/stevenworthington/3178163 (HT Karlo Guidoni Martins)
 
-###############################################################################
-
 ipak <- function(pkg) {
   new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
   if (length(new.pkg))
     install.packages(new.pkg, dependencies = TRUE)
   sapply(pkg, require, character.only = TRUE)
 }
+
 ipak(c("shinydashboard", "leaflet"))
 
 bio_datasource <- c("GBif - The Global Biodiversity Information Facility" = "gbif",
   "Jabot - JBRJ Database" = "jabot",
   "CSV - Comma Separated Values" = "csv")
 
-env_datasource <- c(
-  "WorldClim v.1.4" = "CLIMA",
+env_datasource <- c("WorldClim v.1.4" = "CLIMA",
   "Bio-ORACLE v.1" = "BIOORACLE",
-  "Upload Dataset" = "Others"
-)
+  "Upload Dataset" = "Others")
 
-resolution <- c(
-  "10 arc-minutes" = "10m",
+resolution <- c("10 arc-minutes" = "10m",
   "5 arc-minutes" = "5m",
   "2.5 arc-minutes" = "2-5m",
-  "30 arc-seconds" = "30s"
-)
+  "30 arc-seconds" = "30s")
+
 wc_forecasting_timescale <- c( 'Future conditions' = 'future',
   'Past conditions' = 'past')
 
 future_dates_wc <- c("2050" = "2050",
   "2070" = "2070")
 
-gcm_future_wc <- c(
-  "BCC-CSM1-1" = "bc",
+gcm_future_wc <- c("BCC-CSM1-1" = "bc",
   "CCSM4" = "cc",
   "GISS-E2-R" = "gs",
   "HadGEM2-AO" = "hd",
@@ -56,11 +51,9 @@ gcm_future_wc <- c(
   "MIROC-ESM" = "mr",
   "MIROC5" = "mc",
   "MRI-CGCM3" = "mg",
-  "NorESM1-M" = "no"
-)
+  "NorESM1-M" = "no")
 
-gcm_past_wc_mid<-c(
-  "CCSM4" = "cc",
+gcm_past_wc_mid<-c("CCSM4" = "cc",
   "MIROC-ESM" = "mr",
   "MPI-ESM-P" = "me",
   "BCC-CSM1-1" = "bc",
@@ -75,23 +68,15 @@ gcm_past_wc_lgm<-c(
   "MIROC-ESM" = "mr",
   "MPI-ESM-P" = "me")
 
-rcp <- c(
-  "rcp26" = "26",
+rcp <- c("rcp26" = "26",
   "rcp45" = "45",
   "rcp60" = "60",
-  "rcp85" = "85"
-)
+  "rcp85" = "85")
 past_dates_wc <- c("Mid Holocene" = 'mid',
   "Last Glacial Maximum" = 'lgm')
 
 future_bo_dates<-c("2100"='2100',
-  "2200"='2200'
-)
-
-library(raster)
-Country <<- getData('GADM', country='BRA', level=1)
-states<<- Country$NAME_1
-
+  "2200"='2200')
 
 ################################################################################
 header <- dashboardHeader(title = "Model-R 2.0")
@@ -109,7 +94,6 @@ body <- dashboardBody(
         id = "tabset1",
         
         ########################################################################
-        
         tabPanel("Welcome",
           column(width = 12,
             id = "tabset1",
@@ -203,8 +187,6 @@ body <- dashboardBody(
                           height = 500)
                       )),
                     
-                    
-                    
                     tabPanel("Load occurrence dataset",
                       column(width = 8,
                         box(width = NULL,
@@ -261,10 +243,9 @@ body <- dashboardBody(
                       min = 0,
                       max = 100,
                       value = 0),
-                  #  actionButton("btncentroide", "Delete municipality centroids", icon = icon("trash")),
                     actionButton("btnapagar", "Delete selected ID", icon = icon("trash")),
                     actionButton('btneliminarduplicatas', 'Delete duplicates', icon = icon("cubes")),
-                    downloadButton('downloadData', 'Download data')
+                    actionButton('saveDataset', 'Save dataset', icon = icon("download"))
                   ),
                   
                   box(width = NULL,
