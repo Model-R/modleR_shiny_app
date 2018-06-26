@@ -261,7 +261,7 @@ body <- dashboardBody(
                       min = 0,
                       max = 100,
                       value = 0),
-                    actionButton("btncentroide", "Delete municipality centroids", icon = icon("trash")),
+                  #  actionButton("btncentroide", "Delete municipality centroids", icon = icon("trash")),
                     actionButton("btnapagar", "Delete selected ID", icon = icon("trash")),
                     actionButton('btneliminarduplicatas', 'Delete duplicates', icon = icon("cubes")),
                     downloadButton('downloadData', 'Download data')
@@ -305,8 +305,8 @@ body <- dashboardBody(
                         
                         box(width = 4,
                           solidHeader = TRUE,
-                          selectInput("choose_state2", "Estado", c("", states), selected = ""),
-                          actionButton("btn_crop_extent2", "Crop state extent", icon = icon("map")),
+                          #selectInput("choose_state2", "Estado", c("", states), selected = ""),
+                         # actionButton("btn_crop_extent2", "Crop state extent", icon = icon("map")),
                           numericInput(
                             "edtextend12",
                             "Longitude left:",
@@ -349,8 +349,8 @@ body <- dashboardBody(
                       solidHeader = TRUE,
                       box(width = NULL,
                         status = "warning",
-                        selectInput("choose_state", "Estado", c("", states), selected = ""),
-                        actionButton("btn_crop_extent", "Crop state extent", icon = icon("map")),
+                        #selectInput("choose_state", "Estado", c("", states), selected = ""),
+                        #actionButton("btn_crop_extent", "Crop state extent", icon = icon("map")),
                       
                          numericInput(
                           "edtextend1",
