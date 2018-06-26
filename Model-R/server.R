@@ -1605,7 +1605,7 @@ function(input, output, session) {
     }
     occ_points <- coordinates(occurrences)
     occurrences <- clean(coord=occ_points, abio = pred_nf[[1]])
-    write.csv(occurrences, file=paste0(getwd(),"/www/",projeto,"/csv/occurrences.csv"), row.names = FALSE)
+    write.table(occurrences, file=paste0(getwd(),"/www/",projeto,"/csv/occurrences.csv"), append = FALSE, col.names = TRUE, row.names = FALSE)
     
     dismo.mod(
       "", occurrences, pred_nf, pred_nf2,
@@ -2233,7 +2233,6 @@ function(input, output, session) {
     if (is.null(occurrences)) {
       n <- 0
     }
-    
     n <- nrow(occurrences)
     if (n > 0) {
       if (exists("occurrences")) {
@@ -2243,16 +2242,13 @@ function(input, output, session) {
           on.exit(progress$close())
           occurrences <<- unique(occurrences)
         }
-        
         isolate({
           input$edtelemento
           if (input$edtelemento != "0") {
             if (input$btnapagar == 0) {
               return()
             }
-            
             occurrences <<- occurrences[-input$edtelemento, ]
-            
           }
           rownames(occurrences) <- NULL
           occurrences$id <- 1:nrow(occurrences)
@@ -2296,6 +2292,10 @@ function(input, output, session) {
   # Load species occurrence dataset from gbif/jabot databases
   loadspdata <- eventReactive(input$btnsearch_spdata, {
     ETAPA <<- 1
+    progress <- shiny::Progress$new()
+    progress$set(message = "Importing species occurrence data...", value = 0)
+    on.exit(progress$close())
+    input$btnsearch_spdata
     if (input$bio_datasource == "gbif") {
       occur.data <- getOccurrences_gbif(input$edtespecie)
       occur.data_gbif <- occur.data [, c(2, 3)]
@@ -2315,6 +2315,10 @@ function(input, output, session) {
   # Browse occurrence dataset from local csv file
   loadspdata_csv <- eventReactive(input$btnsearch_spdatacsv, {
     ETAPA <<- 1
+    progress <- shiny::Progress$new()
+    progress$set(message = "Importing species occurrence data...", value = 0)
+    on.exit(progress$close())
+    input$btnsearch_spdatacsv
     inFile <<- input$file1
     if (is.null(inFile)) {
       return(NULL)
@@ -2325,7 +2329,6 @@ function(input, output, session) {
         sep = input$sep,
         quote = input$quote
       )
-      
       arquivo_path <- inFile$datapath
       arquivo_header <- input$header
       arquivo_sep <- input$sep
@@ -2338,18 +2341,27 @@ function(input, output, session) {
   
   # Exhibit table with occurrence records
   output$spdata_table <- DT::renderDataTable({
-    progress <- shiny::Progress$new()
-    progress$set(message = "Importing species occurrence data...", value = 0)
-    on.exit(progress$close())
-    input$btnsearch_spdatacsv
-    input$btnsearch_spdata
     
-    if (input$bio_datasource == "csv") {
+    observeEvent(input$btnsearch_spdatacsv,{
       loadspdata_csv()
-    } else {
+    })
+     
+    observeEvent(input$btnsearch_spdata,{
       loadspdata()
+    })
+    
+    if (exists("occurrences")) {
     }
+    
     occurrences
+    
+    
+    # else {
+    #   if (exists("occurrences")) {
+    #     occurrences
+    #   }
+    # }
+   # occurrences
   }, options = list(lengthMenu = c(5, 30, 50), pageLength = 5))
   
   # Display map with loaded occurrence records
@@ -2401,10 +2413,13 @@ function(input, output, session) {
   
   ##### CREATE NEW/LOAD PROJECT #####
   observeEvent(input$btnrefreshprojeto, {
+    
     # Create new project
     if (input$select_project == "new_proj") {
       projeto <- paste0("projeto/", input$edtprojeto.create)
-      # If left in blank, exhibit error message
+      rm(occurrences, envir = .GlobalEnv)
+      
+     
       if (projeto == "projeto/") {
         showModal(modalDialog(
           title = "Unable to create new project",
@@ -2413,9 +2428,8 @@ function(input, output, session) {
         ))
       }
       
+      # Check if project already exists in the directory
       if (projeto != "projeto/") {
-        
-        # If the project name already exists in the directory, exhibit error message
         if (file.exists(paste0(getwd(), "/www/", projeto)) == TRUE) {
           showModal(modalDialog(
             title = "Unable to create new project",
@@ -2424,11 +2438,10 @@ function(input, output, session) {
           ))
         }
         
-        # If the inserted name is does not exist in the directory, create project folder and sub-directories
+        # If not, create project folder and sub-directories
         if (file.exists(paste0(getwd(), "/www/", projeto)) != TRUE) {
           projeto <<- paste0("projeto/", input$edtprojeto.create)
           
-          # Exhibit progress messages
           withProgress(message = "", value = 0, {
             n <- 7
             
@@ -2460,8 +2473,6 @@ function(input, output, session) {
             incProgress(7 / n, detail = paste0("Creating directory ", projeto, "/csv"))
             Sys.sleep(0.2)
           })
-          
-          # Exhibit success message
           showModal(modalDialog(
             title = "Project succesfully created!",
             paste0("Project directory: ", projeto),
@@ -2478,6 +2489,9 @@ function(input, output, session) {
       # If any of the listed projects is selected, load output results
       if (projeto != "projeto/") {
         if (file.exists(paste0(getwd(), "/www/", projeto)) == TRUE) {
+          if (file.exists(paste0("www/", projeto, "/csv/occurrences.csv")) == TRUE) {
+            occurrences <<- read.csv(paste0("www/", projeto, "/csv/occurrences.csv"), header = TRUE, sep=",")
+          }
           
           # Display Stats results
           output$dbgridresultado <- renderDataTable({
@@ -2534,8 +2548,8 @@ function(input, output, session) {
           # List jpeg files
           output$ui <- renderUI({
             lista_jpg <- list.files(paste0("www/", projeto, "/jpg"),
-              full.names = F,
-              pattern = paste0(".jpg")
+                                    full.names = F,
+                                    pattern = paste0(".jpg")
             )
             lapply(1:length(order(lista_jpg)), function(i) {
               tags$a(
