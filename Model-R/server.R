@@ -21,7 +21,7 @@ ipak <- function(pkg) {
   sapply(pkg, require, character.only = TRUE)
 }
 
-ipak(c(
+ ipak(c(
   "shinydashboard",
   "leaflet",
   "R.utils",
@@ -35,57 +35,50 @@ ipak(c(
   "XML",
   "randomForest",
   "kernlab",
-  "rJava",
   "data.table",
   "DT",
   "shinyjs",
   "sdmpredictors"
 ))
+ 
+ jdk_version <- list.files("/Library/Java/JavaVirtualMachines/")
+ if (length(jdk_version) != 0) {
+   dyn.load(paste0("/Library/Java/JavaVirtualMachines/", jdk_version, "/Contents/Home/lib/server/libjvm.dylib"))
+ } 
+library("rJava")
 
-jdk_version <- list.files("/Library/Java/JavaVirtualMachines/")
-if (length(jdk_version) != 0) {
-  dyn.load(paste0("/Library/Java/JavaVirtualMachines/", jdk_version, "/Contents/Home/lib/server/libjvm.dylib"))
-  library("rJava")
-} else {
-  library("rJava")
-}
+ 
+ # library("shinydashboard")
+# library("leaflet")
+# library("R.utils")
+# library("raster")
+# library("rjson")
+# library("maps")
+# library("rgdal")
+# library("dismo")
+# library("rgbif")
+# library("XML")
+# library("randomForest")
+# library("kernlab")
+# library("data.table")
+# library("DT")
+# library("sdmpredictors")
+# library("shinyjs")
 
-library("shinydashboard")
-library("leaflet")
-library("R.utils")
-library("raster")
-library("rjson")
-library("maps")
-library("rgdal")
-library("dismo")
-library("rgbif")
-library("XML")
-library("randomForest")
-library("kernlab")
-library("data.table")
-library("DT")
-library("sdmpredictors")
-library("shinyjs")
-
-rm(list = ls())
-rm(list = setdiff(ls(), lsf.str()))
-
-home <- "/"
+# rm(list = ls())
+# rm(list = setdiff(ls(), lsf.str()))
+# 
+# home <- "/"
 
 t <- 7
-ext11 <<- -90
-ext21 <<- -33
-ext31 <<- -32
-ext41 <<- 23
+ext11 <<- ext12 <<- -90
+ext21 <<- ext22 <<- -33
+ext31 <<- ext32 <<- -32
+ext41 <<- ext42 <<- 23
 
-ext12 <<- ext11
-ext22 <<- ext21
-ext32 <<- ext31
-ext42 <<- ext41
+#ETAPA <<- 0
 
-ETAPA <<- 0
-
-spname <<- ""
+#spname <<- ""
 
 # Download and decompress maxent.jar file
 jar <- paste0(system.file(package = "dismo"), "/java/maxent.jar")
@@ -206,7 +199,6 @@ clean <- function(coord, abio) {
     } else (cat("Indicate the object with the predictive variables"))
   } else (stop("Coordinate table has more than two columns.\n This table should only have longitude and latitude in this order."))
 }
-
 
 
 options(shiny.maxRequestSize = 100 * 1024^2)
@@ -2292,14 +2284,10 @@ function(input, output, session) {
   # Load species occurrence dataset from gbif/jabot databases
   loadspdata <- eventReactive(input$btnsearch_spdata, {
     ETAPA <<- 1
-    progress <- shiny::Progress$new()
-    progress$set(message = "Importing species occurrence data...", value = 0)
-    on.exit(progress$close())
-    input$btnsearch_spdata
     if (input$bio_datasource == "gbif") {
       occur.data <- getOccurrences_gbif(input$edtespecie)
       occur.data_gbif <- occur.data [, c(2, 3)]
-      occurrences <<- occur.data_gbif
+      occur.data.coord <<- occur.data_gbif
     }
     if (input$bio_datasource == "jabot") {
       occur.data <- getOccurrences_jabot(input$edtespecie)
@@ -2307,18 +2295,14 @@ function(input, output, session) {
       occur.data_jabot <- occur.data[, c(2, 3)]
       occur.data_jabot[, 1] <- as.numeric(occur.data_jabot[, 1])
       occur.data_jabot[, 2] <- as.numeric(occur.data_jabot[, 2])
-      occurrences <<- occur.data_jabot
+      occur.data.coord <<- occur.data_jabot
     }
-    occurrences
+    occur.data.coord
   })
   
   # Browse occurrence dataset from local csv file
   loadspdata_csv <- eventReactive(input$btnsearch_spdatacsv, {
     ETAPA <<- 1
-    progress <- shiny::Progress$new()
-    progress$set(message = "Importing species occurrence data...", value = 0)
-    on.exit(progress$close())
-    input$btnsearch_spdatacsv
     inFile <<- input$file1
     if (is.null(inFile)) {
       return(NULL)
@@ -2334,36 +2318,25 @@ function(input, output, session) {
       arquivo_sep <- input$sep
       arquivo_quote <- input$quote
       sp_data_csv <- sp_data [, 2:3]
-      occurrences <<- sp_data_csv
+      occur.data.coord <<- sp_data_csv
     }
-    occurrences
+    occur.data.coord
   })
   
   # Exhibit table with occurrence records
   output$spdata_table <- DT::renderDataTable({
+    progress <- shiny::Progress$new()
+    progress$set(message = "Importing species occurrence data...", value = 0)
+    on.exit(progress$close())
+    input$btnsearch_spdatacsv
+    input$btnsearch_spdata
     
-    if (exists("occurrences")) {
-    occurrences
-    }
-    observeEvent(input$btnsearch_spdatacsv,{
+    if (input$bio_datasource == "csv") {
       loadspdata_csv()
-      occurrences<<-occurrences
-    })
-     
-    observeEvent(input$btnsearch_spdata,{
+    } else {
       loadspdata()
-      occurrences<<-occurrences
-    })
-    
-    
-    
-    
-    # else {
-    #   if (exists("occurrences")) {
-    #     occurrences
-    #   }
-    # }
-   # occurrences
+    }
+    occur.data.coord
   }, options = list(lengthMenu = c(5, 30, 50), pageLength = 5))
   
   # Display map with loaded occurrence records
@@ -2375,20 +2348,20 @@ function(input, output, session) {
     progress$set(message = "Updating species occurrence map...", value = 0)
     on.exit(progress$close())
     
-    if (!is.null(occurrences)) {
-      latitude<-as.character(occurrences$Latitude)
+    if (!is.null(occur.data.coord)) {
+      latitude<-as.character(occur.data.coord$Latitude)
       latitude<-as.numeric(latitude)
-      longitude<-as.character(occurrences$Longitude)
+      longitude<-as.character(occur.data.coord$Longitude)
       longitude<-as.numeric(longitude)
       if (input$bio_datasource == "csv") {
-        map <- leaflet(occurrences) %>%
+        map <- leaflet(occur.data.coord) %>%
           addTiles() %>%
           addCircles(color = "red", lat = ~ latitude, lng = ~ longitude) %>%
           setView(lng = -31.5, lat = -13.4, zoom = 3)
       }
       
       if (input$bio_datasource == "gbif") {
-        map <- leaflet(occurrences) %>%
+        map <- leaflet(occur.data.coord) %>%
           addTiles() %>%
           addCircles(color = "red", lat = ~ latitude, lng = longitude) %>%
           #addMarkers(clusterOptions = markerClusterOptions()) %>%
@@ -2396,7 +2369,7 @@ function(input, output, session) {
       }
       
       if (input$bio_datasource == "jabot") {
-        map <- leaflet(occurrences) %>%
+        map <- leaflet(occur.data.coord) %>%
           addTiles() %>%
           addCircles(color = "red", lat = ~ latitude, lng = ~ longitude) %>%
           setView(lng = -31.5, lat = -13.4, zoom = 3)
