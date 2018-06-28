@@ -152,9 +152,9 @@ getOccurrences_gbif <- function(spname) {
   key <- name_backbone(name = spname)$speciesKey
   if (!is.null(key)) {
     gbif_data <- occ_search(hasCoordinate = TRUE,
-                            hasGeospatialIssue = F,
-                            taxonKey = key,
-                            return = "data" )
+      hasGeospatialIssue = F,
+      taxonKey = key,
+      return = "data" )
     gbif_data <- subset(gbif_data, !is.na(decimalLongitude) & !is.na(decimalLatitude))
     gbif_data <- subset(gbif_data, (decimalLongitude != 0) & (decimalLatitude != 0))
     occur.data <- cbind(gbif_data$name, gbif_data$decimalLongitude, gbif_data$decimalLatitude)
@@ -498,7 +498,7 @@ function(input, output, session) {
   })
   
   #### Geographic projection area ####
-
+  
   output$mapapontosextend2 <- renderLeaflet({
     input$btnapagar
     input$btneliminarduplicatas
@@ -903,7 +903,7 @@ function(input, output, session) {
   
   observeEvent(input$saveDataset, {
     write.csv(occurrences, file=paste0(getwd(),"/www/",projeto,"/csv/occurrences.csv"), row.names = FALSE)
-    })
+  })
   
   output$mapadistribuicaodatacleaning <- renderLeaflet({
     input$btnapagar
@@ -938,7 +938,7 @@ function(input, output, session) {
     if (input$bio_datasource == "gbif") {
       occur.data <- getOccurrences_gbif(input$edtespecie)
       occur.data_gbif <- occur.data [, c(2, 3)]
-      occur.data.coord <<- occur.data_gbif
+      occurrences <<- occur.data_gbif
     }
     if (input$bio_datasource == "jabot") {
       occur.data <- getOccurrences_jabot(input$edtespecie)
@@ -946,9 +946,9 @@ function(input, output, session) {
       occur.data_jabot <- occur.data[, c(2, 3)]
       occur.data_jabot[, 1] <- as.numeric(occur.data_jabot[, 1])
       occur.data_jabot[, 2] <- as.numeric(occur.data_jabot[, 2])
-      occur.data.coord <<- occur.data_jabot
+      occurrences <<- occur.data_jabot
     }
-    occur.data.coord
+    occurrences
   })
   
   # Browse occurrence dataset from local csv file
@@ -969,9 +969,9 @@ function(input, output, session) {
       arquivo_sep <- input$sep
       arquivo_quote <- input$quote
       sp_data_csv <- sp_data [, 2:3]
-      occur.data.coord <<- sp_data_csv
+      occurrences <<- sp_data_csv
     }
-    occur.data.coord
+    occurrences
   })
   
   # Exhibit table with occurrence records
@@ -987,7 +987,7 @@ function(input, output, session) {
     } else {
       loadspdata()
     }
-    occur.data.coord
+    occurrences
   }, options = list(lengthMenu = c(5, 30, 50), pageLength = 5))
   
   # Display map with loaded occurrence records
@@ -999,20 +999,20 @@ function(input, output, session) {
     progress$set(message = "Updating species occurrence map...", value = 0)
     on.exit(progress$close())
     
-    if (!is.null(occur.data.coord)) {
-      latitude<-as.character(occur.data.coord$Latitude)
+    if (!is.null(occurrences)) {
+      latitude<-as.character(occurrences$Latitude)
       latitude<-as.numeric(latitude)
-      longitude<-as.character(occur.data.coord$Longitude)
+      longitude<-as.character(occurrences$Longitude)
       longitude<-as.numeric(longitude)
       if (input$bio_datasource == "csv") {
-        map <- leaflet(occur.data.coord) %>%
+        map <- leaflet(occurrences) %>%
           addTiles() %>%
           addCircles(color = "red", lat = ~ latitude, lng = ~ longitude) %>%
           setView(lng = -31.5, lat = -13.4, zoom = 3)
       }
       
       if (input$bio_datasource == "gbif") {
-        map <- leaflet(occur.data.coord) %>%
+        map <- leaflet(occurrences) %>%
           addTiles() %>%
           addCircles(color = "red", lat = ~ latitude, lng = longitude) %>%
           #addMarkers(clusterOptions = markerClusterOptions()) %>%
@@ -1020,7 +1020,7 @@ function(input, output, session) {
       }
       
       if (input$bio_datasource == "jabot") {
-        map <- leaflet(occur.data.coord) %>%
+        map <- leaflet(occurrences) %>%
           addTiles() %>%
           addCircles(color = "red", lat = ~ latitude, lng = ~ longitude) %>%
           setView(lng = -31.5, lat = -13.4, zoom = 3)
@@ -1037,16 +1037,20 @@ function(input, output, session) {
     }
   })
   
+  
+  
+  
+  
   ##### CREATE NEW/LOAD PROJECT #####
+  
   observeEvent(input$btnrefreshprojeto, {
     
     # Create new project
     if (input$select_project == "new_proj") {
-      projeto <- paste0("projeto/", input$edtprojeto.create)
-      rm(occurrences, envir = .GlobalEnv)
       
-     
-      if (projeto == "projeto/") {
+      models_dir <- paste0("./www/results/", input$models_dir.new)
+      
+      if (models_dir == "./www/results/") {
         showModal(modalDialog(
           title = "Unable to create new project",
           paste0("Project name cannot be blank!", "Please enter a valid name."),
@@ -1054,164 +1058,73 @@ function(input, output, session) {
         ))
       }
       
-      # Check if project already exists in the directory
-      if (projeto != "projeto/") {
-        if (file.exists(paste0(getwd(), "/www/", projeto)) == TRUE) {
-          showModal(modalDialog(
-            title = "Unable to create new project",
-            paste0("This name is alredy in use!", "Please insert a different name."),
-            easyClose = TRUE
-          ))
-        }
-        
-        # If not, create project folder and sub-directories
-        if (file.exists(paste0(getwd(), "/www/", projeto)) != TRUE) {
-          projeto <<- paste0("projeto/", input$edtprojeto.create)
-          
-          withProgress(message = "", value = 0, {
-            n <- 7
-            
-            mkdirs(paste0("www/", projeto))
-            incProgress(1 / n, detail = paste0("Creating directory ", projeto))
-            Sys.sleep(0.2)
-            
-            mkdirs(paste0("www/", projeto, "/final"))
-            incProgress(2 / n, detail = paste0("Creating directory ", projeto, "/final"))
-            Sys.sleep(0.2)
-            
-            mkdirs(paste0("www/", projeto, "/proj_time"))
-            incProgress(3 / n, detail = paste0("Creating directory ", projeto, "/proj_time"))
-            Sys.sleep(0.2)
-            
-            mkdirs(paste0("www/", projeto, "/jpg"))
-            incProgress(4 / n, detail = paste0("Creating directory ", projeto, "/jpg"))
-            Sys.sleep(0.2)
-            
-            mkdirs(paste0("www/", projeto, "/models"))
-            incProgress(5 / n, detail = paste0("Creating directory ", projeto, "/models"))
-            Sys.sleep(0.2)
-            
-            mkdirs(paste0("www/", projeto, "/proj"))
-            incProgress(6 / n, detail = paste0("Creating directory ", projeto, "/proj"))
-            Sys.sleep(0.2)
-            
-            mkdirs(paste0("www/", projeto, "/csv"))
-            incProgress(7 / n, detail = paste0("Creating directory ", projeto, "/csv"))
-            Sys.sleep(0.2)
-          })
-          showModal(modalDialog(
-            title = "Project succesfully created!",
-            paste0("Project directory: ", projeto),
-            easyClose = TRUE
-          ))
-        }
+      if (file.exists(paste0("./www/results/", models_dir))) {
+        showModal(modalDialog(
+          title = "Unable to create new project",
+          paste0("Project is already in use."),
+          easyClose = TRUE
+        ))
+      }
+      
+      if (!file.exists(paste0("/www/results/", models_dir))) {
+        models_dir <<- paste0("./www/results/", input$models_dir.new)
+        mkdirs(models_dir)
+        showModal(modalDialog(
+          title = "Project succesfully created!",
+          paste0("Project directory: ", models_dir),
+          easyClose = TRUE
+        ))
       }
     }
     
-    # Load output files from a previous project
+    # Load previous project
     if (input$select_project == "load_proj") {
-      projeto <- paste0("projeto/", input$edtprojeto.load)
       
-      # If any of the listed projects is selected, load output results
-      if (projeto != "projeto/") {
-        if (file.exists(paste0(getwd(), "/www/", projeto)) == TRUE) {
-          if (file.exists(paste0("www/", projeto, "/csv/occurrences.csv")) == TRUE) {
-            occurrences <<- read.csv(paste0("www/", projeto, "/csv/occurrences.csv"), header = TRUE, sep=",")
-          }
+      models_dir <- paste0("/www/results/", input$models_dir.load)
+      
+      if (models_dir != "/www/results/") {
+        
+        if (file.exists(paste0("/www/results/", models_dir))) {
           
-          # Display Stats results
+          path <- paste0(models_dir, "/", input$models_dir_species.load)
+          
+          # Display Stats results at outputs tab
           output$dbgridresultado <- renderDataTable({
-            read.table(paste0("./www/", projeto, "/models/statsALL.txt"))
+            stats.file <- list.files(path = path, recursive = T, pattern = "final_statistics.csv")
+            read.csv(stats.file)
           }, options = list(lengthMenu = c(5, 30, 50), pageLength = 10))
           
-          # Display continuous/binary jpg files
-          output$ui <- renderUI({
-            lista_jpg <- list.files(
-              paste0("www/", projeto, "/jpg"),
-              full.names = F,
-              pattern = paste0(".jpg")
-            )
-            lapply(1:length(order(lista_jpg)), function(i) {
-              tags$a(
-                href = paste0(home, projeto, "/jpg/", lista_jpg[i]),
-                tags$img(src = paste0(projeto, "/jpg/", lista_jpg[i]), height = "200px"),
-                target = "_blank"
-              )
-            })
-          })
-          
-          # list final models
+          # Display final models  - png files
           output$uifinal <- renderUI({
-            lista_modelsfinal <- list.files(
-              paste0("www/", projeto, "/final"),
-              full.names = F,
-              pattern = paste0(".png")
-            )
-            lapply(1:length(sort(lista_modelsfinal)), function(i) {
+            display_finalpng <- list.files(path = paste0(path,"/present/final_models"), recursive = T, full.names = T, pattern = ".png")
+            lapply(1:length(order(display_finalpng)), function(i) {
               tags$a(
-                href = paste0(home, projeto, "/final/", lista_modelsfinal[i]),
-                tags$img(src = paste0(projeto, "/final/", lista_modelsfinal[i]), height = "200px"),
+                href = display_finalpng[i],
+                tags$img(src = display_finalpng[i], height = "200px"),
                 target = "_blank"
               )
             })
           })
           
-          # List models
-          output$uiarquivosmodelos <- renderUI({
-            lista_models <- list.files(
-              paste0("www/", projeto, "/models"),
-              full.names = F,
-              pattern = paste0("pre_")
-            )
-            lapply(1:length(sort(lista_models)), function(i) {
-              tags$div(tags$a(
-                href = paste0(home, projeto, "/models/", lista_models[i]),
-                paste0(lista_models[i])
-              ))
-            })
-          })
-          
-          # List jpeg files
-          output$ui <- renderUI({
-            lista_jpg <- list.files(paste0("www/", projeto, "/jpg"),
-                                    full.names = F,
-                                    pattern = paste0(".jpg")
-            )
-            lapply(1:length(order(lista_jpg)), function(i) {
+          # Display ensemble models - png files
+          output$uiensemble <- renderUI({
+            display_ensemblepng <- list.files(path = paste0(path,"/present/ensemble_models"), recursive = T, full.names = T, pattern = ".png")
+            lapply(1:length(order(display_ensemblepng)), function(i) {
               tags$a(
-                href = paste0(home, projeto, "/jpg/", lista_jpg[i]),
-                tags$img(src = paste0(projeto, "/jpg/", lista_jpg[i]), height = "200px"),
+                href = display_ensemblepng[i],
+                tags$img(src = display_ensemblepng[i], height = "200px"),
                 target = "_blank"
               )
-            })
-          })
-          
-          # List script files
-          output$uiscript <- renderUI({
-            lista_txt <- list.files(
-              paste0("www/", projeto, "/"),
-              full.names = F,
-              pattern = paste0("Script.R")
-            )
-            lapply(1:length(lista_txt), function(i) {
-              tags$div(tags$a(
-                href = paste0(home, projeto, "/", lista_txt[i]),
-                paste0(lista_txt[i]), target = "_blank"
-              ))
             })
           })
           
           # List statistics files
           output$uiestatistica <- renderUI({
-            lista_txt <- list.files(
-              paste0("www/", projeto, "/models"),
-              full.names = F,
-              pattern = paste0("statsALL.txt")
-            )
-            lapply(1:length(lista_txt), function(i) {
+            stats_file <- list.files(path = path, recursive = T, full.names = T, pattern = "final_statistics.csv")
+            lapply(1:length(stats_file), function(i) {
               tags$div(tags$a(
-                href = paste0(home, projeto, "/models/", lista_txt[i]),
-                paste0(lista_txt[i]),
+                href = stats_file[i],
+                paste0(stats_file[i]),
                 target = "_blank"
               ))
             })
@@ -1219,15 +1132,35 @@ function(input, output, session) {
           
           # List species occurrence dataset file (.csv)
           output$uiarquivosdados <- renderUI({
-            lista_csv <- list.files(
-              paste0("www/", projeto, "/csv"),
-              full.names = F,
-              pattern = paste0("occurrences.csv")
-            )
-            lapply(1:length(lista_csv), function(i) {
+            list_csv <- list.files(path = path, recursive = T, full.names = T, pattern = "occurrences.csv")
+            lapply(1:length(list_csv), function(i) {
               tags$div(tags$a(
-                href = paste0(home, projeto, "/csv/", lista_csv[i]),
-                paste0(lista_csv[i]),
+                href = list_csv[i],
+                paste0(list_csv[i]),
+                target = "_blank"
+              ))
+            })
+          })
+          
+          # List partitions
+          output$uiarquivosmodelos <- renderUI({
+            list_partitions <- list.files(path = paste0(path,"/present/partitions"), recursive = T, full.names = T, pattern = ".tif")
+            lapply(1:length(sort(list_partitions)), function(i) {
+              tags$div(tags$a(
+                href = list_partitions[i],
+                paste0(list_partitions[i]),
+                target = "_blank"
+              ))
+            })
+          })
+          
+          # List final files
+          output$uiarquivosfinal <- renderUI({
+            list_final <-  list.files(path = paste0(path,"/present/final_models"), recursive = T, full.names = T, pattern = ".tif")
+            lapply (1:length(sort(list_final)), function(i) {
+              tags$div(tags$a(
+                href = list_final[i],
+                paste0(list_final[i]),
                 target = "_blank"
               ))
             })
@@ -1235,63 +1168,27 @@ function(input, output, session) {
           
           # List ensemble files
           output$uiarquivosensemble <- renderUI({
-            lista_final <- list.files(
-              paste0("www/", projeto, "/final"),
-              full.names = F,
-              pattern = paste0(".tif")
-            )
-            lapply(1:length(sort(lista_final)), function(i) {
+            list_ensemble <-  list.files(path = paste0(path,"/present/ensemble_models"), recursive = T, full.names = T, pattern = ".tif")
+            lapply(1:length(sort(list_ensemble)), function(i) {
               tags$div(tags$a(
-                href = paste0(home, projeto, "/final/", lista_final[i]),
-                paste0(lista_final[i]),
-                target = "_blank"
-              ))
-            })
-          })
-          
-          # List "geographic projection" files
-          output$uiarquivosprojecao <- renderUI({
-            lista_proj <- list.files(
-              paste0("www/", projeto, "/proj"),
-              full.names = F,
-              pattern = paste0(".tif")
-            )
-            lapply(1:length(sort(lista_proj)), function(i) {
-              tags$div(tags$a(
-                href = paste0(home, projeto, "/proj/", lista_proj[i]),
-                paste0(lista_proj[i]),
-                target = "_blank"
-              ))
-            })
-          })
-          
-          # List "time projection" files
-          output$uiarquivosprojecaofuturo <- renderUI({
-            list_timeproj <- list.files(
-              paste0("www/", projeto, "proj_time"),
-              full.names = F,
-              pattern = paste0(".tif")
-            )
-            lapply(1:length(sort(list_timeproj)), function(i) {
-              tags$div(tags$a(
-                href = paste0(home, projeto, "/proj_time/", list_timeproj [i]),
-                paste0(list_timeproj [i]),
+                href = list_ensemble[i],
+                paste0(list_ensemble[i]),
                 target = "_blank"
               ))
             })
           })
           
           showModal(modalDialog(
-            title = paste0("Project ", input$edtprojeto.load, " succefully loaded!"),
+            title = paste0("Project ", input$models_dir.load, " - ",input$models_dir_species.load ," succefully loaded!"),
             paste0("Output files are dispalyed at the 'Outputs' tab."),
             easyClose = TRUE
           ))
-          projeto <<- paste0("projeto/", input$edtprojeto.load)
+          
+          models_dir <<- paste0("/www/results/", input$models_dir.load, "/", input$models_dir_species.load)
         }
       }
       
-      # In case none of the listed projects is selected, exhibit error dialog
-      if (projeto == "projeto/") {
+      if (models_dir == "/www/results/") {
         showModal(modalDialog(
           title = "Error! Project name cannot be blank!",
           paste0("Please enter a valid name."),
@@ -1300,4 +1197,5 @@ function(input, output, session) {
       }
     }
   })
+  
 }

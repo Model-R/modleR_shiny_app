@@ -102,10 +102,11 @@ body <- dashboardBody(
                 column (width = 6,
                   br(),
                   img (src = "logo.png", width = 200)),
+                
                 column (width = 9,
-
                   h4("A workflow to perform Environmental Niche Modeling based on dismo")
                 ),
+                
                 column (width = 12,
                   br(),
                   p("Please cite:"),
@@ -117,30 +118,43 @@ body <- dashboardBody(
                   p("...ABSTRACT..."))
               )
             ),
+              
               column(width = 3,
                 box(width = NULL,
-                  if (length(list.files ( "./www/projeto/",full.names = F,pattern = paste0(".")) > 0)) {
-                    list_projects <- list.files("./www/projeto/",full.names = F,pattern = paste0("."))
+                  if (length(list.files( "./www/results/") > 0)) {
+                    list_projects <- list.files("./www/results/", full.names = F, recursive = F)
                     box(title = "Create/Open project",
                       status = "primary",
                       solidHeader = TRUE,
                       width = NULL,
                       selectInput("select_project",
-                        label= "Select project: ",
-                        choices = c("Create new project" = "new_proj", "Open project" = "load_proj")
-                      ),
+                        label = "Select project: ",
+                        choices = c("Create new project" = "new_proj", "Open project" = "load_proj")),
+                      
                       conditionalPanel("input.select_project == 'load_proj' ",
-                        helpText('Select project: '),
-                        radioButtons("edtprojeto.load",
+                        radioButtons("models_dir.load",
                           "Open project:",
                           choices = c(list_projects),
                           choiceValues = c(list_projects),
+                          selected = NULL),
+                          # list<-"input.models_dir.load"
+                          # 
+                        #list_species <- list.dirs(path = "./www/results/", full.names = F,recursive = TRUE) != "")
+                      
+                        radioButtons("models_dir_species.load",
+                          "Choose species:",
+                          choices = c(list.dirs(models_dir)),
+                          choiceValues = c(list.dirs(models_dir)),
                           selected = NULL)
+                        
                       ),
+                      
                       conditionalPanel("input.select_project == 'new_proj' ",
-                        textInput("edtprojeto.create", label = "Insert project name: ", value = "")),
-                      actionButton("btnrefreshprojeto", "Submit", icon = icon("ok", lib = "glyphicon"))
+                        textInput("models_dir.new", label = "Insert project name: ", value = "")
+                      ),
+                      actionButton("btnrefreshprojeto", "Submit", icon = icon(""))
                     )
+                    
                   } else {
                     box(title = "Create/Open project",
                       status = "primary",
@@ -149,9 +163,9 @@ body <- dashboardBody(
                       selectInput("select_project","",
                         choices = c("Create new project" = "new_proj")),
                       conditionalPanel("input.select_project == 'new_proj' ",
-                        textInput("edtprojeto.create", label = "Insert project name: ", value = "")
+                        textInput("models_dir.new", label = "Insert project name: ", value = "")
                       ),
-                      actionButton("btnrefreshprojeto", "Submit", icon = icon("gear"))
+                      actionButton("btnrefreshprojeto", "Submit", icon = icon("ok", lib = "glyphicon"))
                     )
                   }
                 )
