@@ -226,7 +226,7 @@ body <- dashboardBody(
                                                                                 ),
                                                                                 
                                                                                 conditionalPanel("input.bio_datasource != 'csv' ",
-                                                                                                 helpText('Insert species scientific Name'),
+                                                                                                 helpText('Insert species scientific name'),
                                                                                                  textInput("species_name", label = "Species name:", value = "Caesalpinia echinata"),
                                                                                                  actionButton("btnsearch_spdata", "Search", icon = icon("search"))
                                                                                 )
@@ -295,28 +295,28 @@ body <- dashboardBody(
                                                                                        solidHeader = TRUE,
                                                                                        numericInput(
                                                                                          "edtextend12",
-                                                                                         "Longitude left:",
+                                                                                         "West:",
                                                                                          min = -180,
                                                                                          max = 180,
                                                                                          value = -90,
                                                                                          step = 1),
                                                                                        numericInput(
                                                                                          "edtextend22",
-                                                                                         "Longitude right:",
+                                                                                         "East:",
                                                                                          min = -180,
                                                                                          max = 180,
                                                                                          value = -32,
                                                                                          step = 1),
                                                                                        numericInput(
                                                                                          "edtextend42",
-                                                                                         "Latitude higher:",
+                                                                                         "North:",
                                                                                          min = -90,
                                                                                          max = 90,
                                                                                          value = 23,
                                                                                          step = 1),
                                                                                        numericInput(
                                                                                          "edtextend32",
-                                                                                         "Latitude lower:",
+                                                                                         "South:",
                                                                                          min = -90,
                                                                                          max = 90,
                                                                                          value = -33,
@@ -337,7 +337,7 @@ body <- dashboardBody(
                                                                       status = "warning",
                                                                       numericInput(
                                                                         "edtextend1",
-                                                                        "Longitude left:",
+                                                                        "West:",
                                                                         min = -180,
                                                                         max = 180,
                                                                         value = -90,
@@ -345,7 +345,7 @@ body <- dashboardBody(
                                                                       ),
                                                                       numericInput(
                                                                         "edtextend2",
-                                                                        "Longitude right:",
+                                                                        "East:",
                                                                         min = -180,
                                                                         max = 180,
                                                                         value = -32,
@@ -353,7 +353,7 @@ body <- dashboardBody(
                                                                       ),
                                                                       numericInput(
                                                                         "edtextend4",
-                                                                        "Latitude higher:",
+                                                                        "North:",
                                                                         min = -90,
                                                                         max = 90,
                                                                         value = 23,
@@ -361,7 +361,7 @@ body <- dashboardBody(
                                                                       ),
                                                                       numericInput(
                                                                         "edtextend3",
-                                                                        "Latitude lower:",
+                                                                        "South:",
                                                                         min = -90,
                                                                         max = 90,
                                                                         value = -33,

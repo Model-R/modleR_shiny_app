@@ -351,7 +351,6 @@ function(input, output, session) {
   
   # Browse occurrence dataset from local csv file
   loadspdata_csv <- eventReactive(input$btnsearch_spdatacsv, {
-    #ETAPA <<- 1
     inFile <<- input$file1
     if (is.null(inFile)) {
       return(NULL)
@@ -437,7 +436,6 @@ function(input, output, session) {
     input$btneliminarduplicatas
     input$btnsearch_spdatacsv
     input$btnsearch_spdata
-    #  ETAPA<<-2
     if (is.null(occurrences)) {
       n <- 0
     }
@@ -517,18 +515,11 @@ function(input, output, session) {
       ext21 <<- input$edtextend2
       ext41 <<- input$edtextend4
       
-      ext12 <<- input$edtextend1
-      ext32 <<- input$edtextend3
-      ext22 <<- input$edtextend2
-      ext42 <<- input$edtextend4
-      
-      occurrences <<- occurrences
       map <- leaflet(occurrences) %>%
         addTiles() %>%
         addMarkers(clusterOptions = markerClusterOptions()) %>%
         addMarkers(~ lon, ~ lat) %>%
-        addRectangles(ext11,
-                      ext31, ext21, ext41,
+        addRectangles(ext11, ext31, ext21, ext41,
                       color = "red",
                       fill = TRUE, dashArray = "5,5", weight = 3)
       map
@@ -546,13 +537,11 @@ function(input, output, session) {
       ext22 <<- input$edtextend22
       ext42 <<- input$edtextend42
       
-      occurrences <<- occurrences
       map <- leaflet(occurrences) %>%
         addTiles() %>%
         addMarkers(clusterOptions = markerClusterOptions()) %>%
         addMarkers(~ lon, ~ lat) %>%
-        addRectangles(ext12,
-                      ext32, ext22, ext42,
+        addRectangles(ext12, ext32, ext22, ext42,
                       color = "green", fill = TRUE, dashArray = "5,5",
                       weight = 3
         )
@@ -646,7 +635,7 @@ function(input, output, session) {
           environmental_data$write_timeproj <- TRUE
           checkfiles_timeproj <- list()
           
-          ## Include future projection
+          ## Include future projections
           if (input$forecasting_wc == "future_wc") {
             timescale <<- "Future"
             path_future <- paste0(
@@ -680,7 +669,7 @@ function(input, output, session) {
             }
           }
           
-          ## Include paleo projection
+          ## Include paleo projections
           if (input$forecasting_wc == "past_wc") {
             timescale <<- "Past"
             
@@ -792,7 +781,7 @@ function(input, output, session) {
             # Future layers
             layer_code_future <- paste0("BO_", scenario_bo, "_", input$future_dates_bo, "_", vars_selection[i])
             environmental_data$data_timeproj <- c(environmental_data$data_timeproj, load_layers(layer_code_future, rasterstack = FALSE, datadir = path_future))
-            # Current layers
+            # Present layers
             layer_code <- paste0("BO_", vars_selection[i])
             environmental_data$data_current <- c(environmental_data$data_current, load_layers(layer_code, rasterstack = FALSE, datadir = path_current))
           }
@@ -829,7 +818,6 @@ function(input, output, session) {
       withProgress(message = "", value = 0, {
         n <- 3
         incProgress(1 / n, detail = paste0("Loading variables..."))
-        #ETAPA <<- 3
         env_data <<- environmental_data$data_current
         write_timeproj <<- environmental_data$write_timeproj
         envdata_timeproj <<- environmental_data$data_timeproj
@@ -848,7 +836,7 @@ function(input, output, session) {
           ext2 <- extent(ext12, ext22, ext32, ext42)
           pred_nf2 <<- crop(predictors, ext2)
           
-          # Calculate correlation between selected variables (current conditions only)
+          # Calculate correlation between selected variables 
           if (length(env_data) > 1) {
             incProgress(2 / n, detail = paste0("Calculating corelation..."))
             presvals <- raster::extract(predictors, occurrences)
@@ -857,7 +845,7 @@ function(input, output, session) {
             absvals <- raster::extract(predictors, backgr)
             sdmdata <- data.frame(cbind(absvals))
             
-            # Exhibit correlation panel plots
+            # Exhibit correlation panel 
             output$grafico_correlacao <- renderPlot({
               if (is.null(env_data) | length(env_data) <= 1) {
                 return(NULL)
@@ -880,7 +868,7 @@ function(input, output, session) {
             })
           }
         }
-        incProgress(3 / n, detail = paste0("Ploting correlation..."))
+        incProgress(3 / n, detail = paste0("Plotting correlation panel..."))
       })
     }
   })
