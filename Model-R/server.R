@@ -106,7 +106,7 @@ getOccurrences_gbif <- function(species_name) {
       return = "data" )
     gbif_data <- subset(gbif_data, !is.na(decimalLongitude) & !is.na(decimalLatitude))
     occur.data <- cbind(gbif_data$name, gbif_data$decimalLongitude, gbif_data$decimalLatitude)
-    colnames(occur.data) <- c("Name", "Longitude", "Latitude")
+    colnames(occur.data) <- c("name", "lon", "lat")
     occur.data <- as.data.frame(occur.data)
     return(occur.data)
   } else {
@@ -126,7 +126,7 @@ getOccurrences_jabot <- function(species_name) {
   final_data <- do.call(rbind, json_data)
   jabot_data <- final_data[, c("taxoncompleto", "longitude", "latitude")]
   occur.data <- cbind(as.character(jabot_data[, 1]), as.numeric(jabot_data[, 2]), as.numeric(jabot_data[, 3]))
-  colnames(occur.data) <- c("Name", "Longitude", "Latitude")
+  colnames(occur.data) <- c("name", "lon", "lat")
   return(occur.data)
 }
 
@@ -395,9 +395,9 @@ function(input, output, session) {
     on.exit(progress$close())
     
     if (!is.null(occurrences)) {
-      latitude<-as.character(occurrences$Latitude)
+      latitude<-as.character(occurrences$lat)
       latitude<-as.numeric(latitude)
-      longitude<-as.character(occurrences$Longitude)
+      longitude<-as.character(occurrences$lon)
       longitude<-as.numeric(longitude)
       if (input$bio_datasource == "csv") {
         map <- leaflet(occurrences) %>%
@@ -480,9 +480,9 @@ function(input, output, session) {
         occurrences$id <- 1:nrow(occurrences)
         map <- leaflet(occurrences) %>%
           addTiles() %>%
-          addCircles(color = "red", lat = ~ Latitude, lng = ~ Longitude) %>%
+          addCircles(color = "red", lat = ~ lat, lng = ~ lon) %>%
           addMarkers(clusterOptions = markerClusterOptions()) %>%
-          addMarkers(~ Longitude, ~ Latitude, popup = ~ as.character(id))
+          addMarkers(~ lon, ~ lat, popup = ~ as.character(id))
         map
       }
     } else {
@@ -524,7 +524,7 @@ function(input, output, session) {
       map <- leaflet(occurrences) %>%
         addTiles() %>%
         addMarkers(clusterOptions = markerClusterOptions()) %>%
-        addMarkers(~ Longitude, ~ Latitude) %>%
+        addMarkers(~ lon, ~ lat) %>%
         addRectangles(ext11,
                       ext31, ext21, ext41,
                       color = "red",
@@ -548,7 +548,7 @@ function(input, output, session) {
       map <- leaflet(occurrences) %>%
         addTiles() %>%
         addMarkers(clusterOptions = markerClusterOptions()) %>%
-        addMarkers(~ Longitude, ~ Latitude) %>%
+        addMarkers(~ lon, ~ lat) %>%
         addRectangles(ext12,
                       ext32, ext22, ext42,
                       color = "green", fill = TRUE, dashArray = "5,5",
@@ -851,7 +851,7 @@ function(input, output, session) {
             incProgress(2 / n, detail = paste0("Calculating corelation..."))
             presvals <- raster::extract(predictors, occurrences)
             backgr <- randomPoints(predictors, 300)
-            colnames(backgr) <- c("Longitude", "Latitude")
+            colnames(backgr) <- c("lon", "lat")
             absvals <- raster::extract(predictors, backgr)
             sdmdata <- data.frame(cbind(absvals))
             
@@ -909,13 +909,14 @@ function(input, output, session) {
       boot_n <- input$boot_n
       boot_proportion <- input$boot_proportion
     } 
-    
     if(input$geo_filt == TRUE){
       geo_filt_dist <- input$geo_filt_dist
     } else {
       geo_filt_dist <- NULL
     }
     
+    
+
     do_enm(
       species_name = species_name,
       occurrences = occurrences,
@@ -933,8 +934,8 @@ function(input, output, session) {
       centroid = FALSE, # Keep default
       brt = input$brt,
       real_absences = NULL, # Keep default
-      lon = "Longitude",
-      lat = "Latitude",
+      lon = "lon",
+      lat = "lat",
       buffer_type = input$buffer_type,
       seed = 512, # Keep default
       clean_dupl = F, # Keep default
@@ -960,7 +961,7 @@ function(input, output, session) {
       select_par_val = input$TSS,
       consensus_level = 0.5, # Keep
       models_dir = models_dir, # Keep
-      final_dir = "./final_models", # Keep
+      final_dir = "final_models", # Keep
       which_models = c("raw_mean"),# Keep
       write_png = T # Keep
       )
@@ -969,8 +970,8 @@ function(input, output, session) {
       species_name = species_name,
       occurrences = occurrences,
       models_dir = models_dir, 
-      final_dir = "./final_models",# Keep
-      ensemble_dir = "./ensemble",# Keep
+      final_dir = "final_models",# Keep
+      ensemble_dir = "ensemble",# Keep
       which_models = c("raw_mean"),# Keep
       consensus = FALSE, # Keep
       consensus_level = 0.5, # Keep
