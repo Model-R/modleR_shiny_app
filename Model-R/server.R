@@ -130,8 +130,7 @@ getOccurrences_jabot <- function(species_name) {
   return(occur.data)
 }
 
-
-## Function to plot model ensemble map of selected algorithm
+## Ploensemble map of selected algorithm
 maparesultado_model <- function(
   model_ensemble = model_ensemble,
   model_title = model_title) {
@@ -215,7 +214,8 @@ function(input, output, session) {
       models_dir <- paste0("./www/results/", input$models_dir.load)
       
       if (models_dir != "./www/results/") {
-        
+        models_dir_sp <- list.dirs(models_dir, full.names = T, recursive = F)
+        #if(models_dir_sp >= 1){
         if (file.exists(models_dir)) {
           
           # Display Stats results at outputs tab
@@ -314,8 +314,9 @@ function(input, output, session) {
             easyClose = TRUE
           ))
           models_dir <<-  paste0("./www/results/", input$models_dir.load)
-        }
+        #}
       }
+    }
       # if (models_dir == "./www/results/") {
       #   showModal(modalDialog(
       #     title = "Error! Project name cannot be blank!",
@@ -895,12 +896,32 @@ function(input, output, session) {
   
   # MODELING FUNCTION ----------------------------------------------------------
   modelagem <- function(){
+    
+    if(input$partition_type == 'crossvalidation'){
+      cv_n <- input$cv_n
+      cv_partitions <- input$cv_partitions
+      boot_n <- NULL
+      boot_proportion <- NULL
+    }
+    if(input$partition_type == 'bootstrap'){
+      cv_n <- NULL
+      cv_partitions <- NULL
+      boot_n <- input$boot_n
+      boot_proportion <- input$boot_proportion
+    } 
+    
+    if(input$geo_filt == TRUE){
+      geo_filt_dist <- input$geo_filt_dist
+    } else {
+      geo_filt_dist <- NULL
+    }
+    
     do_enm(
       species_name = species_name,
       occurrences = occurrences,
       predictors = predictors,
       models_dir = models_dir,
-       bioclim =  input$BIOCLIM ,
+      bioclim =  input$BIOCLIM ,
       domain =  input$DOMAIN,
       glm =  input$GLM,
       mahal = input$MAHALANOBIS,
@@ -917,39 +938,39 @@ function(input, output, session) {
       buffer_type = input$buffer_type,
       seed = 512, # Keep default
       clean_dupl = F, # Keep default
-      clean_nas = T, 
+      clean_nas = T, # Keep default
       geo_filt = input$geo_filt,
-      geo_filt_dist = input$geo_filt_dist,
+      geo_filt_dist = geo_filt_dist,
       plot_sdmdata = T, # Keep default
       n_back = input$n_back,
       partition_type = input$partition_type,
-      boot_n = input$boot_n,
-      boot_proportion = input$boot_proportion,
-      cv_n = input$cv_n,
-      cv_partitions = input$cv_partitions
+      boot_n = boot_n,
+      boot_proportion = boot_proportion,
+      cv_n = cv_n,
+      cv_partitions = cv_partitions
      )
     
     final_model(
       species_name = species_name,# Keep
-      algorithms = NULL,# Keep
-      weight_par = NULL,# Keep
+      algorithms = NULL, # Keep
+      weight_par = NULL, # Keep
       select_partitions = TRUE, # Keep
       threshold = c("spec_sens"),# Keep
       select_par = "TSS", # Keep
       select_par_val = input$TSS,
       consensus_level = 0.5, # Keep
       models_dir = models_dir, # Keep
-      final_dir = "final_models", # Keep
+      final_dir = "./final_models", # Keep
       which_models = c("raw_mean"),# Keep
       write_png = T # Keep
       )
     
     ensemble_model(
-      species_name = species_name,# Keep
-      occurrences = occurrences,# Keep
-      models_dir = models_dir, # Keep
-      final_dir = "final_models",# Keep
-      ensemble_dir = "ensemble",# Keep
+      species_name = species_name,
+      occurrences = occurrences,
+      models_dir = models_dir, 
+      final_dir = "./final_models",# Keep
+      ensemble_dir = "./ensemble",# Keep
       which_models = c("raw_mean"),# Keep
       consensus = FALSE, # Keep
       consensus_level = 0.5, # Keep

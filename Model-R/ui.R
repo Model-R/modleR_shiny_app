@@ -625,15 +625,14 @@ body <- dashboardBody(
                                         min = 0,
                                         max = 1,
                                         value = 0.7,
-                                        step = 0.05
+                                        step = 0.1
                                       ),
                                       
                                       radioButtons("buffer_type", "Buffer type :",
-                                                   c("False" = "F",
-                                                     "Mean"= "mean",
+                                                   c("Mean"= "mean",
                                                      "Median" = "median",
-                                                     "Maximum" = "max"
-                                                   )
+                                                     "Maximal" = "maximal"
+                                                     )
                                       ),
                                       
                                       checkboxInput('brt',
@@ -642,11 +641,11 @@ body <- dashboardBody(
                                       
                                       selectInput("partition_type", 
                                                   "Partitioning type",
-                                                  choices = c("KFold",
-                                                              "Bootstrap")
+                                                  choices = c("crossvalidation",
+                                                              "bootstrap")
                                       ),
                                       
-                                      conditionalPanel(condition = "input.partition_type == 'KFold'",
+                                      conditionalPanel(condition = "input.partition_type == 'crossvalidation'",
                                                        sliderInput("cv_n",
                                                                    "Number of crossvalidation runs",
                                                                    min = 1,
@@ -661,13 +660,13 @@ body <- dashboardBody(
                                                                    step = 1)    
                                       ),
                                       
-                                      conditionalPanel(condition = "input.partition_type == 'Bootstrap'",
+                                      conditionalPanel(condition = "input.partition_type == 'bootstrap'",
                                                        sliderInput("boot_proportion",
                                                                    "Proportion of points to be sampled for bootstrap:",
                                                                    min = 0,
                                                                    max = 1,
-                                                                   value = 0.7,
-                                                                   step = 0.05) ,  
+                                                                   value = 0.8,
+                                                                   step = 0.1) ,  
                                                        sliderInput("boot_n",
                                                                    "Number bootstrap runs:",
                                                                    min = 1,
@@ -675,7 +674,6 @@ body <- dashboardBody(
                                                                    value = 1,
                                                                    step = 1)    
                                       )),
-                                  
                                   
                                   box(width = 6,
                                       height=400,
