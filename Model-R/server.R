@@ -10,6 +10,7 @@
 ##                         ##
 ## 08 DE FEVEREIRO DE 2018 ##
 #############################
+
 # Thanks to Steven Worthington for function ipak https://gist.github.com/stevenworthington/3178163 (HT Karlo Guidoni Martins)
 
 ipak <- function(pkg) {
