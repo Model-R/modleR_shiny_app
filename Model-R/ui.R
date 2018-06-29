@@ -231,7 +231,7 @@ body <- dashboardBody(
                           
                           conditionalPanel("input.bio_datasource != 'csv' ",
                             helpText('Insert species scientific Name'),
-                            textInput("edtespecie", label = "Species name:", value = "Caesalpinia echinata"),
+                            textInput("species_name", label = "Species name:", value = "Caesalpinia echinata"),
                             actionButton("btnsearch_spdata", "Search", icon = icon("search"))
                           )
                         )
@@ -650,7 +650,7 @@ body <- dashboardBody(
                                        value = FALSE),
                          
                          selectInput("partition_type", "Partitioning type",
-                                     choices = c("KFold", "Bootstrap"),
+                                     choices = c("KFold", "Bootstrap")
                          ),
                          
                          conditionalPanel(condition = "input.partition_type == 'KFold'",
