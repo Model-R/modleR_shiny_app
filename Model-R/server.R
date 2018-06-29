@@ -19,7 +19,6 @@ ipak <- function(pkg) {
   }
   sapply(pkg, require, character.only = TRUE)
 }
-
 ipak(c(
   "devtools",
   "shinydashboard",
@@ -56,7 +55,6 @@ ext21 <<- ext22 <<- -33
 ext31 <<- ext32 <<- -32
 ext41 <<- ext42 <<- 23
 
-# Download and decompress maxent.jar file
 jar <- paste0(system.file(package = "dismo"), "/java/maxent.jar")
 if (file.exists(jar) != T) {
   url <- "http://biodiversityinformatics.amnh.org/open_source/maxent/maxent.php?op=download"
@@ -107,7 +105,6 @@ getOccurrences_gbif <- function(species_name) {
       taxonKey = key,
       return = "data" )
     gbif_data <- subset(gbif_data, !is.na(decimalLongitude) & !is.na(decimalLatitude))
-    gbif_data <- subset(gbif_data, (decimalLongitude != 0) & (decimalLatitude != 0))
     occur.data <- cbind(gbif_data$name, gbif_data$decimalLongitude, gbif_data$decimalLatitude)
     colnames(occur.data) <- c("Name", "Longitude", "Latitude")
     occur.data <- as.data.frame(occur.data)
@@ -138,8 +135,10 @@ getOccurrences_jabot <- function(species_name) {
 maparesultado_model <- function(
   model_ensemble = model_ensemble,
   model_title = model_title) {
-  if (file.exists(paste0("www/", projeto, "/final/", model_ensemble, ".tif"))) {
-    r <- raster::raster(paste0("www/", projeto, "/final/", model_ensemble, ".tif"))
+  file <- paste0(models_dir, "/", species_name, "/present/ensemble_models/", model_ensemble, ".tif")
+  
+  if (file.exists(file)) {
+    r <- raster::raster(file)
     pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(r), na.color = "transparent")
     occ_points <<- coordinates(occurrences)
     lng <<- occ_points[,1]
@@ -154,29 +153,21 @@ maparesultado_model <- function(
 }
 
 ## Function to plot geographic projection of the ensemble maps
-maparesultado_model_proj <- function() {
-  if (file.exists(paste0("www/", projeto, "/final/proj_ensemble.tif")) && input$project_ext == TRUE) {
-    rproj <- raster::raster(paste0("www/", projeto, "/final/proj_ensemble.tif"))
-    palproj <- colorNumeric (c("#FFFFFF", "#FDBB84", "#31A354"), values(rproj), na.color = "transparent")
-    occ_points <<- coordinates(occurrences)
-    lng <<- occ_points[,1]
-    lat <<- occ_points[,2]
-    map_proj <- leaflet() %>%
-      addTiles() %>%
-      addRasterImage(rproj, colors = palproj, opacity = 0.7) %>%
-      addLegend(pal = palproj, values = values(rproj), title = "") %>%
-      addCircles(color = "red", lat = lat, lng = lng, weight = 2, fill = TRUE) %>%
-      addRectangles(ext12, ext32, ext22, ext42, color = "green", fill = FALSE, dashArray = "5,5", weight = 2)
-  }
-}
-
-
-
-
-
-
-
-
+# maparesultado_model_proj <- function() {
+#   if (file.exists(paste0("www/", projeto, "/final/proj_ensemble.tif")) && input$project_ext == TRUE) {
+#     rproj <- raster::raster(paste0("www/", projeto, "/final/proj_ensemble.tif"))
+#     palproj <- colorNumeric (c("#FFFFFF", "#FDBB84", "#31A354"), values(rproj), na.color = "transparent")
+#     occ_points <<- coordinates(occurrences)
+#     lng <<- occ_points[,1]
+#     lat <<- occ_points[,2]
+#     map_proj <- leaflet() %>%
+#       addTiles() %>%
+#       addRasterImage(rproj, colors = palproj, opacity = 0.7) %>%
+#       addLegend(pal = palproj, values = values(rproj), title = "") %>%
+#       addCircles(color = "red", lat = lat, lng = lng, weight = 2, fill = TRUE) %>%
+#       addRectangles(ext12, ext32, ext22, ext42, color = "green", fill = FALSE, dashArray = "5,5", weight = 2)
+#   }
+# }
 
 options(shiny.maxRequestSize = 100 * 1024^2)
 dirColors <- c(`1` = "#595490", `2` = "#527525", `3` = "#A93F35", `4` = "#BA48AA")
@@ -437,12 +428,6 @@ function(input, output, session) {
     }
   })
   
-  
-  
-  
-  
-  
-  
   #####  DATA CLEANING #####
   output$dgbriddadosdatacleaning <- renderDataTable({
     input$btnapagar
@@ -479,7 +464,7 @@ function(input, output, session) {
   }, options = list(searching = FALSE, lengthMenu = c(5, 30, 50), pageLength = 5))
   
   eventReactive(input$saveDataset, {
-    write.csv(occurrences, file=paste0(getwd(),"/www/",projeto,"/csv/occurrences.csv"), row.names = FALSE)
+    write.csv(occurrences, file=paste0(models_dir, "/", species_name, "/" ,"occurrences.csv"), row.names = FALSE)
   })
   
   output$mapadistribuicaodatacleaning <- renderLeaflet({
@@ -861,7 +846,6 @@ function(input, output, session) {
           pred_nf2 <<- crop(predictors, ext2)
           
           # Calculate correlation between selected variables (current conditions only)
-          
           if (length(env_data) > 1) {
             incProgress(2 / n, detail = paste0("Calculating corelation..."))
             presvals <- raster::extract(predictors, occurrences)
@@ -909,20 +893,14 @@ function(input, output, session) {
     }
   })
   
- 
-  
-  
-  
-  
   # MODELING FUNCTION ----------------------------------------------------------
   modelagem <- function(){
-
     do_enm(
       species_name = species_name,
       occurrences = occurrences,
       predictors = predictors,
       models_dir = models_dir,
-     bioclim =  input$BIOCLIM ,
+       bioclim =  input$BIOCLIM ,
       domain =  input$DOMAIN,
       glm =  input$GLM,
       mahal = input$MAHALANOBIS,
