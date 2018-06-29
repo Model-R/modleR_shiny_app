@@ -583,14 +583,24 @@ body <- dashboardBody(
                                                 leafletOutput('maparesultadorf')
                                          ))
                                 ,
-                                tabPanel("SVM",
+                                tabPanel("SVM.K",
                                          column(width = 12,
-                                                leafletOutput('maparesultadosvm')
+                                                leafletOutput('maparesultadosvm.k')
                                          ))
                                 ,
-                                tabPanel("Domain",
+                                tabPanel("SVM.E",
+                                         column(width = 12,
+                                                leafletOutput('maparesultadosvm.e')
+                                         ))
+                                ,
+                                tabPanel("DO",
                                          column(width = 12,
                                                 leafletOutput('maparesultadodo')
+                                         ))
+                                ,
+                                tabPanel("ENSEMBLE",
+                                         column(width = 12,
+                                                leafletOutput('maparesultadoensemble')
                                          ))
                               )
                        ),
@@ -680,14 +690,14 @@ body <- dashboardBody(
                                       status = "warning",
                                       actionButton("btnModelar", "Run", icon = icon("cogs")),
                                       h4("Algorithms"),
-                                      checkboxInput('BIOCLIM', 'Bioclim', value = FALSE),
-                                      checkboxInput('MAHALANOBIS', 'Mahalanobis', value = FALSE),
-                                      checkboxInput('MAXENT', 'Maxent', value = FALSE),
-                                      checkboxInput('GLM', 'GLM', value = FALSE),
-                                      checkboxInput('RF', 'RandomForest', value = FALSE),
-                                      checkboxInput('SVM.K', 'SVM.K', value = FALSE),
-                                      checkboxInput('SVM.E', 'SVM.E', value = FALSE),
-                                      checkboxInput('DOMAIN', 'Domain', value = FALSE)
+                                      checkboxInput('bioclim', 'Bioclim', value = FALSE),
+                                      checkboxInput('mahal', 'Mahalanobis', value = FALSE),
+                                      checkboxInput('maxent', 'Maxent', value = FALSE),
+                                      checkboxInput('glm', 'GLM', value = FALSE),
+                                      checkboxInput('rf', 'RandomForest', value = FALSE),
+                                      checkboxInput('svm.k', 'SVM.K', value = FALSE),
+                                      checkboxInput('svm.e', 'SVM.E', value = FALSE),
+                                      checkboxInput('domain', 'Domain', value = FALSE)
                                   ),
                                   
                                   conditionalPanel("input.project_ext",

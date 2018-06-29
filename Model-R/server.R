@@ -102,9 +102,9 @@ getOccurrences_gbif <- function(species_name) {
   key <- name_backbone(name = species_name)$speciesKey
   if (!is.null(key)) {
     gbif_data <- occ_search(hasCoordinate = TRUE,
-      hasGeospatialIssue = F,
-      taxonKey = key,
-      return = "data" )
+                            hasGeospatialIssue = F,
+                            taxonKey = key,
+                            return = "data" )
     gbif_data <- subset(gbif_data, !is.na(decimalLongitude) & !is.na(decimalLatitude))
     occur.data <- cbind(gbif_data$name, gbif_data$decimalLongitude, gbif_data$decimalLatitude)
     colnames(occur.data) <- c("name", "lon", "lat")
@@ -131,14 +131,15 @@ getOccurrences_jabot <- function(species_name) {
   return(occur.data)
 }
 
-## Ploensemble map of selected algorithm
+## Plot final models
 maparesultado_model <- function(
-  model_ensemble = model_ensemble,
   model_title = model_title) {
-  file <- paste0(models_dir, "/", species_name, "/present/ensemble_models/", model_ensemble, ".tif")
+  finaldir <- list.files(paste0(models_dir, "/", species_name, "/present/final_models/"))
+  tif_file <- finaldir[finaldir==paste0(species_name, "_" , model_title, "_raw_mean.tif")]
+  raw_mean_file <- list.files(paste0(models_dir, "/", species_name, "/present/final_models/"), pattern = tif_file, full.names = T)
   
-  if (file.exists(file)) {
-    r <- raster::raster(file)
+  if (file.exists(raw_mean_file)) {
+    r <- raster::raster(raw_mean_file)
     pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(r), na.color = "transparent")
     occ_points <<- coordinates(occurrences)
     lng <<- occ_points[,1]
@@ -173,7 +174,7 @@ options(shiny.maxRequestSize = 100 * 1024^2)
 dirColors <- c(`1` = "#595490", `2` = "#527525", `3` = "#A93F35", `4` = "#BA48AA")
 
 function(input, output, session) {
- 
+  
   ###### CREATE NEW/LOAD PROJECT #####
   observeEvent(input$btnrefreshprojeto, {
     
@@ -315,9 +316,9 @@ function(input, output, session) {
             easyClose = TRUE
           ))
           models_dir <<-  paste0("./www/results/", input$models_dir.load)
-        #}
+          #}
+        }
       }
-    }
       # if (models_dir == "./www/results/") {
       #   showModal(modalDialog(
       #     title = "Error! Project name cannot be blank!",
@@ -868,8 +869,6 @@ function(input, output, session) {
                       diag.panel = panel.hist,
                       upper.panel = panel.cor
                 )
-                
-                # Exhibit correlation matrix
                 output$dgbriddadoscorrelacao <- renderDataTable({
                   round(cor(sdmdata), 2)
                 }, options = list(
@@ -916,110 +915,113 @@ function(input, output, session) {
       geo_filt_dist <- NULL
     }
     
-    
-
     do_enm(
       species_name = species_name,
       occurrences = occurrences,
       predictors = predictors,
       models_dir = models_dir,
-      bioclim =  input$BIOCLIM ,
-      domain =  input$DOMAIN,
-      glm =  input$GLM,
-      mahal = input$MAHALANOBIS,
-      maxent = input$MAXENT,
-      rf = input$RF,  
-      svm.k =  input$SVM.K ,
-      svm.e =  input$SVM.E,
-      mindist = FALSE, # Keep default
-      centroid = FALSE, # Keep default
+      bioclim =  input$bioclim ,
+      domain =  input$domain,
+      glm =  input$glm,
+      mahal = input$mahal,
+      maxent = input$maxent,
+      rf = input$rf,  
+      svm.k =  input$svm.k ,
+      svm.e =  input$svm.e,
+      mindist = FALSE, 
+      centroid = FALSE, 
       brt = input$brt,
-      real_absences = NULL, # Keep default
+      real_absences = NULL, 
       lon = "lon",
       lat = "lat",
       buffer_type = input$buffer_type,
-      seed = 512, # Keep default
-      clean_dupl = F, # Keep default
-      clean_nas = T, # Keep default
+      seed = 512, 
+      clean_dupl = F, 
+      clean_nas = T, 
       geo_filt = input$geo_filt,
       geo_filt_dist = geo_filt_dist,
-      plot_sdmdata = T, # Keep default
+      plot_sdmdata = T, 
       n_back = input$n_back,
       partition_type = input$partition_type,
       boot_n = boot_n,
       boot_proportion = boot_proportion,
       cv_n = cv_n,
       cv_partitions = cv_partitions
-     )
+    )
     
     final_model(
-      species_name = species_name,# Keep
-      algorithms = NULL, # Keep
-      weight_par = NULL, # Keep
-      select_partitions = TRUE, # Keep
-      threshold = c("spec_sens"),# Keep
-      select_par = "TSS", # Keep
+      species_name = species_name,
+      algorithms = NULL, 
+      weight_par = NULL, 
+      select_partitions = TRUE, 
+      threshold = c("spec_sens"),
+      select_par = "TSS", 
       select_par_val = input$TSS,
-      consensus_level = 0.5, # Keep
-      models_dir = models_dir, # Keep
-      final_dir = "final_models", # Keep
-      which_models = c("raw_mean"),# Keep
-      write_png = T # Keep
-      )
+      consensus_level = 0.5, 
+      models_dir = models_dir, 
+      final_dir = "final_models", 
+      which_models = c("raw_mean"),
+      write_png = T
+    )
     
     ensemble_model(
       species_name = species_name,
       occurrences = occurrences,
       models_dir = models_dir, 
-      final_dir = "final_models",# Keep
-      ensemble_dir = "ensemble",# Keep
-      which_models = c("raw_mean"),# Keep
-      consensus = FALSE, # Keep
-      consensus_level = 0.5, # Keep
-      write_png = T,# Keep
-      write_raw_map = F # Keep
+      final_dir = "final_models",
+      ensemble_dir = "ensemble",
+      which_models = c("raw_mean"),
+      consensus = FALSE, 
+      consensus_level = 0.5, 
+      write_png = T,
+      write_raw_map = F 
     )
-
+    
     output$maparesultadomax <- renderLeaflet({
       input$btnModelar
-      maparesultado_model(model_ensemble = "mx_ensemble", model_title = "Maxent")
+      maparesultado_model(model_title = "maxent")
     })
     
-    output$maparesultadosvm <- renderLeaflet({
+    output$maparesultadosvm.e <- renderLeaflet({
       input$btnModelar
-      maparesultado_model(model_ensemble = "svm_ensemble", model_title = "SVM")
+      maparesultado_model(model_title = "svm.k")
+    })
+    
+    output$maparesultadosvm.k <- renderLeaflet({
+      input$btnModelar
+      maparesultado_model(model_title = "svm.e")
     })
     
     output$maparesultadomh <- renderLeaflet({
       input$btnModelar
-      maparesultado_model(model_ensemble = "ma_ensemble", model_title = "Mahal")
+      maparesultado_model(model_title = "mahal")
     })
     
     output$maparesultadorf <- renderLeaflet({
       input$btnModelar
-      maparesultado_model(model_ensemble = "rf_ensemble", model_title = "RF")
+      maparesultado_model(model_title = "rf")
     })
     
     output$maparesultadoglm <- renderLeaflet({
       input$btnModelar
-      maparesultado_model(model_ensemble = "glm_ensemble", model_title = "GLM")
+      maparesultado_model(model_title = "glm")
     })
     
     output$maparesultadobc <- renderLeaflet({
       input$btnModelar
-      maparesultado_model(model_ensemble = "bc_ensemble", model_title = "BioClim")
+      maparesultado_model(model_title = "bioclim")
     })
     
     output$maparesultadodo <- renderLeaflet({
       input$btnModelar
-      maparesultado_model(model_ensemble = "do_ensemble", model_title = "Domain")
+      maparesultado_model(model_title = "domain")
     })
     
     #### Exhibit geo. projected model ensemble ####
-    output$maparesultado_proj <- renderLeaflet({
-      input$btnModelar
-      maparesultado_model_proj()
-    })
+    # output$maparesultado_proj <- renderLeaflet({
+    #   input$btnModelar
+    #   maparesultado_model_proj()
+    # })
     
     #### Display results at the Outputs tab ####
     output$uiarquivosmodelos <- renderUI({
@@ -1109,15 +1111,15 @@ function(input, output, session) {
   #### GROUPING ALL MODELING PROCESSES BY CLICKING THE EXECUTE BUTTON ####
   observeEvent(input$btnModelar, {
     if(any
-       (input$DOMAIN,
-         input$MAXENT,
-         input$BIOCLIM ,
-         input$GLM ,
-         input$RF  ,
-         input$SVM.E,
-         input$SVM.K,
-         input$GLM)
-       ){
+       (input$domain,
+         input$maxent,
+         input$bioclim ,
+         input$mahal ,
+         input$glm ,
+         input$rf  ,
+         input$svm.e,
+         input$svm.k)
+    ){
       
       if (exists("occurrences") && exists("predictors") && exists("species_name")) {
         progress <<- shiny::Progress$new()
@@ -1125,8 +1127,8 @@ function(input, output, session) {
         on.exit(progress$close()) 
         
         modelagem()
-     
-         } else {
+        
+      } else {
         showModal(modalDialog(
           title = "Error!",
           "Please inform species occurrence data, predictor variables and species name.",
