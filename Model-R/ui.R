@@ -136,16 +136,13 @@ body <- dashboardBody(
                           "Open project:",
                           choices = c(list_projects),
                           choiceValues = c(list_projects),
-                          selected = NULL),
-                          # list<-"input.models_dir.load"
-                          # 
-                        #list_species <- list.dirs(path = "./www/results/", full.names = F,recursive = TRUE) != "")
-                      
-                        radioButtons("models_dir_species.load",
-                          "Choose species:",
-                          choices = c(list.dirs(models_dir)),
-                          choiceValues = c(list.dirs(models_dir)),
                           selected = NULL)
+                          
+                        # radioButtons("models_dir_species.load",
+                        #   "Choose species:",
+                        #   choices = c(list.dirs(paste0("./www/results/"))),
+                        #   choiceValues = c(list.dirs(paste0("./www/results/"))),
+                        #   selected = NULL)
                         
                       ),
                       
@@ -608,66 +605,109 @@ body <- dashboardBody(
             #plotOutput(outputId = "plotmodelagem")
           ),
           column(width = 6,
-            box(width = NULL,
-              height=800,
-              box(width = 6,
-                height=400,
-                status = "warning",
-                selectInput("dataset", "Partitioning type",
-                  choices = c("KFold")),
-                # choices = c("KFold", "Bootstrap")),
-                sliderInput(
-                  "edtnumgrupo",
-                  "No. of partitions:",
-                  min = 1,
-                  max = 50,
-                  value = 3,
-                  step = 1
-                ),
-                sliderInput(
-                  "edtnumpontos",
-                  "Pseudo-absences:",
-                  min = 100,
-                  max = 2000,
-                  value = 1000,
-                  step = 100
-                ),
-                sliderInput(
-                  "edtTSS",
-                  "TSS score cutoff:",
-                  min = 0,
-                  max = 1,
-                  value = 0.7,
-                  step = 0.05
-                )
-                # radioButtons("edtBuffer", "Buffer:",
-                #   c("Median" = "MEDIAN",
-                #     "Maximum" = "MAX",
-                #     "Minimum" = "MIN",
-                #     "False" = "FALSE"))
-                
-              ),
-              box(width = 6,
-                height=400,
-                status = "warning",
-                actionButton("btnModelar", "Run", icon = icon("cogs")),
-                h4("Algorithms"),
-                checkboxInput('BIOCLIM', 'Bioclim', value = FALSE),
-                checkboxInput('MAHALANOBIS', 'Mahalanobis', value = FALSE),
-                checkboxInput('MAXENT', 'Maxent', value = FALSE),
-                checkboxInput('GLM', 'GLM', value = FALSE),
-                checkboxInput('RF', 'RandomForest', value = FALSE),
-                checkboxInput('SVM', 'SVM', value = FALSE),
-                checkboxInput('DOMAIN', 'Domain', value = FALSE)
-              ),
-              conditionalPanel("input.project_ext",
-                box(title="Projection ensemble",
-                  width = 12,
-                  height = 320,
-                  leafletOutput('maparesultado_proj',  width = "100%", height = 250)
-                )
-              )
-            )
+                 box(width = NULL,
+                     height=800,
+                     box(width = 6,
+                         height=400,
+                         status = "warning",
+                         checkboxInput('geo_filt',
+                                       'Delete occurrence that are too close?',
+                                       value = FALSE),
+                         
+                         conditionalPanel(condition = "input.geo_filt",
+                                          textInput("geo_filt_dist", 
+                                                    "Minimum distance between records (in km):",
+                                                    value = NULL)
+                         ),
+                         
+                         sliderInput(
+                           "n_back",
+                           "Pseudo-absences points:",
+                           min = 100,
+                           max = 2000,
+                           value = 1000,
+                           step = 100
+                         ),
+                         
+                         sliderInput(
+                           "TSS",
+                           "TSS score cutoff:",
+                           min = 0,
+                           max = 1,
+                           value = 0.7,
+                           step = 0.05
+                         ),
+                         
+                         radioButtons("buffer_type", "Buffer type :",
+                                      c("Mean"= "mean",
+                                        "Median" = "median",
+                                        "Maximum" = "max",
+                                        "False" = "F")
+                         ),
+                         
+                         checkboxInput('brt',
+                                       'Execute boosted regression trees?',
+                                       value = FALSE),
+                         
+                         selectInput("partition_type", "Partitioning type",
+                                     choices = c("KFold", "Bootstrap"),
+                         ),
+                         
+                         conditionalPanel(condition = "input.partition_type == 'KFold'",
+                                          sliderInput("cv_n",
+                                                      "Number of crossvalidation runs",
+                                                      min = 1,
+                                                      max = 50,
+                                                      value = 1,
+                                                      step = 1) ,  
+                                          sliderInput("cv_partitions",
+                                                      "Number of partitions:",
+                                                      min = 1,
+                                                      max = 50,
+                                                      value = 3,
+                                                      step = 1)    
+                         ),
+                         
+                         conditionalPanel(condition = "input.partition_type == 'Bootstrap'",
+                                          sliderInput("boot_proportion",
+                                                      "Proportion of points to be sampled for bootstrap:",
+                                                      min = 0,
+                                                      max = 1,
+                                                      value = 0.7,
+                                                      step = 0.05) ,  
+                                          sliderInput("boot_n",
+                                                      "Number bootstrap runs:",
+                                                      min = 1,
+                                                      max = 50,
+                                                      value = 1,
+                                                      step = 1)    
+                         )),
+                     
+                     
+                     box(width = 6,
+                         height=400,
+                         status = "warning",
+                         actionButton("btnModelar", "Run", icon = icon("cogs")),
+                         h4("Algorithms"),
+                         checkboxInput('BIOCLIM', 'Bioclim', value = FALSE),
+                         checkboxInput('MAHALANOBIS', 'Mahalanobis', value = FALSE),
+                         checkboxInput('MAXENT', 'Maxent', value = FALSE),
+                         checkboxInput('GLM', 'GLM', value = FALSE),
+                         checkboxInput('RF', 'RandomForest', value = FALSE),
+                         checkboxInput('SVM.K', 'SVM.K', value = FALSE),
+                         checkboxInput('SVM.E', 'SVM.E', value = FALSE),
+                         checkboxInput('DOMAIN', 'Domain', value = FALSE)
+                     ),
+                     
+                     conditionalPanel("input.project_ext",
+                                      box(title="Projection ensemble",
+                                          width = 12,
+                                          height = 320,
+                                          leafletOutput('maparesultado_proj',  width = "100%", height = 250)
+                                      )
+                     )
+                     
+                 )
           )
         ),
         ########################################################################

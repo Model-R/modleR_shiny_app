@@ -105,7 +105,7 @@ getOccurrences_gbif <- function(spname) {
     gbif_data <- subset(gbif_data, !is.na(decimalLongitude) & !is.na(decimalLatitude))
     gbif_data <- subset(gbif_data, (decimalLongitude != 0) & (decimalLatitude != 0))
     occur.data <- cbind(gbif_data$name, gbif_data$decimalLongitude, gbif_data$decimalLatitude)
-    colnames(occur.data) <- c("Name", "Longitude", "Latitude")
+    colnames(occur.data) <- c("name", "longitude", "latitude")
     occur.data <- as.data.frame(occur.data)
     return(occur.data)
   } else {
@@ -125,7 +125,7 @@ getOccurrences_jabot <- function(spname) {
   final_data <- do.call(rbind, json_data)
   jabot_data <- final_data[, c("taxoncompleto", "longitude", "latitude")]
   occur.data <- cbind(as.character(jabot_data[, 1]), as.numeric(jabot_data[, 2]), as.numeric(jabot_data[, 3]))
-  colnames(occur.data) <- c("Name", "Longitude", "Latitude")
+  colnames(occur.data) <- c("name", "longitude", "latitude")
   return(occur.data)
 }
 
@@ -199,9 +199,9 @@ function(input, output, session) {
     # Create new project
     if (input$select_project == "new_proj") {
       
-      models_dir <- paste0("/www/results/", input$models_dir.new)
+      models_dir <- paste0("./www/results/", input$models_dir.new)
       
-      if (models_dir == "/www/results/") {
+      if (models_dir == "./www/results/") {
         showModal(modalDialog(
           title = "Unable to create new project",
           paste0("Project name cannot be blank!", "Please enter a valid name."),
@@ -209,7 +209,7 @@ function(input, output, session) {
         ))
       }
       
-      if (file.exists(paste0("/www/results/", models_dir))) {
+      if (file.exists(models_dir)) {
         showModal(modalDialog(
           title = "Unable to create new project",
           paste0("Project is already in use."),
@@ -217,38 +217,35 @@ function(input, output, session) {
         ))
       }
       
-      if (!file.exists(paste0("/www/results/", models_dir))) {
-        
-        models_dir <<- paste0("/www/results/", input$models_dir.new)
-        
+      if (!file.exists(models_dir)) {
+        mkdirs(models_dir)
         showModal(modalDialog(
           title = "Project succesfully created!",
           paste0("Project directory: ", models_dir),
           easyClose = TRUE
         ))
+        models_dir <<- paste0("./www/results/", input$models_dir.new)
       }
     }
     
     # Load previous project
     if (input$select_project == "load_proj") {
       
-      models_dir <- paste0("/www/results/", input$models_dir.load)
+      models_dir <- paste0("./www/results/", input$models_dir.load)
       
-      if (models_dir != "/www/results/") {
+      if (models_dir != "./www/results/") {
         
-        if (file.exists(paste0("/www/results/", models_dir))) {
-          
-          path <- paste0(models_dir, "/", input$models_dir_species.load)
+        if (file.exists(models_dir)) {
           
           # Display Stats results at outputs tab
           output$dbgridresultado <- renderDataTable({
-            stats.file <- list.files(path = path, recursive = T, pattern = "final_statistics.csv")
+            stats.file <- list.files(path =  models_dir, recursive = T, pattern = "final_statistics.csv")
             read.csv(stats.file)
           }, options = list(lengthMenu = c(5, 30, 50), pageLength = 10))
           
           # Display final models  - png files
           output$uifinal <- renderUI({
-            display_finalpng <- list.files(path = paste0(path,"/present/final_models"), recursive = T, full.names = T, pattern = ".png")
+            display_finalpng <- list.files(path = paste0(models_dir,"/present/final_models"), recursive = T, full.names = T, pattern = ".png")
             lapply(1:length(order(display_finalpng)), function(i) {
               tags$a(
                 href = display_finalpng[i],
@@ -260,7 +257,7 @@ function(input, output, session) {
           
           # Display ensemble models - png files
           output$uiensemble <- renderUI({
-            display_ensemblepng <- list.files(path = paste0(path,"/present/ensemble_models"), recursive = T, full.names = T, pattern = ".png")
+            display_ensemblepng <- list.files(path = paste0(models_dir,"/present/ensemble_models"), recursive = T, full.names = T, pattern = ".png")
             lapply(1:length(order(display_ensemblepng)), function(i) {
               tags$a(
                 href = display_ensemblepng[i],
@@ -272,7 +269,7 @@ function(input, output, session) {
           
           # List statistics files
           output$uiestatistica <- renderUI({
-            stats_file <- list.files(path = path, recursive = T, full.names = T, pattern = "final_statistics.csv")
+            stats_file <- list.files(path = models_dir, recursive = T, full.names = T, pattern = "final_statistics.csv")
             lapply(1:length(stats_file), function(i) {
               tags$div(tags$a(
                 href = stats_file[i],
@@ -284,7 +281,7 @@ function(input, output, session) {
           
           # List species occurrence dataset file (.csv)
           output$uiarquivosdados <- renderUI({
-            list_csv <- list.files(path = path, recursive = T, full.names = T, pattern = "occurrences.csv")
+            list_csv <- list.files(path = models_dir, recursive = T, full.names = T, pattern = "occurrences.csv")
             lapply(1:length(list_csv), function(i) {
               tags$div(tags$a(
                 href = list_csv[i],
@@ -296,7 +293,7 @@ function(input, output, session) {
           
           # List partitions
           output$uiarquivosmodelos <- renderUI({
-            list_partitions <- list.files(path = paste0(path,"/present/partitions"), recursive = T, full.names = T, pattern = ".tif")
+            list_partitions <- list.files(path = paste0(models_dir,"/present/partitions"), recursive = T, full.names = T, pattern = ".tif")
             lapply(1:length(sort(list_partitions)), function(i) {
               tags$div(tags$a(
                 href = list_partitions[i],
@@ -308,7 +305,7 @@ function(input, output, session) {
           
           # List final files
           output$uiarquivosfinal <- renderUI({
-            list_final <-  list.files(path = paste0(path,"/present/final_models"), recursive = T, full.names = T, pattern = ".tif")
+            list_final <-  list.files(path = paste0(models_dir,"/present/final_models"), recursive = T, full.names = T, pattern = ".tif")
             lapply (1:length(sort(list_final)), function(i) {
               tags$div(tags$a(
                 href = list_final[i],
@@ -320,7 +317,7 @@ function(input, output, session) {
           
           # List ensemble files
           output$uiarquivosensemble <- renderUI({
-            list_ensemble <-  list.files(path = paste0(path,"/present/ensemble_models"), recursive = T, full.names = T, pattern = ".tif")
+            list_ensemble <-  list.files(path = paste0(models_dir,"/present/ensemble_models"), recursive = T, full.names = T, pattern = ".tif")
             lapply(1:length(sort(list_ensemble)), function(i) {
               tags$div(tags$a(
                 href = list_ensemble[i],
@@ -331,22 +328,20 @@ function(input, output, session) {
           })
           
           showModal(modalDialog(
-            title = paste0("Project ", input$models_dir.load, " - ",input$models_dir_species.load ," succefully loaded!"),
+            title = paste0("Project ", input$models_dir.load," succefully loaded!"),
             paste0("Output files are dispalyed at the 'Outputs' tab."),
             easyClose = TRUE
           ))
-          
-          models_dir <<- paste0("/www/results/", input$models_dir.load, "/", input$models_dir_species.load)
+          models_dir <<-  paste0("./www/results/", input$models_dir.load)
         }
       }
-      
-      if (models_dir == "/www/results/") {
-        showModal(modalDialog(
-          title = "Error! Project name cannot be blank!",
-          paste0("Please enter a valid name."),
-          easyClose = TRUE
-        ))
-      }
+      # if (models_dir == "./www/results/") {
+      #   showModal(modalDialog(
+      #     title = "Error! Project name cannot be blank!",
+      #     paste0("Please enter a valid name."),
+      #     easyClose = TRUE
+      #   ))
+      # }
     }
   })
 
@@ -354,111 +349,114 @@ function(input, output, session) {
 
 
 
-#####  IMPORT SPECIES OCCURRENCE DATASET #####
-# Load species occurrence dataset from gbif/jabot databases
-loadspdata <- eventReactive(input$btnsearch_spdata, {
-  ETAPA <<- 1
-  if (input$bio_datasource == "gbif") {
-    occur.data <- getOccurrences_gbif(input$edtespecie)
-    occur.data_gbif <- occur.data [, c(2, 3)]
-    occur.data.coord <<- occur.data_gbif
-  }
-  if (input$bio_datasource == "jabot") {
-    occur.data <- getOccurrences_jabot(input$edtespecie)
-    occur.data <- as.data.frame(occur.data, stringsAsFactors = F)
-    occur.data_jabot <- occur.data[, c(2, 3)]
-    occur.data_jabot[, 1] <- as.numeric(occur.data_jabot[, 1])
-    occur.data_jabot[, 2] <- as.numeric(occur.data_jabot[, 2])
-    occur.data.coord <<- occur.data_jabot
-  }
-  occur.data.coord
-})
-
-# Browse occurrence dataset from local csv file
-loadspdata_csv <- eventReactive(input$btnsearch_spdatacsv, {
-  ETAPA <<- 1
-  inFile <<- input$file1
-  if (is.null(inFile)) {
-    return(NULL)
-  } else {
-    sp_data <- read.csv(
-      inFile$datapath,
-      header = input$header,
-      sep = input$sep,
-      quote = input$quote
-    )
-    arquivo_path <- inFile$datapath
-    arquivo_header <- input$header
-    arquivo_sep <- input$sep
-    arquivo_quote <- input$quote
-    sp_data_csv <- sp_data [, 2:3]
-    occur.data.coord <<- sp_data_csv
-  }
-  occur.data.coord
-})
-
-# Exhibit table with occurrence records
-output$spdata_table <- DT::renderDataTable({
-  progress <- shiny::Progress$new()
-  progress$set(message = "Importing species occurrence data...", value = 0)
-  on.exit(progress$close())
-  input$btnsearch_spdatacsv
-  input$btnsearch_spdata
   
-  if (input$bio_datasource == "csv") {
-    loadspdata_csv()
-  } else {
-    loadspdata()
-  }
-  occur.data.coord
-}, options = list(lengthMenu = c(5, 30, 50), pageLength = 5))
-
-# Display map with loaded occurrence records
-output$mapadistribuicao <- renderLeaflet({
-  input$btnsearch_spdatacsv
-  input$btnsearch_spdata
   
-  progress <- shiny::Progress$new()
-  progress$set(message = "Updating species occurrence map...", value = 0)
-  on.exit(progress$close())
-  
-  if (!is.null(occur.data.coord)) {
-    latitude<-as.character(occur.data.coord$Latitude)
-    latitude<-as.numeric(latitude)
-    longitude<-as.character(occur.data.coord$Longitude)
-    longitude<-as.numeric(longitude)
-    if (input$bio_datasource == "csv") {
-      map <- leaflet(occur.data.coord) %>%
-        addTiles() %>%
-        addCircles(color = "red", lat = ~ latitude, lng = ~ longitude) %>%
-        setView(lng = -31.5, lat = -13.4, zoom = 3)
-    }
-    
+  #####  IMPORT SPECIES OCCURRENCE DATASET #####
+  # Load species occurrence dataset from gbif/jabot databases
+  loadspdata <- eventReactive(input$btnsearch_spdata, {
+    #ETAPA <<- 1
+    species_name <<- input$edtespecie
     if (input$bio_datasource == "gbif") {
-      map <- leaflet(occur.data.coord) %>%
-        addTiles() %>%
-        addCircles(color = "red", lat = ~ latitude, lng = longitude) %>%
-        #addMarkers(clusterOptions = markerClusterOptions()) %>%
-        setView(lng = -31.5, lat = -13.4, zoom = 3)
+      occur.data <- getOccurrences_gbif(input$edtespecie)
+      occur.data_gbif <- occur.data [, c(2, 3)]
+      occurrences <<- occur.data_gbif
     }
-    
     if (input$bio_datasource == "jabot") {
-      map <- leaflet(occur.data.coord) %>%
-        addTiles() %>%
-        addCircles(color = "red", lat = ~ latitude, lng = ~ longitude) %>%
-        setView(lng = -31.5, lat = -13.4, zoom = 3)
+      occur.data <- getOccurrences_jabot(input$edtespecie)
+      occur.data <- as.data.frame(occur.data, stringsAsFactors = F)
+      occur.data_jabot <- occur.data[, c(2, 3)]
+      occur.data_jabot[, 1] <- as.numeric(occur.data_jabot[, 1])
+      occur.data_jabot[, 2] <- as.numeric(occur.data_jabot[, 2])
+      occurrences <<- occur.data_jabot
     }
-    map
+    occurrences
+  })
+  
+  # Browse occurrence dataset from local csv file
+  loadspdata_csv <- eventReactive(input$btnsearch_spdatacsv, {
+    #ETAPA <<- 1
+    inFile <<- input$file1
+    if (is.null(inFile)) {
+      return(NULL)
+    } else {
+      sp_data <- read.csv(
+        inFile$datapath,
+        header = input$header,
+        sep = input$sep,
+        quote = input$quote
+      )
+      species_name <<- as.character(sp_data[1,1])
+      arquivo_path <- inFile$datapath
+      arquivo_header <- input$header
+      arquivo_sep <- input$sep
+      arquivo_quote <- input$quote
+      sp_data_csv <- sp_data [, 2:3]
+      occurrences <<- sp_data_csv
+    }
+    occurrences
+  })
+  
+  # Exhibit table with occurrence records
+  output$spdata_table <- DT::renderDataTable({
+    progress <- shiny::Progress$new()
+    progress$set(message = "Importing species occurrence dataset...", value = 0)
+    on.exit(progress$close())
+    input$btnsearch_spdatacsv
+    input$btnsearch_spdata
+    if (input$bio_datasource == "csv") {
+      loadspdata_csv()
+    } else {
+      loadspdata()
+    }
+    occurrences
+  }, options = list(lengthMenu = c(5, 30, 50), pageLength = 5))
+  
+  # Display map with loaded occurrence records
+  output$mapadistribuicao <- renderLeaflet({
+    input$btnsearch_spdatacsv
+    input$btnsearch_spdata
+    progress <- shiny::Progress$new()
+    progress$set(message = "Updating occurrence map...", value = 0)
+    on.exit(progress$close())
     
-    # In case no occurrence dataset is informed, exihibit error message
-  } else {
-    showModal(modalDialog(
-      title = "Error!",
-      "Please inform species occurrence dataset",
-      easyClose = TRUE
-    ))
-  }
-})
+    if (!is.null(occurrences)) {
+      latitude<-as.character(occurrences$Latitude)
+      latitude<-as.numeric(latitude)
+      longitude<-as.character(occurrences$Longitude)
+      longitude<-as.numeric(longitude)
+      if (input$bio_datasource == "csv") {
+        map <- leaflet(occurrences) %>%
+          addTiles() %>%
+          addCircles(color = "red", lat = ~ latitude, lng = ~ longitude) %>%
+          setView(lng = -31.5, lat = -13.4, zoom = 3)
+      }
+      
+      if (input$bio_datasource == "gbif") {
+        map <- leaflet(occurrences) %>%
+          addTiles() %>%
+          addCircles(color = "red", lat = ~ latitude, lng = longitude) %>%
+          setView(lng = -31.5, lat = -13.4, zoom = 3)
+      }
+      
+      if (input$bio_datasource == "jabot") {
+        map <- leaflet(occurrences) %>%
+          addTiles() %>%
+          addCircles(color = "red", lat = ~ latitude, lng = ~ longitude) %>%
+          setView(lng = -31.5, lat = -13.4, zoom = 3)
+      }
+      map
+    } else {
+      showModal(modalDialog(
+        title = "Error!",
+        "Please inform species occurrence dataset",
+        easyClose = TRUE
+      ))
+    }
+  })
+
+
+
+
 
 #####  DATA CLEANING #####
 output$dgbriddadosdatacleaning <- renderDataTable({
