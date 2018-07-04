@@ -198,17 +198,24 @@ dirColors <- c(`1` = "#595490", `2` = "#527525", `3` = "#A93F35", `4` = "#BA48AA
 function(input, output, session) {
   
   ###### CREATE NEW/LOAD PROJECT #####
+  dirs <<- reactiveValues(
+    sp_dirs = NULL,
+    selected = NULL
+  )
   observe({
     if (input$select_project == "load_proj") {
       models_dir <- paste0("./www/results/", input$models_dir.load)
       if (models_dir != "./www/results/") {
-        dirs <- reactiveValues(
-          sp_dir = list.dirs(paste0("./www/results/", input$models_dir.load), recursive = F, full.names = F)
-        )
-        updateSelectInput(session, "spSelect",
-                          label = paste("Select species"),
-                          choices = dirs$sp_dir
-        )
+        if (is.null(list.dirs(paste0("./www/results/", input$models_dir.load)))){
+          return()
+        } else{
+          dirs$sp_dirs = list.dirs(paste0("./www/results/", input$models_dir.load), recursive = F, full.names = F)
+          updateSelectInput(session, "Select_spdir",
+                            label = paste("Select species"),
+                            choices = dirs$sp_dirs
+          )
+          dirs$selected <<- input$Select_spdir
+        }
       }
     }
   })
@@ -248,29 +255,31 @@ function(input, output, session) {
     
     # Load previous project
     if (input$select_project == "load_proj") {
-      models_dir <- paste0("./www/results/", input$models_dir.load )
-      models_dir_sp <- paste0("./www/results/", input$models_dir.load, "/",input$spSelect )
+      
+      models_dir <<- paste0("./www/results/", input$models_dir.load )
+      models_dir_sp <<- paste0("./www/results/", input$models_dir.load, "/", dirs$selected )
       
       if (models_dir != "./www/results/") {
         if (models_dir_sp != models_dir){
           
           # Display Stats results at outputs tab
           output$dbgridresultado <- renderDataTable({
-            stats.file <- list.files(path =  paste0(models_dir_sp_path,"/present/final_models"),recursive = T, full.names= T,pattern = "final_statistics.csv")[1]
+            stats.file <- list.files(path =  paste0(models_dir_sp,"/present/final_models"), recursive = T, full.names= T,pattern = "final_statistics.csv")[1]
             read.csv(stats.file)
           }, options = list(lengthMenu = c(5, 30, 50), pageLength = 10))
           
           # Display final models  - png files
-          output$uifinal <- renderUI({
-            display_finalpng <-list.files(path =  paste0(models_dir_sp_path,"/present/final_models"),recursive = T, full.names= F,pattern = ".png")
-            display_finalpng_full<- list.files(path =  paste0(models_dir_sp_path,"/present/final_models"),recursive = T, full.names= T,pattern = ".png")
-            lapply(1:length(order(display_finalpng)), function(i) {
-              tags$a(
-                href = display_finalpng_full[i],
-                tags$img(src = display_finalpng[i], height = "200px"),
-                target = "_blank"
-              )
-            })
+          output$ui<- renderUI({
+            png <- list.files(path =  paste0(models_dir_sp,"/present"), recursive = T, full.names= T, pattern = ".png")
+            if(length(png)>=1){
+              
+              list(src = png,
+                   contentType = 'image/png',
+                   width = 400,
+                   height = 300,
+                   alt = "This is alternate text")
+              
+            }
           })
           
           # Display ensemble models - png files
