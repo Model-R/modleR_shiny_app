@@ -387,6 +387,12 @@ function(input, output, session) {
     occurrences
   }, options = list(lengthMenu = c(5, 30, 50), pageLength = 5))
   
+  eventReactive(input$btn_usedataset,{
+    mkdirs(paste0(models_dir, "/", species_name))
+    save_raw<-data.frame(species_name, occurrences)
+    names(save_raw)<- c("name", "lon", "lat")
+    write.csv(save_raw, file=paste0(models_dir, "/", species_name, "/" ,"occurrences_raw.csv"), row.names = FALSE)
+  })
   # Display map with loaded occurrence records
   output$mapadistribuicao <- renderLeaflet({
     input$btnsearch_spdatacsv
@@ -400,26 +406,10 @@ function(input, output, session) {
       latitude<-as.numeric(latitude)
       longitude<-as.character(occurrences$lon)
       longitude<-as.numeric(longitude)
-      if (input$bio_datasource == "csv") {
-        map <- leaflet(occurrences) %>%
-          addTiles() %>%
-          addCircles(color = "red", lat = ~ latitude, lng = ~ longitude) %>%
-          setView(lng = -31.5, lat = -13.4, zoom = 3)
-      }
-      
-      if (input$bio_datasource == "gbif") {
-        map <- leaflet(occurrences) %>%
-          addTiles() %>%
-          addCircles(color = "red", lat = ~ latitude, lng = longitude) %>%
-          setView(lng = -31.5, lat = -13.4, zoom = 3)
-      }
-      
-      if (input$bio_datasource == "jabot") {
-        map <- leaflet(occurrences) %>%
-          addTiles() %>%
-          addCircles(color = "red", lat = ~ latitude, lng = ~ longitude) %>%
-          setView(lng = -31.5, lat = -13.4, zoom = 3)
-      }
+      map <- leaflet(occurrences) %>%
+        addTiles() %>%
+        addCircles(color = "red", lat = ~ latitude, lng = ~ longitude) %>%
+        setView(lng = -31.5, lat = -13.4, zoom = 3)
       map
     } else {
       showModal(modalDialog(
