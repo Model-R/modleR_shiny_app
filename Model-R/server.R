@@ -51,10 +51,10 @@ if (length(jdk_version) != 0) {
 }
 library("ModelR", lib.loc="/Library/Frameworks/R.framework/Versions/3.4/Resources/library")
 
-ext11 <<- ext12 <<- -90
-ext21 <<- ext22 <<- -33
-ext31 <<- ext32 <<- -32
-ext41 <<- ext42 <<- 23
+ext11 <- ext12 <- -90
+ext21 <- ext22 <- -33
+ext31 <- ext32 <- -32
+ext41 <- ext42 <- 23
 
 jar <- paste0(system.file(package = "dismo"), "/java/maxent.jar")
 if (file.exists(jar) != T) {
@@ -91,10 +91,10 @@ panel.hist <- function(x, ...) {
   rect(breaks[-nB], 0, breaks[-1], y, col = "gray", ...)
 }
 
-mkdirs <- function(fp) {
-  if (!file.exists(fp)) {
-    mkdirs(dirname(fp))
-    dir.create(fp, showWarnings = FALSE, recursive = FALSE, mode = "777")
+mkdirs <- function(dir_path) {
+  if (!file.exists(dir_path)) {
+    mkdirs(dirname(dir_path))
+    dir.create(dir_path, recursive = FALSE, mode = "777")
   }
 }
 
@@ -133,9 +133,9 @@ getOccurrences_jabot <- function(species_name) {
 
 ## Plot final models
 maparesultado_model <- function(
-  model_title = model_title) {
+  algorithm = algorithm) {
   finaldir <- list.files(paste0(models_dir, "/", species_name, "/present/final_models/"))
-  tif_file <- finaldir[finaldir==paste0(species_name, "_" , model_title, "_raw_mean.tif")]
+  tif_file <- finaldir[finaldir==paste0(species_name, "_" , algorithm, "_raw_mean.tif")]
   raw_mean_file <- list.files(paste0(models_dir, "/", species_name, "/present/final_models/"), pattern = tif_file, full.names = T)
   
   if (file.exists(raw_mean_file)) {
@@ -147,7 +147,7 @@ maparesultado_model <- function(
     map <- leaflet() %>%
       addTiles() %>%
       addRasterImage(r, colors = pal, opacity = 0.7) %>%
-      addLegend(pal = pal, values = values(r), title = model_title) %>%
+      addLegend(pal = pal, values = values(r), title = algorithm) %>%
       addCircles(color = "red",lat = lat, lng =lng, weight = 2, fill = TRUE) %>%
       addRectangles(ext11, ext31, ext21, ext41, color = "red", fill = FALSE, dashArray = "5,5", weight = 2)
   }
@@ -172,11 +172,6 @@ maparesultado_ensemble <- function() {
       addRectangles(ext11, ext31, ext21, ext41, color = "red", fill = FALSE, dashArray = "5,5", weight = 2)
   }
 }
-
-
-
-
-
 
 ## Function to plot geographic projection of the ensemble maps
 # maparesultado_model_proj <- function() {
@@ -203,16 +198,30 @@ dirColors <- c(`1` = "#595490", `2` = "#527525", `3` = "#A93F35", `4` = "#BA48AA
 function(input, output, session) {
   
   ###### CREATE NEW/LOAD PROJECT #####
+  observe({
+    if (input$select_project == "load_proj") {
+      models_dir <- paste0("./www/results/", input$models_dir.load)
+      if (models_dir != "./www/results/") {
+        dirs <- reactiveValues(
+          sp_dir = list.dirs(paste0("./www/results/", input$models_dir.load), recursive = F, full.names = F)
+        )
+        updateSelectInput(session, "spSelect",
+                          label = paste("Select species"),
+                          choices = dirs$sp_dir
+        )
+      }
+    }
+  })
+    
   observeEvent(input$btnrefreshprojeto, {
     
     # Create new project
     if (input$select_project == "new_proj") {
-      
       models_dir <- paste0("./www/results/", input$models_dir.new)
       
       if (models_dir == "./www/results/") {
         showModal(modalDialog(
-          title = "Unable to create new project",
+          title = "Unable to create project",
           paste0("Project name cannot be blank!", "Please enter a valid name."),
           easyClose = TRUE
         ))
@@ -220,8 +229,8 @@ function(input, output, session) {
       
       if (file.exists(models_dir)) {
         showModal(modalDialog(
-          title = "Unable to create new project",
-          paste0("Project is already in use."),
+          title = "Unable to create project",
+          paste0("Inserted name is already in use."),
           easyClose = TRUE
         ))
       }
@@ -239,14 +248,11 @@ function(input, output, session) {
     
     # Load previous project
     if (input$select_project == "load_proj") {
-      
-      models_dir <<- paste0("./www/results/", input$models_dir.load)
+      models_dir <- paste0("./www/results/", input$models_dir.load )
+      models_dir_sp <- paste0("./www/results/", input$models_dir.load, "/",input$spSelect )
       
       if (models_dir != "./www/results/") {
-          models_dir_sp <- list.dirs(models_dir, full.names = F, recursive = F) 
-          models_dir_sp_path <<- list.files(models_dir, full.names = T,include.dirs = T, recursive = F)
-          
-           if (file.exists(models_dir_sp_path)) {
+        if (models_dir_sp != models_dir){
           
           # Display Stats results at outputs tab
           output$dbgridresultado <- renderDataTable({
@@ -346,17 +352,16 @@ function(input, output, session) {
             easyClose = TRUE
           ))
           models_dir <<-  paste0("./www/results/", input$models_dir.load)
-          #}
+        }
       }
     }
-      }
-      # if (models_dir == "./www/results/") {
-      #   showModal(modalDialog(
-      #     title = "Error! Project name cannot be blank!",
-      #     paste0("Please enter a valid name."),
-      #     easyClose = TRUE
-      #   ))
-      # }
+    # if (models_dir == "./www/results/") {
+    #   showModal(modalDialog(
+    #     title = "Error! Project name cannot be blank!",
+    #     paste0("Please enter a valid name."),
+    #     easyClose = TRUE
+    #   ))
+    # }
   })
   
   #####  IMPORT SPECIES OCCURRENCE DATASET #####
@@ -1027,7 +1032,6 @@ function(input, output, session) {
       input$btnModelar
       maparesultado_model(model_title = "domain")
     })
-    
     
     output$maparesultadoensemble <- renderLeaflet({
       input$btnModelar

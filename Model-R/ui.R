@@ -22,7 +22,7 @@ ipak <- function(pkg) {
 
 ipak(c("shinydashboard", 
        "leaflet"))
-
+#x <- character(0)
 bio_datasource <- c("GBif - The Global Biodiversity Information Facility" = "gbif",
                     "Jabot - JBRJ Database" = "jabot",
                     "CSV - Comma Separated Values" = "csv")
@@ -126,6 +126,7 @@ body <- dashboardBody(
                                      box(width = NULL,
                                          if (length(list.files( "./www/results/") > 0)) {
                                            list_projects <- list.files("./www/results/", full.names = F, recursive = F)
+                                           
                                            box(title = "Create/Open project",
                                                status = "primary",
                                                solidHeader = TRUE,
@@ -139,8 +140,12 @@ body <- dashboardBody(
                                                                              "Open project:",
                                                                              choices = c(list_projects),
                                                                              choiceValues = c(list_projects),
-                                                                             selected = NULL)
+                                                                             selected = NULL),
+                                                                selectInput("spSelect", "Select input",
+                                                                            c("Item A", "Item B", "Item C"))
+                                                                
                                                ),
+                                                                
                                                
                                                conditionalPanel("input.select_project == 'new_proj' ",
                                                                 textInput("models_dir.new", label = "Insert project name: ", value = "")
