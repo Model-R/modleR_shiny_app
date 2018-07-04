@@ -1,0 +1,2 @@
+"kappa" "spec_sens" "no_omission" "prevalence" "equal_sens_spec" "sensitivity" "AUC" "TSS" "algoritmo" "run" "partition"
+"Caesalpinia echinata 1 3 domain" 0.61609048 0.59471293 0.41674435 0.18751905 0.58732004 0.60746803 0.94195652173913 0.83304347826087 "domain" 1 3

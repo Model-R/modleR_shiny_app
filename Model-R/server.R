@@ -153,6 +153,31 @@ maparesultado_model <- function(
   }
 }
 
+maparesultado_ensemble <- function() {
+  finaldir <- list.files(paste0(models_dir, "/", species_name, "/present/ensemble/"))
+  tif_file <- finaldir[finaldir==paste0(species_name, "_raw_", "mean_ensemble_mean.tif")]
+  raw_mean_file <- list.files(paste0(models_dir, "/", species_name, "/present/ensemble/"), pattern = tif_file, full.names = T)
+  
+  if (file.exists(raw_mean_file)) {
+    r <- raster::raster(raw_mean_file)
+    pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(r), na.color = "transparent")
+    occ_points <<- coordinates(occurrences)
+    lng <<- occ_points[,1]
+    lat <<-  occ_points[,2]
+    map <- leaflet() %>%
+      addTiles() %>%
+      addRasterImage(r, colors = pal, opacity = 0.7) %>%
+      addLegend(pal = pal, values = values(r), title = "Mean ensemble") %>%
+      addCircles(color = "red",lat = lat, lng =lng, weight = 2, fill = TRUE) %>%
+      addRectangles(ext11, ext31, ext21, ext41, color = "red", fill = FALSE, dashArray = "5,5", weight = 2)
+  }
+}
+
+
+
+
+
+
 ## Function to plot geographic projection of the ensemble maps
 # maparesultado_model_proj <- function() {
 #   if (file.exists(paste0("www/", projeto, "/final/proj_ensemble.tif")) && input$project_ext == TRUE) {
@@ -169,6 +194,8 @@ maparesultado_model <- function(
 #       addRectangles(ext12, ext32, ext22, ext42, color = "green", fill = FALSE, dashArray = "5,5", weight = 2)
 #   }
 # }
+
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 options(shiny.maxRequestSize = 100 * 1024^2)
 dirColors <- c(`1` = "#595490", `2` = "#527525", `3` = "#A93F35", `4` = "#BA48AA")
@@ -213,25 +240,27 @@ function(input, output, session) {
     # Load previous project
     if (input$select_project == "load_proj") {
       
-      models_dir <- paste0("./www/results/", input$models_dir.load)
+      models_dir <<- paste0("./www/results/", input$models_dir.load)
       
       if (models_dir != "./www/results/") {
-        models_dir_sp <- list.dirs(models_dir, full.names = T, recursive = F)
-        #if(models_dir_sp >= 1){
-        if (file.exists(models_dir)) {
+          models_dir_sp <- list.dirs(models_dir, full.names = F, recursive = F) 
+          models_dir_sp_path <<- list.files(models_dir, full.names = T,include.dirs = T, recursive = F)
+          
+           if (file.exists(models_dir_sp_path)) {
           
           # Display Stats results at outputs tab
           output$dbgridresultado <- renderDataTable({
-            stats.file <- list.files(path =  models_dir, recursive = T, pattern = "final_statistics.csv")
+            stats.file <- list.files(path =  paste0(models_dir_sp_path,"/present/final_models"),recursive = T, full.names= T,pattern = "final_statistics.csv")[1]
             read.csv(stats.file)
           }, options = list(lengthMenu = c(5, 30, 50), pageLength = 10))
           
           # Display final models  - png files
           output$uifinal <- renderUI({
-            display_finalpng <- list.files(path = paste0(models_dir,"/present/final_models"), recursive = T, full.names = T, pattern = ".png")
+            display_finalpng <-list.files(path =  paste0(models_dir_sp_path,"/present/final_models"),recursive = T, full.names= F,pattern = ".png")
+            display_finalpng_full<- list.files(path =  paste0(models_dir_sp_path,"/present/final_models"),recursive = T, full.names= T,pattern = ".png")
             lapply(1:length(order(display_finalpng)), function(i) {
               tags$a(
-                href = display_finalpng[i],
+                href = display_finalpng_full[i],
                 tags$img(src = display_finalpng[i], height = "200px"),
                 target = "_blank"
               )
@@ -240,10 +269,11 @@ function(input, output, session) {
           
           # Display ensemble models - png files
           output$uiensemble <- renderUI({
-            display_ensemblepng <- list.files(path = paste0(models_dir,"/present/ensemble_models"), recursive = T, full.names = T, pattern = ".png")
+            display_ensemblepng <-list.files(path =  paste0(models_dir_sp_path,"/present/ensemble_models"),recursive = T, full.names= F,pattern = ".png")
+            display_ensemblepng_full<- list.files(path =  paste0(models_dir_sp_path,"/present/ensemble_models"),recursive = T, full.names= T,pattern = ".png")
             lapply(1:length(order(display_ensemblepng)), function(i) {
               tags$a(
-                href = display_ensemblepng[i],
+                href = display_ensemblepng_full[i],
                 tags$img(src = display_ensemblepng[i], height = "200px"),
                 target = "_blank"
               )
@@ -317,7 +347,8 @@ function(input, output, session) {
           ))
           models_dir <<-  paste0("./www/results/", input$models_dir.load)
           #}
-        }
+      }
+    }
       }
       # if (models_dir == "./www/results/") {
       #   showModal(modalDialog(
@@ -326,7 +357,6 @@ function(input, output, session) {
       #     easyClose = TRUE
       #   ))
       # }
-    }
   })
   
   #####  IMPORT SPECIES OCCURRENCE DATASET #####
@@ -387,9 +417,10 @@ function(input, output, session) {
     occurrences
   }, options = list(lengthMenu = c(5, 30, 50), pageLength = 5))
   
-  eventReactive(input$btn_usedataset,{
+  observeEvent(input$btn_usedataset,{
     mkdirs(paste0(models_dir, "/", species_name))
     save_raw<-data.frame(species_name, occurrences)
+    models_dir_sp<-paste0(models_dir, "/", species_name)
     names(save_raw)<- c("name", "lon", "lat")
     write.csv(save_raw, file=paste0(models_dir, "/", species_name, "/" ,"occurrences_raw.csv"), row.names = FALSE)
   })
@@ -997,6 +1028,11 @@ function(input, output, session) {
       maparesultado_model(model_title = "domain")
     })
     
+    
+    output$maparesultadoensemble <- renderLeaflet({
+      input$btnModelar
+      maparesultado_ensemble()
+    })
     #### Exhibit geo. projected model ensemble ####
     # output$maparesultado_proj <- renderLeaflet({
     #   input$btnModelar
@@ -1005,10 +1041,12 @@ function(input, output, session) {
     
     #### Display results at the Outputs tab ####
     output$uiarquivosmodelos <- renderUI({
-      list_partitions <- list.files(path = paste0(models_dir,"/present/partitions"), recursive = T, full.names = T, pattern = ".tif")
-      lapply(1:length(sort(list_partitions)), function(i) {
+      list_partitions <- list.files(path = paste0(models_dir_sp_present,"/partitions"), recursive = T, full.names = F, pattern = ".tif")
+      list_partitions_full <- list.files(path = paste0(models_dir_sp_present,"/partitions"), recursive = T, full.names = T, pattern = ".tif")
+      
+       lapply(1:length(list_partitions), function(i) {
         tags$div(tags$a(
-          href = list_partitions[i],
+          href = list_partitions_full[i],
           paste0(list_partitions[i]),
           target = "_blank"
         ))
@@ -1016,10 +1054,12 @@ function(input, output, session) {
     })
     
     output$ui <- renderUI({
-      list_png <- list.files(path = models_dir, recursive = T, full.names = T, pattern = ".png")
+      list_png <- list.files(path = models_dir, recursive = T, full.names = F, pattern = ".png")
+      list_png_full <- list.files(path = models_dir, recursive = T, full.names = T, pattern = ".png")
+      
       lapply(1:length(order(list_png)), function(i) {
         tags$a(
-          href =  list_png[i],
+          href =  list_png_full[i],
           tags$img(src =  list_png[i], height = "200px"),
           target = "_blank"
         )
@@ -1027,7 +1067,7 @@ function(input, output, session) {
     })
     
     output$uiestatistica <- renderUI({
-      stats_file <- list.files(path = models_dir, recursive = T, full.names = T, pattern = "final_statistics.csv")
+      stats_file <- list.files(path = models_dir_sp_present, recursive = T, full.names = T, pattern = "final_statistics.csv")
       lapply(1:length(stats_file), function(i) {
         tags$div(tags$a(
           href = stats_file[i],
@@ -1038,7 +1078,7 @@ function(input, output, session) {
     })
     
     output$uiarquivosdados <- renderUI({
-      list_csv <- list.files(path = models_dir, recursive = T, full.names = T, pattern = "occurrences.csv")
+      list_csv <- list.files(path = models_dir_sp, recursive = T, full.names = T, pattern = "occurrences")
       lapply(1:length(list_csv), function(i) {
         tags$div(tags$a(
           href = list_csv[i],
@@ -1049,7 +1089,7 @@ function(input, output, session) {
     })
     
     output$uiarquivosensemble <- renderUI({
-      list_ensemble <-  list.files(path = paste0(models_dir,"/present/ensemble_models"), recursive = T, full.names = T, pattern = ".tif")
+      list_ensemble <-  list.files(path = models_dir_sp_present, recursive = T, full.names = T, pattern = ".tif")
       lapply(1:length(sort(list_ensemble)), function(i) {
         tags$div(tags$a(
           href = list_ensemble[i],
@@ -1104,6 +1144,8 @@ function(input, output, session) {
       if (exists("occurrences") && exists("predictors") && exists("species_name")) {
         progress <<- shiny::Progress$new()
         progress$set(message = "Processing...", value = 0)
+        models_dir_sp_path <- list.dirs(paste0(models_dir, "/", species_name), full.names = T, recursive = F)
+        
         on.exit(progress$close()) 
         
         modelagem()

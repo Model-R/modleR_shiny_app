@@ -1,0 +1,2 @@
+"kappa" "spec_sens" "no_omission" "prevalence" "equal_sens_spec" "sensitivity" "AUC" "TSS" "algoritmo" "run" "partition"
+"Caesalpinia echinata 1 2 rf" 0.52172619 0.52172619 0.27236667 0.17026667 0.36162381 0.5579 0.997142857142857 0.952380952380952 "rf" 1 2
