@@ -465,7 +465,9 @@ function(input, output, session) {
   }, options = list(searching = FALSE, lengthMenu = c(5, 30, 50), pageLength = 5))
   
   eventReactive(input$saveDataset, {
-    write.csv(occurrences, file=paste0(models_dir, "/", species_name, "/" ,"occurrences.csv"), row.names = FALSE)
+    save_cleandata<-data.frame("species_name", occurrences)
+    names(save_cleandata)<- c("name", "lon", "lat")
+    write.csv(save_cleandata, file=paste0(models_dir, "/", species_name, "/" ,"occurrences.csv"), row.names = FALSE)
   })
   
   output$mapadistribuicaodatacleaning <- renderLeaflet({
