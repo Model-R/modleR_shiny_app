@@ -219,7 +219,7 @@ function(input, output, session) {
       }
     }
   })
-    
+  
   observeEvent(input$btnrefreshprojeto, {
     
     # Create new project
@@ -255,60 +255,47 @@ function(input, output, session) {
     
     # Load previous project
     if (input$select_project == "load_proj") {
-      
       models_dir <<- paste0("./www/results/", input$models_dir.load )
       models_dir_sp <<- paste0("./www/results/", input$models_dir.load, "/", dirs$selected )
       
       if (models_dir != "./www/results/") {
         if (models_dir_sp != models_dir){
           
-          # Display Stats results at outputs tab
-          output$dbgridresultado <- renderDataTable({
-            stats.file <- list.files(path =  paste0(models_dir_sp,"/present/final_models"), recursive = T, full.names= T,pattern = "final_statistics.csv")[1]
-            read.csv(stats.file)
-          }, options = list(lengthMenu = c(5, 30, 50), pageLength = 10))
-          
-          # Display final models  - png files
-          output$ui<- renderUI({
+          ## Binary and Continuous models tab
+          output$png<- renderUI({
             png <- list.files(path =  paste0(models_dir_sp,"/present"), recursive = T, full.names= T, pattern = ".png")
             if(length(png)>=1){
-              
               list(src = png,
                    contentType = 'image/png',
                    width = 400,
                    height = 300,
                    alt = "This is alternate text")
-              
             }
           })
           
-          # Display ensemble models - png files
-          output$uiensemble <- renderUI({
-            display_ensemblepng <-list.files(path =  paste0(models_dir_sp_path,"/present/ensemble_models"),recursive = T, full.names= F,pattern = ".png")
-            display_ensemblepng_full<- list.files(path =  paste0(models_dir_sp_path,"/present/ensemble_models"),recursive = T, full.names= T,pattern = ".png")
-            lapply(1:length(order(display_ensemblepng)), function(i) {
-              tags$a(
-                href = display_ensemblepng_full[i],
-                tags$img(src = display_ensemblepng[i], height = "200px"),
-                target = "_blank"
-              )
-            })
-          })
+          ## Stats tab
+          output$stats <- renderDataTable({
+            stats.file <- list.files(path =  paste0(models_dir_sp,"/present/final_models"), recursive = T, full.names= T,pattern = "final_statistics.csv")[1]
+            read.csv(stats.file)
+          }, options = list(lengthMenu = c(5, 30, 50), pageLength = 10))
           
-          # List statistics files
-          output$uiestatistica <- renderUI({
-            stats_file <- list.files(path = models_dir, recursive = T, full.names = T, pattern = "final_statistics.csv")
-            lapply(1:length(stats_file), function(i) {
+          ## Input data tab
+         #output$uiarquivosdados <-
+          # 1 - metadata table
+           output$meta <-
+          # 2 - Sdmdata txt table
+          output$sdmdata_table <- renderUI({
+            list_csv <- list.files(path = models_dir, recursive = T, full.names = T, pattern = "occurrences.csv")
+            lapply(1:length(list_csv), function(i) {
               tags$div(tags$a(
-                href = stats_file[i],
-                paste0(stats_file[i]),
+                href = list_csv[i],
+                paste0(list_csv[i]),
                 target = "_blank"
               ))
             })
           })
-          
-          # List species occurrence dataset file (.csv)
-          output$uiarquivosdados <- renderUI({
+          # 3 - Sdmdata png map
+          output$sdmdata_png <- renderUI({
             list_csv <- list.files(path = models_dir, recursive = T, full.names = T, pattern = "occurrences.csv")
             lapply(1:length(list_csv), function(i) {
               tags$div(tags$a(
@@ -319,8 +306,11 @@ function(input, output, session) {
             })
           })
           
-          # List partitions
-          output$uiarquivosmodelos <- renderUI({
+          
+          ## Output files - Present
+          # partitions dir
+          #output$uiarquivosmodelos <-
+            output$partitions <-renderUI({
             list_partitions <- list.files(path = paste0(models_dir,"/present/partitions"), recursive = T, full.names = T, pattern = ".tif")
             lapply(1:length(sort(list_partitions)), function(i) {
               tags$div(tags$a(
@@ -331,8 +321,9 @@ function(input, output, session) {
             })
           })
           
-          # List final files
-          output$uiarquivosfinal <- renderUI({
+          # final_models dir
+          #output$uiarquivosfinal 
+          output$final <- renderUI({
             list_final <-  list.files(path = paste0(models_dir,"/present/final_models"), recursive = T, full.names = T, pattern = ".tif")
             lapply (1:length(sort(list_final)), function(i) {
               tags$div(tags$a(
@@ -343,8 +334,9 @@ function(input, output, session) {
             })
           })
           
-          # List ensemble files
-          output$uiarquivosensemble <- renderUI({
+          # ensemble dir
+          #output$uiarquivosensemble <- 
+          output$ensemble <- renderUI({
             list_ensemble <-  list.files(path = paste0(models_dir,"/present/ensemble_models"), recursive = T, full.names = T, pattern = ".tif")
             lapply(1:length(sort(list_ensemble)), function(i) {
               tags$div(tags$a(
@@ -354,6 +346,8 @@ function(input, output, session) {
               ))
             })
           })
+          
+          ## Output files - Present
           
           showModal(modalDialog(
             title = paste0("Project ", input$models_dir.load," succefully loaded!"),
@@ -880,7 +874,7 @@ function(input, output, session) {
             backgr <- randomPoints(predictors, 300)
             colnames(backgr) <- c("lon", "lat")
             absvals <- raster::extract(predictors, backgr)
-            sdmdata <- data.frame(cbind(absvals))
+            sdmdata <<- data.frame(cbind(absvals))
             
             # Exhibit correlation panel 
             output$grafico_correlacao <- renderPlot({
@@ -909,6 +903,16 @@ function(input, output, session) {
       })
     }
   })
+  
+  # output$corrlayers <-renderText({
+  #   input$btnAtualizaSelecaoVariaveis
+  #   if (is.null(sdmdata)) {
+  #     return(NULL)
+  #   } else {
+  #     correlated_vars <- correlation_groups(sdmdata, max_correlation = input$maxcorr)
+  #     correlated_vars
+  #   }
+  # })
   
   output$mapaabiotico <- renderPlot({
     input$btnAtualizaSelecaoVariaveis
@@ -1057,7 +1061,7 @@ function(input, output, session) {
       list_partitions <- list.files(path = paste0(models_dir_sp_present,"/partitions"), recursive = T, full.names = F, pattern = ".tif")
       list_partitions_full <- list.files(path = paste0(models_dir_sp_present,"/partitions"), recursive = T, full.names = T, pattern = ".tif")
       
-       lapply(1:length(list_partitions), function(i) {
+      lapply(1:length(list_partitions), function(i) {
         tags$div(tags$a(
           href = list_partitions_full[i],
           paste0(list_partitions[i]),

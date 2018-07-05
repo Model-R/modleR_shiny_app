@@ -729,22 +729,36 @@ body <- dashboardBody(
                                 
                                 tabPanel("Binary and continuous models",
                                          column(width = 12,
-                                                htmlOutput("ui"))),
+                                                htmlOutput("png"))),
                                 
                                 tabPanel("Stats",
                                          column(width = 12,
-                                                DT::dataTableOutput('dbgridresultado')
+                                                DT::dataTableOutput('stats')
                                          )),
                                 
+                                tabPanel("Input data",
+                                         column(width = 4,
+                                                box(width = NULL,
+                                                    status = "warning",
+                                                    DT::dataTableOutput('meta')
+                                                )
+                                         ),
+                                         
+                                         column(width = 8,
+                                                box(width=12,
+                                                    DT::dataTableOutput('sdmdata_png')
+                                                ),
+                                                box(width=12,
+                                                    DT::dataTableOutput('sdmdata_table')
+                                                )
+                                         )
+                                ),
+                                
+                                
+                                ############ PAREEEEEI ############
                                 tabPanel("Output files",
                                          column(width = 12,
-                                                column(width = 2,
-                                                       box(width = NULL,
-                                                           status = "warning",
-                                                           h4("Script"),
-                                                           htmlOutput("uiscript")
-                                                       )),
-                                                
+
                                                 column(width = 2,
                                                        box(width = NULL,
                                                            status = "warning",
