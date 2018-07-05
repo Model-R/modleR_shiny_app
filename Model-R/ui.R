@@ -105,7 +105,7 @@ body <- dashboardBody(
                                                       column (width = 6,
                                                               br(),
                                                               img (src = "logo.png", width = 200)
-                                                              ),
+                                                      ),
                                                       
                                                       column (width = 9,
                                                               h4("A workflow to perform Environmental Niche Modeling based on dismo")
@@ -194,7 +194,7 @@ body <- dashboardBody(
                                                                                 solidHeader = TRUE,
                                                                                 leafletOutput('mapadistribuicao'),
                                                                                 height = 500))
-                                                                     ),
+                                                            ),
                                                             
                                                             tabPanel("Load occurrence dataset",
                                                                      column(width = 8,
@@ -718,82 +718,75 @@ body <- dashboardBody(
                        )
               ),
               ########################################################################
-              tabPanel("Outputs",
+              tabPanel("Results",
                        column(width = 12,
                               tabBox(
                                 side = "left",
                                 title = "",
-                                width = '100%',
-                                height = 500,
+                                width = NULL,
                                 id = "tabset2",
+                                
+                                tabPanel("Input data",
+                                         box(width =12,
+                                             column(width = 8,
+                                                        DT::dataTableOutput('sdmdata_table', width= NULL)
+                                                    
+                                             ),
+                                             
+                                             column(width = 4,
+                                                        imageOutput('sdmdata_png', height = 300)
+                                                    )
+                                             
+                                         ),
+                                         column(width = 12,
+                                                box(width=NULL,
+                                                    
+                                                    DT::dataTableOutput('metadata_table', width= NULL)
+                                                )
+                                         )
+                                ),
                                 
                                 tabPanel("Binary and continuous models",
                                          column(width = 12,
-                                                htmlOutput("png"))),
+                                                htmlOutput("png")
+                                         )),
                                 
                                 tabPanel("Stats",
                                          column(width = 12,
                                                 DT::dataTableOutput('stats')
                                          )),
                                 
-                                tabPanel("Input data",
-                                         column(width = 4,
-                                                box(width = NULL,
-                                                    status = "warning",
-                                                    DT::dataTableOutput('meta')
-                                                )
-                                         ),
-                                         
-                                         column(width = 8,
-                                                box(width=12,
-                                                    DT::dataTableOutput('sdmdata_png')
-                                                ),
-                                                box(width=12,
-                                                    DT::dataTableOutput('sdmdata_table')
-                                                )
-                                         )
-                                ),
-                                
-                                
-                                ############ PAREEEEEI ############
-                                tabPanel("Output files",
+                                tabPanel("Output list",
                                          column(width = 12,
-
-                                                column(width = 2,
-                                                       box(width = NULL,
-                                                           status = "warning",
-                                                           h4("Statistics"),
-                                                           htmlOutput("uiestatistica")
-                                                       )),
-                                                column(width = 2,
-                                                       box(width = NULL,
-                                                           status = "warning",
-                                                           h4("Occurence dataset"),
-                                                           htmlOutput("uiarquivosdados")
-                                                       )),
-                                                column(width = 2,
+                                                column(width = 4,
                                                        box(width = NULL,
                                                            status = "warning",
                                                            h4("Models"),
-                                                           htmlOutput("uiarquivosmodelos")
+                                                           htmlOutput("partitions")
                                                        )),
-                                                column(width = 2,
+                                                column(width = 4,
+                                                       box(width = NULL,
+                                                           status = "warning",
+                                                           h4("Final models"),
+                                                           htmlOutput("final")
+                                                       )),
+                                                column(width = 4,
                                                        box(width = NULL,
                                                            status = "warning",
                                                            h4("Ensemble"),
-                                                           htmlOutput("uiarquivosensemble")
-                                                       )),
-                                                column(width = 2,
+                                                           htmlOutput("ensemble")
+                                                       ))
+                                                
+                                         )
+                                ),
+                                
+                                tabPanel("Projections",
+                                         column(width = 12,
+                                                column(width = 12,
                                                        box(width = NULL,
                                                            status = "warning",
-                                                           h4("Geographic projections"),
-                                                           htmlOutput("uiarquivosprojecao")
-                                                       )),
-                                                column(width = 2,
-                                                       box(width = NULL,
-                                                           status = "warning",
-                                                           h4("Time projections"),
-                                                           htmlOutput("uiarquivosprojecaofuturo")
+                                                           h4("Projections"),
+                                                           htmlOutput("projections")
                                                        ))
                                          )
                                 )
