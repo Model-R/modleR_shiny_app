@@ -1,0 +1,2 @@
+"kappa" "spec_sens" "no_omission" "prevalence" "equal_sens_spec" "sensitivity" "AUC" "TSS" "algoritmo" "run" "partition"
+"Aphelandra squarrosa 1 1 bioclim" 0.7499 0.7499 -1e-04 -1e-04 0.1249 0.1249 0.7125 0.5 "bioclim" 1 1

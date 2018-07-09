@@ -41,7 +41,7 @@ ipak(c(
   "sdmpredictors"
 ))
 
-#install_github("Model-R/modelr_pkg", build_vignettes = FALSE, ref="brt")
+install_github("Model-R/modelr_pkg", build_vignettes = FALSE, ref="brt")
 
 jdk_version <- list.files("/Library/Java/JavaVirtualMachines/")
 if (length(jdk_version) != 0) {
@@ -49,7 +49,8 @@ if (length(jdk_version) != 0) {
 } else{
   library("rJava")
 }
-library("ModelR", lib.loc="/Library/Frameworks/R.framework/Versions/3.4/Resources/library")
+library(ModelR)
+#library("ModelR", lib.loc="/Library/Frameworks/R.framework/Versions/3.4/Resources/library")
 
 ext11 <- ext12 <- -90
 ext21 <- ext22 <- -33
@@ -147,7 +148,7 @@ maparesultado_model <- function(
     map <- leaflet() %>%
       addTiles() %>%
       addRasterImage(r, colors = pal, opacity = 0.7) %>%
-      addLegend(pal = pal, values = values(r), title = algorithm) %>%
+      addLegend(pal = pal, values = values(r), title = "") %>%
       addCircles(color = "red",lat = lat, lng =lng, weight = 2, fill = TRUE) %>%
       addRectangles(ext11, ext31, ext21, ext41, color = "red", fill = FALSE, dashArray = "5,5", weight = 2)
   }
@@ -167,7 +168,7 @@ maparesultado_ensemble <- function() {
     map <- leaflet() %>%
       addTiles() %>%
       addRasterImage(r, colors = pal, opacity = 0.7) %>%
-      addLegend(pal = pal, values = values(r), title = "Mean ensemble") %>%
+      addLegend(pal = pal, values = values(r), title = "") %>%
       addCircles(color = "red",lat = lat, lng =lng, weight = 2, fill = TRUE) %>%
       addRectangles(ext11, ext31, ext21, ext41, color = "red", fill = FALSE, dashArray = "5,5", weight = 2)
   }
@@ -270,7 +271,7 @@ function(input, output, session) {
         
         if (models_dir_sp != paste0(models_dir,"/")){
           
-          dirs$present_path <<- list.files(path =  paste0(models_dir_sp,"/present"), recursive = T, include.dirs=F,full.names= T)
+          dirs$present_path <<- list.files(path =  paste0(models_dir_sp,"/present"), recursive = T, include.dirs=F, full.names= T)
           dirs$metatxt <<- grep("metadata.txt", dirs$present_path, value = T)
           dirs$sdmdatatxt <<- grep("sdmdata.txt", dirs$present_path, value = T)
           dirs$sdmdatapng <<- grep("sdmdata_.*png$", dirs$presentpath, value = T)
@@ -281,20 +282,14 @@ function(input, output, session) {
             file<-dirs$metatxt
             read.delim(file, header = TRUE, sep = " ", dec = ".")
           },
-          options = list(scrollX = TRUE,
-                         scrollY= TRUE,
-                         searching = FALSE
-                         )
-          )
+          options = list(scrollX = TRUE,scrollY= TRUE,searching = FALSE))
           
           # 2 - Sdmdata txt table
           output$sdmdata_table <- renderDataTable({
             file<-dirs$sdmdatatxt
             read.delim(file, header = TRUE, sep = " ", dec = ".")
           },
-          options = list(scrollX = TRUE,
-                         searching = FALSE)
-          )
+          options = list(scrollX = TRUE, searching = FALSE))
           
           # 3 - Sdmdata png map
           output$sdmdata_png <- renderImage({
@@ -324,35 +319,7 @@ function(input, output, session) {
             stats.file <- list.files(path =  paste0(models_dir_sp,"/present/final_models"), recursive = T, full.names= T,pattern = "final_statistics.csv")[1]
             read.csv(stats.file)
           }, options = list(lengthMenu = c(5, 30, 50), pageLength = 10))
-          
-          ## Input data tab
-          #output$uiarquivosdados <-
-          # 1 - metadata table
-          output$meta <-
-            # 2 - Sdmdata txt table
-            output$sdmdata_table <- renderUI({
-              list_csv <- list.files(path = models_dir, recursive = T, full.names = T, pattern = "occurrences.csv")
-              lapply(1:length(list_csv), function(i) {
-                tags$div(tags$a(
-                  href = list_csv[i],
-                  paste0(list_csv[i]),
-                  target = "_blank"
-                ))
-              })
-            })
-          # 3 - Sdmdata png map
-          output$sdmdata_png <- renderUI({
-            list_csv <- list.files(path = models_dir, recursive = T, full.names = T, pattern = "occurrences.csv")
-            lapply(1:length(list_csv), function(i) {
-              tags$div(tags$a(
-                href = list_csv[i],
-                paste0(list_csv[i]),
-                target = "_blank"
-              ))
-            })
-          })
-          
-          
+
           ## Output files - Present
           # partitions dir
           output$partitions <-renderUI({
@@ -401,7 +368,8 @@ function(input, output, session) {
               ))
             })
           })
-          showModal(modalDialog(
+         
+           showModal(modalDialog(
             title = paste0("Project ", input$models_dir.load," succefully loaded!"),
             paste0("Output files are dispalyed at the 'Outputs' tab."),
             easyClose = TRUE
@@ -410,6 +378,7 @@ function(input, output, session) {
         }
       }
     }
+    
     # if (models_dir == "./www/results/") {
     #   showModal(modalDialog(
     #     title = "Error! Project name cannot be blank!",
@@ -1060,49 +1029,50 @@ function(input, output, session) {
     
     output$maparesultadomax <- renderLeaflet({
       input$btnModelar
-      maparesultado_model(model_title = "maxent")
+      maparesultado_model(algorithm = "maxent")
     })
     
     output$maparesultadosvm.e <- renderLeaflet({
       input$btnModelar
-      maparesultado_model(model_title = "svm.k")
+      maparesultado_model(algorithm = "svm.k")
     })
     
     output$maparesultadosvm.k <- renderLeaflet({
       input$btnModelar
-      maparesultado_model(model_title = "svm.e")
+      maparesultado_model(algorithm = "svm.e")
     })
     
     output$maparesultadomh <- renderLeaflet({
       input$btnModelar
-      maparesultado_model(model_title = "mahal")
+      maparesultado_model(algorithm = "mahal")
     })
     
     output$maparesultadorf <- renderLeaflet({
       input$btnModelar
-      maparesultado_model(model_title = "rf")
+      maparesultado_model(algorithm = "rf")
     })
     
     output$maparesultadoglm <- renderLeaflet({
       input$btnModelar
-      maparesultado_model(model_title = "glm")
+      maparesultado_model(algorithm = "glm")
     })
     
     output$maparesultadobc <- renderLeaflet({
       input$btnModelar
-      maparesultado_model(model_title = "bioclim")
+      maparesultado_model(algorithm = "bioclim")
     })
     
     output$maparesultadodo <- renderLeaflet({
       input$btnModelar
-      maparesultado_model(model_title = "domain")
+      maparesultado_model(algorithm = "domain")
     })
     
     output$maparesultadoensemble <- renderLeaflet({
       input$btnModelar
       maparesultado_ensemble()
     })
-    #### Exhibit geo. projected model ensemble ####
+   
+     #### Exhibit geo. projected model ensemble ####
     # output$maparesultado_proj <- renderLeaflet({
     #   input$btnModelar
     #   maparesultado_model_proj()
