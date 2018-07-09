@@ -22,7 +22,8 @@ ipak <- function(pkg) {
 
 ipak(c("shinydashboard", 
        "leaflet"))
-#x <- character(0)
+
+
 bio_datasource <- c("GBif - The Global Biodiversity Information Facility" = "gbif",
                     "Jabot - JBRJ Database" = "jabot",
                     "CSV - Comma Separated Values" = "csv")
@@ -250,13 +251,12 @@ body <- dashboardBody(
                                                      box(width = NULL,
                                                          status = "warning",
                                                          numericInput("edtelemento",
-                                                                      "Occurence record ID:",
+                                                                      "Occurrence record ID:",
                                                                       min = 0,
                                                                       max = 100,
                                                                       value = 0),
                                                          actionButton("btnapagar", "Delete selected ID", icon = icon("trash")),
-                                                         actionButton('btneliminarduplicatas', 'Delete duplicates', icon = icon("cubes")),
-                                                         actionButton('saveDataset', 'Save dataset', icon = icon("download"))
+                                                         actionButton('btneliminarduplicatas', 'Delete duplicates', icon = icon("cubes"))
                                                      ),
                                                      
                                                      box(width = NULL,
