@@ -21,7 +21,8 @@ ipak <- function(pkg) {
 }
 
 ipak(c("shinydashboard", 
-       "leaflet"))
+       "leaflet",
+       "DT"))
 
 
 bio_datasource <- c("GBif - The Global Biodiversity Information Facility" = "gbif",
@@ -142,7 +143,7 @@ body <- dashboardBody(
                                                                              choices = c(list_projects),
                                                                              choiceValues = c(list_projects),
                                                                              selected = NULL),
-                                                                selectInput("Select_spdir", "Select input",
+                                                                selectInput("Choose_spdir", "Select input",
                                                                             c("Sp A", "Sp B", "Sp C"))
                                                ),
                                                

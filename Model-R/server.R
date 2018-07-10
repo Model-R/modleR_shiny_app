@@ -13,6 +13,7 @@
 
 # Thanks to Steven Worthington for function ipak https://gist.github.com/stevenworthington/3178163 (HT Karlo Guidoni Martins)
 
+##### INSTALLING AND LOADING REQUIRED PACKAGES #####
 ipak <- function(pkg) {
   new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
   if (length(new.pkg)) {
@@ -41,11 +42,6 @@ ipak(c(
   "sdmpredictors"
 ))
 
-ModelR_check <- require(ModelR)
-if(ModelR_check == FALSE){
-  install_github("Model-R/modelr_pkg", build_vignettes = FALSE, ref="brt")
-} 
-
 jdk_version <- list.files("/Library/Java/JavaVirtualMachines/")
 if (length(jdk_version) != 0) {
   dyn.load(paste0("/Library/Java/JavaVirtualMachines/", jdk_version, "/Contents/Home/lib/server/libjvm.dylib"))
@@ -53,9 +49,11 @@ if (length(jdk_version) != 0) {
   library("rJava")
 }
 
+ModelR_check <- require(ModelR)
+if(ModelR_check == FALSE){
+  install_github("Model-R/modelr_pkg", build_vignettes = FALSE, ref="brt")
+} 
 library("ModelR")
-
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 jar <- paste0(system.file(package = "dismo"), "/java/maxent.jar")
 if (file.exists(jar) != T) {
@@ -65,6 +63,10 @@ if (file.exists(jar) != T) {
   unlink("maxent.zip")
 }
 
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+
+
+##### GLOBAL FUNCTIONS ######
 panel.reg <- function(x, y, bg = NA, cex = 1, col.regres = "red", ...) {
   points(x, y, cex = cex)
   abline(stats::lm(y ~ x), col = col.regres, ...)
@@ -124,7 +126,7 @@ getOccurrences_jabot <- function(species_name) {
   library("rjson")
   pTaxon <- gsub(" ", "_", species_name)
   json_file <- paste0 ("https://model-r.jbrj.gov.br/execjabot.php?especie=", pTaxon)
-  json_data <- fromJSON(file = json_file, method = "C")
+  json_data <- rjson::fromJSON(file = json_file, method = "C")
   final_data <- do.call(rbind, json_data)
   jabot_data <- final_data[, c("taxoncompleto", "longitude", "latitude")]
   occur.data <- cbind(as.character(jabot_data[, 1]), as.numeric(jabot_data[, 2]), as.numeric(jabot_data[, 3]))
@@ -140,9 +142,9 @@ maparesultado_model <- function(algorithm = algorithm) {
   if (file.exists(raw_mean_file)) {
     r <- raster::raster(raw_mean_file)
     pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(r), na.color = "transparent")
-    occ_points <<- coordinates(occurrences)
-    lng <<- occ_points[,1]
-    lat <<-  occ_points[,2]
+    occ_points <- coordinates(occurrences)
+    lng <- occ_points[,1]
+    lat <-  occ_points[,2]
     map <- leaflet() %>%
       addTiles() %>%
       addRasterImage(r, colors = pal, opacity = 0.7) %>%
@@ -161,8 +163,8 @@ maparesultado_ensemble <- function() {
     r <- raster::raster(raw_mean_file)
     pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(r), na.color = "transparent")
     occ_points <<- coordinates(occurrences)
-    lng <<- occ_points[,1]
-    lat <<-  occ_points[,2]
+    lng <- occ_points[,1]
+    lat <-  occ_points[,2]
     map <- leaflet() %>%
       addTiles() %>%
       addRasterImage(r, colors = pal, opacity = 0.7) %>%
@@ -255,162 +257,53 @@ modelagem <- function(){
   )
 }
 
-refresh_results_tab<- function(models_dir, models_dir_sp){
-  
-  if (models_dir_sp != paste0(models_dir,"/")){
-    
-    dirs <<- reactiveValues(
-      sp_dirs = list.dirs(path = models_dir, recursive = F, full.names= T),
-      selected_sp = species_name,
-      present_path = list.files(path =  paste0(models_dir_sp,"/present"), recursive = T, include.dirs=F, full.names= T),
-      metadatatxt=grep("metadata.txt", dirs$present_path, value = T),
-      sdmdatatxt=grep("sdmdata.txt", dirs$present_path, value = T),
-      sdmdatapng = grep("sdmdata_.*png$", dirs$presentpath, value = T),
-      imgs_png_bin<-grep("bin.*png$", dirs$presentpath, value = T),
-      imgs_png_cont<-grep("cont.*png$", dirs$presentpath, value = T)
-    )
-    
-    ##########      Input data     #########
-    # metadata table
-    output$metadata_table <- renderDataTable({
-      file<-dirs$metatxt
-      read.delim(file, header = TRUE, sep = " ", dec = ".")
-    },
-    options = list(scrollX = TRUE,scrollY= TRUE, searching = FALSE))
-    
-    # sdmdata txt table
-    output$sdmdata_table <- renderDataTable({
-      file<-dirs$sdmdatatxt
-      read.delim(file, header = TRUE, sep = " ", dec = ".")
-    },
-    options = list(scrollX = TRUE, searching = FALSE))
-    
-    # sdmdata png map
-    output$sdmdata_png <- renderImage({
-      file <- dirs$sdmdatapng
-      list(src = file,
-           contentType = 'image/png',
-           height = 300,
-           alt = "This is alternate text")
-    })
-    
-    ########## Binary and Continuous models #########
-    output$png<- renderUI({
-      files <- c(dirs$imgs_png_bin, dirs$imgs_png_cont)
-      if(length(files)>=1){
-        list(src = files,
-             contentType = 'image/png',
-             width = 400,
-             height = 300,
-             alt = "This is alternate text")
-      }
-    })
-    
-    ########## Stats #########
-    output$stats <- renderDataTable({
-      stats.file <- list.files(path = paste0(models_dir_sp,"/present/final_models"), recursive = T, full.names= T, pattern = "final_statistics.csv")[1]
-      read.csv(stats.file)
-    }, options = list(lengthMenu = c(5, 30, 50), pageLength = 10))
-    
-    ########## Output list #########
-    ##  Present ##
-    # partitions dir
-    output$partitions <-renderUI({
-      list_partitions <- list.files(path = paste0(models_dir,"/present/partitions"), recursive = T, full.names = T, pattern = ".tif")
-      lapply(1:length(sort(list_partitions)), function(i) {
-        tags$div(tags$a(
-          href = list_partitions[i],
-          paste0(list_partitions[i]),
-          target = "_blank"
-        ))
-      })
-    })
-    
-    # final_models dir
-    output$final <- renderUI({
-      list_final <-  list.files(path = paste0(models_dir,"/present/final_models"), recursive = T, full.names = T, pattern = ".tif")
-      lapply (1:length(sort(list_final)), function(i) {
-        tags$div(tags$a(
-          href = list_final[i],
-          paste0(list_final[i]),
-          target = "_blank"
-        ))
-      })
-    })
-    
-    # ensemble dir
-    output$ensemble <- renderUI({
-      list_ensemble <-  list.files(path = paste0(models_dir,"/present/ensemble"), recursive = T, full.names = T, pattern = ".tif")
-      lapply(1:length(sort(list_ensemble)), function(i) {
-        tags$div(tags$a(
-          href = list_ensemble[i],
-          paste0(list_ensemble[i]),
-          target = "_blank"
-        ))
-      })
-    })
-  }
-}
-
+##### STARTING SHINY SESSION #####
 options(shiny.maxRequestSize = 100 * 1024^2)
 dirColors <- c(`1` = "#595490", `2` = "#527525", `3` = "#A93F35", `4` = "#BA48AA")
 
 function(input, output, session) {
-ext11 <- ext12 <- -90
-ext21 <- ext22 <- -33
-ext31 <- ext32 <- -32
-ext41 <- ext42 <- 23
-  ###### CREATE NEW/LOAD PROJECT #####
-  dirs <<- reactiveValues(
-    sp_dirs = NULL,
-    selected_sp = NULL,
-    present_path = NULL,
-    projection_paths = NULL,
-    metadatatxt=NULL,
-    sdmdatatxt=NULL,
-    sdmdatapng = NULL,
-    imgs_png_bin=NULL,
-    imgs_png_cont=NULL
-  )
   
+  ext11 <- ext12 <- -90
+  ext21 <- ext22 <- -33
+  ext31 <- ext32 <- -32
+  ext41 <- ext42 <- 23
+  
+  ###### CREATE NEW/LOAD PROJECT #####
   observe({
     if (input$select_project == "load_proj") {
-      
       models_dir <- paste0("./www/results/", input$models_dir.load)
       
       if (models_dir != "./www/results/") {
         
-        if (is.null(list.dirs(models_dir))){
-          return()
-        } else {
-          dirs$sp_dirs <<- list.dirs(models_dir, recursive = F, full.names = F)
+        if (length(list.dirs(models_dir))>=1){
+          avaiable_sps <- list.dirs(models_dir, recursive = F, full.names = F)
+          avaiable_sps_dirs <- list.dirs(models_dir, recursive = F, full.names = T)
           
-          updateSelectInput(session, "Select_spdir",
+          updateSelectInput(session, "Choose_spdir",
                             label = paste("Select species"),
-                            choices = dirs$sp_dirs)
-          dirs$selected_sp <<- input$Select_spdir
+                            choices  = avaiable_sps)
         }
       }
     }
   })
-  
+
   observeEvent(input$btnrefreshprojeto, {
     
-    # Create new project
+    # New project
     if (input$select_project == "new_proj") {
-      models_dir <- paste0("./www/results/", input$models_dir.new)
+      models_dir <<- paste0("./www/results/", input$models_dir.new)
       
       if (models_dir == "./www/results/") {
         showModal(modalDialog(
-          title = "Unable to create project",
-          paste0("Project name cannot be blank!", "Please enter a valid name."),
+          title = "Unable to create project!",
+          paste0("Project name cannot be blank.Please enter a valid name."),
           easyClose = TRUE
         ))
       }
       
       if (file.exists(models_dir)) {
         showModal(modalDialog(
-          title = "Unable to create project",
+          title = "Unable to create project!",
           paste0("Inserted name is already in use."),
           easyClose = TRUE
         ))
@@ -423,25 +316,20 @@ ext41 <- ext42 <- 23
           paste0("Project directory: ", models_dir),
           easyClose = TRUE
         ))
-        models_dir <<- paste0("./www/results/", input$models_dir.new)
       }
     }
     
-    # Load previous project
+    # Load project
     if (input$select_project == "load_proj") {
       
       models_dir <- paste0("./www/results/", input$models_dir.load)
+      models_dir_sp <- paste0(models_dir, "/", input$Choose_spdir )
       
-      #if (dir.exists(models_dir)&& models_dir != "./www/results/") {
-      
-      models_dir_sp <- paste0(models_dir, "/", dirs$selected )
-      
-      if (dir.exists(models_dir_sp) && models_dir_sp != models_dir ){
-        models_dir <<-  models_dir
-        models_dir_sp <<-  models_dir_sp
+      if (models_dir_sp != models_dir && dir.exists(paste0(models_dir_sp,"/present"))){
         
-        refresh_results(models_dir = models_dir, 
-                        models_dir_sp = models_dir_sp)
+        models_dir <<-  models_dir
+        models_dir_sp <<- models_dir_sp
+        species_name <<- input$Choose_spdir
         
         showModal(modalDialog(
           title = paste0("Project ", input$models_dir.load," succefully loaded!"),
@@ -451,19 +339,18 @@ ext41 <- ext42 <- 23
         
       } else {
         showModal(modalDialog(
-          title = paste0("Unable to load outputs"),
+          title = paste0("Unable to load project outputs"),
           paste0("Please check models directory"),
           easyClose = TRUE
         ))
       }
-      # }
     }
   })
   
   #####  IMPORT SPECIES OCCURRENCE DATASET #####
   # Load species occurrence dataset from gbif/jabot databases
   loadspdata <- eventReactive(input$btnsearch_spdata, {
-    species_name <<- input$species_name
+    species_name <- input$species_name
     if (input$bio_datasource == "gbif") {
       occur.data <- getOccurrences_gbif(input$species_name)
       occur.data_gbif <- occur.data [, c(2, 3)]
@@ -482,7 +369,7 @@ ext41 <- ext42 <- 23
   
   # Browse occurrence dataset from local csv file
   loadspdata_csv <- eventReactive(input$btnsearch_spdatacsv, {
-    inFile <<- input$file1
+    inFile <- input$file1
     if (is.null(inFile)) {
       return(NULL)
     } else {
@@ -492,13 +379,13 @@ ext41 <- ext42 <- 23
         sep = input$sep,
         quote = input$quote
       )
-      species_name <<- as.character(sp_data[1,1])
+      species_name <- as.character(sp_data[1,1])
       arquivo_path <- inFile$datapath
       arquivo_header <- input$header
       arquivo_sep <- input$sep
       arquivo_quote <- input$quote
       sp_data_csv <- sp_data [, 2:3]
-      occurrences <<- sp_data_csv
+      occurrences <- sp_data_csv
     }
     occurrences
   })
@@ -517,14 +404,6 @@ ext41 <- ext42 <- 23
     }
     occurrences
   }, options = list(lengthMenu = c(5, 30, 50), pageLength = 5))
-  
-  # observeEvent(input$btn_usedataset,{
-  #   mkdirs(paste0(models_dir, "/", species_name))
-  #   save_raw<-data.frame(species_name, occurrences)
-  #   models_dir_sp<-paste0(models_dir, "/", species_name)
-  #   names(save_raw)<- c("name", "lon", "lat")
-  #   write.csv(save_raw, file=paste0(models_dir, "/", species_name, "/" ,"occurrences_raw.csv"), row.names = FALSE)
-  # })
   
   # Display map with loaded occurrence records
   output$mapadistribuicao <- renderLeaflet({
@@ -554,7 +433,7 @@ ext41 <- ext42 <- 23
   })
   
   #####  DATA CLEANING #####
-  output$dgbriddadosdatacleaning <- renderDataTable({
+  output$dgbriddadosdatacleaning <- DT::renderDataTable({
     input$btnapagar
     input$btneliminarduplicatas
     input$btnsearch_spdatacsv
@@ -570,7 +449,7 @@ ext41 <- ext42 <- 23
           progress <- shiny::Progress$new()
           progress$set(message = "Excluding duplicates...", value = 0)
           on.exit(progress$close())
-          occurrences <<- unique(occurrences)
+          occurrences <- unique(occurrences)
         }
         
         isolate({
@@ -579,7 +458,7 @@ ext41 <- ext42 <- 23
             if (input$btnapagar == 0) {
               return()
             }
-            occurrences <<- occurrences[-input$edtelemento, ]
+            occurrences <- occurrences[-input$edtelemento, ]
           }
           rownames(occurrences) <- NULL
           occurrences$id <- 1:nrow(occurrences)
@@ -588,12 +467,6 @@ ext41 <- ext42 <- 23
       }
     }
   }, options = list(searching = FALSE, lengthMenu = c(5, 30, 50), pageLength = 5))
-  
-  # eventReactive(input$saveDataset, {
-  #   save_cleandata<-data.frame("species_name", occurrences)
-  #   names(save_cleandata)<- c("name", "lon", "lat")
-  #   write.csv(save_cleandata, file=paste0(models_dir, "/", species_name, "/" ,"occurrences.csv"), row.names = FALSE)
-  # })
   
   output$mapadistribuicaodatacleaning <- renderLeaflet({
     input$btnapagar
@@ -621,15 +494,7 @@ ext41 <- ext42 <- 23
     }
   })
   
- # Update species occurrence dataset
-  datasetInput <- reactive({
-    if (exists("occurrences")) {
-      switch("occurrences", occurrences = occurrences)
-    }
-  })
-
-  
-  #### Model Extent ####
+  ######### MODEL EXTENT #########
   output$mapapontosextend <- renderLeaflet({
     input$btnapagar
     input$btneliminarduplicatas
@@ -1025,14 +890,11 @@ ext41 <- ext42 <- 23
       if (exists("occurrences") && exists("predictors") && exists("species_name")) {
         progress <<- shiny::Progress$new()
         progress$set(message = "Processing...", value = 0)
-        
-        models_dir_sp <<- paste0(models_dir, "/", species_name)
-        
         on.exit(progress$close()) 
         
+        models_dir_sp <<- paste0(models_dir, "/", species_name)
         modelagem()
-        refresh_results(models_dir = models_dir,
-                        models_dir_sp = models_dir_sp)
+        
         output$maparesultadomax <- renderLeaflet({
           input$btnModelar
           maparesultado_model(algorithm = "maxent")
@@ -1078,7 +940,7 @@ ext41 <- ext42 <- 23
           maparesultado_ensemble()
         })
         
-        
+       
       } else {
         showModal(modalDialog(
           title = "Error!",
@@ -1087,5 +949,96 @@ ext41 <- ext42 <- 23
         ))
       }
     }
+  })
+  
+  
+  observeEvent({ 
+    input$btnModelar
+    input$btnrefreshprojeto
+  }, { 
+    
+    if (models_dir_sp != paste0(models_dir,"/")){
+      
+      dirs <-reactiveValues()
+      dirs$present_files <- list.files(path =  paste0(models_dir_sp,"/present"), recursive = T, include.dirs=F, full.names= T)
+      dirs$metadatatxt <- grep("metadata.txt", dirs$present_files, value = T)
+      dirs$sdmdatatxt <- grep("sdmdata.txt", dirs$present_files, value = T)
+      dirs$sdmdatapng <- grep("sdmdata_.*png$", dirs$present_files, value = T)
+      dirs$imgs_png_bin <- grep("bin.*png$", dirs$present_files, value = T)
+      dirs$imgs_png_cont <- grep("cont.*png$", dirs$present_files, value = T)
+      dirs$list_partitions <- list.files(path = paste0(models_dir_sp,"/present/partitions"), recursive = T, full.names = T, pattern = ".tif")
+      dirs$list_final <-  list.files(path = paste0(models_dir_sp,"/present/final_models"), recursive = T, full.names = T, pattern = ".tif")
+      dirs$list_ensemble <-  list.files(path = paste0(models_dir_sp,"/present/ensemble"), recursive = T, full.names = T, pattern = ".tif")
+      dirs$stats.file <- list.files(path = paste0(models_dir_sp,"/present/final_models"), recursive = T, full.names= T, pattern = "final_statistics.csv")[1]
+      
+    }
+    
+    ## metadata table ##
+    output$metadata_table <- renderDataTable({
+      read.delim(dirs$metadatatxt, header = TRUE, sep = " ", dec = ".")
+    }, options = list(scrollX = TRUE,scrollY= TRUE, searching = FALSE))
+    
+    ## sdmdata txt table ##
+    output$sdmdata_table <- renderDataTable({
+      read.delim( dirs$sdmdatatxt, header = TRUE, sep = " ", dec = ".")
+    }, options = list(scrollX = TRUE, searching = FALSE))
+    
+    ## sdmdata png map ##
+    output$sdmdata_png <- renderImage({
+      list(src = dirs$sdmdatapng,
+           contentType = 'image/png',
+           height = 300,
+           alt = "This is alternate text")
+    })
+    
+    ## Binary and Continuous models ##
+    output$png<- renderUI({
+      files <- c(dirs$imgs_png_bin, dirs$imgs_png_cont)
+      if(length(files)>=1){
+        list(src = files,
+             contentType = 'image/png',
+             width = 400,
+             alt = "This is alternate text")
+      }
+    })
+    
+    ## Stats ##
+    output$stats <- renderDataTable({
+      read.csv(dirs$stats.file)
+    }, options = list(lengthMenu = c(5, 30, 50), pageLength = 10))
+    
+    ##  Present: partitions dir ##
+    output$partitions <-renderUI({
+      lapply(1:length(sort(dirs$list_partitions)), function(i) {
+        tags$div(tags$a(
+          href = dirs$list_partitions[i],
+          paste0(dirs$list_partitions[i]),
+          target = "_blank"
+        ))
+      })
+    })
+    
+    ##  Present: final_models dir ##
+    output$final <- renderUI({
+      lapply (1:length(sort(dirs$list_final)), function(i) {
+        tags$div(tags$a(
+          href = dirs$list_final[i],
+          paste0(dirs$list_final[i]),
+          target = "_blank"
+        ))
+      })
+    })
+    
+    ##  Present: ensemble dir ##
+    output$ensemble <- renderUI({
+      lapply(1:length(sort(dirs$list_ensemble)), function(i) {
+        tags$div(tags$a(
+          href = dirs$list_ensemble[i],
+          paste0(dirs$list_ensemble[i]),
+          target = "_blank"
+        ))
+      })
+    })
+    
   })
 }
