@@ -193,8 +193,7 @@ body <- dashboardBody(
                                                             tabPanel("Load occurrence dataset",
                                                                      column(width = 8,
                                                                             box(width = NULL,
-                                                                                DT::dataTableOutput('spdata_table'),
-                                                                                actionButton('btn_usedataset', "Use species dataset", icon = icon("next"))
+                                                                                DT::dataTableOutput('spdata_table')
                                                                             )),
                                                                      
                                                                      column(width = 4,
@@ -228,8 +227,12 @@ body <- dashboardBody(
                                                                                                  textInput("species_name", label = "Species name:", value = "Caesalpinia echinata"),
                                                                                                  actionButton("btnsearch_spdata", "Search", icon = icon("search"))
                                                                                 )
-                                                                            )
+                                                                            ),
+                                                                            actionButton("btnconfirm_spname", "Confirm species name", icon = icon("submit"))
+                                                                            
                                                                      )
+                                                                     
+                                                                     
                                                             )
                                                      ))),
                                      
@@ -557,8 +560,8 @@ body <- dashboardBody(
                                 tabPanel("BC",
                                          column(width = 12,
                                                 leafletOutput('maparesultadobc')
-                                         )
-                                ),
+                                         )),
+                                
                                 tabPanel("MH",
                                          column(width = 12,
                                                 leafletOutput('maparesultadomh')
@@ -604,14 +607,14 @@ body <- dashboardBody(
                               box(width = NULL,
                                   height=800,
                                   box(width = 6,
-                                      height=400,
+                                      height="400px",
                                       status = "warning",
                                       checkboxInput('geo_filt',
                                                     'Delete occurrence that are too close?',
                                                     value = FALSE),
                                       
                                       conditionalPanel(condition = "input.geo_filt",
-                                                       textInput("geo_filt_dist", 
+                                                       numericInput("geo_filt_dist", 
                                                                  "Minimum distance between records (in km):",
                                                                  value = NULL)
                                       ),
