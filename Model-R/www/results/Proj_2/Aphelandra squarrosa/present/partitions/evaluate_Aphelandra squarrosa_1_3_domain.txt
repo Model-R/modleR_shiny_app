@@ -1,2 +1,0 @@
-"kappa" "spec_sens" "no_omission" "prevalence" "equal_sens_spec" "sensitivity" "AUC" "TSS" "algoritmo" "run" "partition"
-"Aphelandra squarrosa 1 3 domain" 0.66599589 0.58323333 0.58323333 0.06656667 0.58323333 0.59156667 0.98375 0.93 "domain" 1 3

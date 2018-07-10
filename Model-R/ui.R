@@ -20,10 +20,10 @@ ipak <- function(pkg) {
   sapply(pkg, require, character.only = TRUE)
 }
 
-ipak(c("shinydashboard", 
+ipak(c("shiny",
+       "shinydashboard", 
        "leaflet",
        "DT"))
-
 
 bio_datasource <- c("GBif - The Global Biodiversity Information Facility" = "gbif",
                     "Jabot - JBRJ Database" = "jabot",
@@ -75,6 +75,7 @@ rcp <- c("rcp26" = "26",
          "rcp45" = "45",
          "rcp60" = "60",
          "rcp85" = "85")
+
 past_dates_wc <- c("Mid Holocene" = 'mid',
                    "Last Glacial Maximum" = 'lgm')
 
@@ -85,23 +86,16 @@ future_bo_dates<-c("2100"='2100',
 header <- dashboardHeader(title = "Model-R 2.0")
 body <- dashboardBody(
   fluidRow(
-    tags$head(
-      tags$link(rel = "stylesheet",
-                type = "text/css",
-                href = "style.css")
-    ),
     column (width = 12,
             tabBox(
               side = "left",
               title = "Steps",
               width = NULL,
               height = "1000px",
-              id = "tabset1",
               
               ########################################################################
               tabPanel("Welcome",
                        column(width = 12,
-                              id = "tabset1",
                               tabPanel("", column(width = 9,
                                                   box(width = NULL,
                                                       column (width = 6,
@@ -187,8 +181,6 @@ body <- dashboardBody(
                                                             title = "",
                                                             width = NULL,
                                                             height = "600px",
-                                                            id = "tabset1",
-                                                            
                                                             
                                                             tabPanel("View occurrence map",
                                                                      column(width = 12,
@@ -562,7 +554,6 @@ body <- dashboardBody(
                                 side = "left",
                                 title = "",
                                 width = NULL,
-                                id = "tabset2",
                                 tabPanel("BC",
                                          column(width = 12,
                                                 leafletOutput('maparesultadobc')
@@ -721,81 +712,72 @@ body <- dashboardBody(
               ########################################################################
               tabPanel("Results",
                        column(width = 12,
-                              tabBox(
-                                side = "left",
-                                title = "",
-                                width = NULL,
-                                id = "tabset2",
-                                
-                                tabPanel("Input data",
-                                         box(width =12,
-                                             column(width = 8,
-                                                        DT::dataTableOutput('sdmdata_table', width= NULL)
-                                                    
-                                             ),
-                                             
-                                             column(width = 4,
-                                                        imageOutput('sdmdata_png', height = 300)
-                                                    )
-                                             
-                                         ),
-                                         column(width = 12,
-                                                box(width=NULL,
-                                                    
-                                                    DT::dataTableOutput('metadata_table', width= NULL)
-                                                )
-                                         )
-                                ),
-                                
-                                tabPanel("Binary and continuous models",
-                                         column(width = 12,
-                                                htmlOutput("png")
-                                         )),
-                                
-                                tabPanel("Stats",
-                                         column(width = 12,
-                                                DT::dataTableOutput('stats')
-                                         )),
-                                
-                                tabPanel("Output list",
-                                         column(width = 12,
-                                                column(width = 4,
-                                                       box(width = NULL,
-                                                           status = "warning",
-                                                           h4("Models"),
-                                                           htmlOutput("partitions")
-                                                       )),
-                                                column(width = 4,
-                                                       box(width = NULL,
-                                                           status = "warning",
-                                                           h4("Final models"),
-                                                           htmlOutput("final")
-                                                       )),
-                                                column(width = 4,
-                                                       box(width = NULL,
-                                                           status = "warning",
-                                                           h4("Ensemble"),
-                                                           htmlOutput("ensemble")
-                                                       ))
-                                                
-                                         )
-                                ),
-                                
-                                tabPanel("Projections",
-                                         column(width = 12,
-                                                column(width = 12,
-                                                       box(width = NULL,
-                                                           status = "warning",
-                                                           h4("Projections"),
-                                                           htmlOutput("projections")
-                                                       ))
-                                         )
-                                )
+                              tabBox(title = "",
+                                     side = "left",
+                                     width = NULL,
+                                     height = NULL,
+                                    
+                                     tabPanel("Input data",
+                                              box(width = 12,
+                                                  column(width = 8, 
+                                                         DT::dataTableOutput('sdmdata_table', height = "400px")
+                                                  ),
+                                                  
+                                                  column(width = 4, 
+                                                         imageOutput('sdmdata_png',height = "400px")
+                                                  )
+                                              ),
+                                              box(width = 12,
+                                                  DT::dataTableOutput('metadata_table', width= NULL)
+                                              )
+                                     ),
+                                     
+                                     tabPanel("Binary and continuous models",
+                                              column(width = 12,
+                                                     htmlOutput("png")
+                                              )),
+                                     
+                                     tabPanel("Stats",
+                                              column(width = 12,
+                                                     DT::dataTableOutput('stats')
+                                              )),
+                                     
+                                     tabPanel("Output list",
+                                              column(width = 4,
+                                                     box(width = NULL,
+                                                         status = "warning",
+                                                         h4("Models"),
+                                                         htmlOutput("partitions")
+                                                     )),
+                                              column(width = 4,
+                                                     box(width = NULL,
+                                                         status = "warning",
+                                                         h4("Final models"),
+                                                         htmlOutput("final")
+                                                     )),
+                                              column(width = 4,
+                                                     box(width = NULL,
+                                                         status = "warning",
+                                                         h4("Ensemble"),
+                                                         htmlOutput("ensemble")
+                                                     ))
+                                     ),
+                                     
+                                     tabPanel("Projections",
+                                              column(width = 12,
+                                                     box(width = NULL,
+                                                         status = "warning",
+                                                         h4("Projections"),
+                                                         htmlOutput("projections")
+                                                     ))
+                                     )
                               )
                        )),
               ########################################################################
               tabPanel("Help"
-              )
+              
+                       )
+              
             ) 
     ) 
   ) 

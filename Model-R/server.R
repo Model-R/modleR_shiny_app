@@ -30,7 +30,6 @@ ipak(c(
   "rjson",
   "maps",
   "rgdal",
-  "raster",
   "dismo",
   "rgbif",
   "XML",
@@ -38,7 +37,6 @@ ipak(c(
   "kernlab",
   "data.table",
   "DT",
-  "shinyjs",
   "sdmpredictors"
 ))
 
@@ -109,9 +107,8 @@ getOccurrences_gbif <- function(species_name) {
                             taxonKey = key,
                             return = "data" )
     gbif_data <- subset(gbif_data, !is.na(decimalLongitude) & !is.na(decimalLatitude))
-    occur.data <- cbind(gbif_data$name, gbif_data$decimalLongitude, gbif_data$decimalLatitude)
+    occur.data <- data.frame(gbif_data$name, gbif_data$decimalLongitude, gbif_data$decimalLatitude)
     colnames(occur.data) <- c("name", "lon", "lat")
-    occur.data <- as.data.frame(occur.data)
     return(occur.data)
   } else {
     showModal(modalDialog(
@@ -129,7 +126,7 @@ getOccurrences_jabot <- function(species_name) {
   json_data <- rjson::fromJSON(file = json_file, method = "C")
   final_data <- do.call(rbind, json_data)
   jabot_data <- final_data[, c("taxoncompleto", "longitude", "latitude")]
-  occur.data <- cbind(as.character(jabot_data[, 1]), as.numeric(jabot_data[, 2]), as.numeric(jabot_data[, 3]))
+  occur.data <- data.frame(as.character(jabot_data[, 1]), as.numeric(jabot_data[, 2]), as.numeric(jabot_data[, 3]))
   colnames(occur.data) <- c("name", "lon", "lat")
   return(occur.data)
 }
@@ -141,7 +138,7 @@ maparesultado_model <- function(algorithm = algorithm) {
   
   if (file.exists(raw_mean_file)) {
     r <- raster::raster(raw_mean_file)
-    pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(r), na.color = "transparent")
+    pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(r), na.color = "transparent") 
     occ_points <- coordinates(occurrences)
     lng <- occ_points[,1]
     lat <-  occ_points[,2]
@@ -175,7 +172,6 @@ maparesultado_ensemble <- function() {
 }
 
 modelagem <- function(){
-  
   if(input$partition_type == 'crossvalidation'){
     cv_n <- input$cv_n
     cv_partitions <- input$cv_partitions
@@ -263,11 +259,6 @@ dirColors <- c(`1` = "#595490", `2` = "#527525", `3` = "#A93F35", `4` = "#BA48AA
 
 function(input, output, session) {
   
-  ext11 <- ext12 <- -90
-  ext21 <- ext22 <- -33
-  ext31 <- ext32 <- -32
-  ext41 <- ext42 <- 23
-  
   ###### CREATE NEW/LOAD PROJECT #####
   observe({
     if (input$select_project == "load_proj") {
@@ -326,7 +317,6 @@ function(input, output, session) {
       models_dir_sp <- paste0(models_dir, "/", input$Choose_spdir )
       
       if (models_dir_sp != models_dir && dir.exists(paste0(models_dir_sp,"/present"))){
-        
         models_dir <<-  models_dir
         models_dir_sp <<- models_dir_sp
         species_name <<- input$Choose_spdir
@@ -353,16 +343,11 @@ function(input, output, session) {
     species_name <- input$species_name
     if (input$bio_datasource == "gbif") {
       occur.data <- getOccurrences_gbif(input$species_name)
-      occur.data_gbif <- occur.data [, c(2, 3)]
-      occurrences <<- occur.data_gbif
+      occurrences <<- occur.data [, -c(1)]
     }
     if (input$bio_datasource == "jabot") {
       occur.data <- getOccurrences_jabot(input$species_name)
-      occur.data <- as.data.frame(occur.data, stringsAsFactors = F)
-      occur.data_jabot <- occur.data[, c(2, 3)]
-      occur.data_jabot[, 1] <- as.numeric(occur.data_jabot[, 1])
-      occur.data_jabot[, 2] <- as.numeric(occur.data_jabot[, 2])
-      occurrences <<- occur.data_jabot
+      occurrences <<- occur.data[, -c(1)]
     }
     occurrences
   })
@@ -384,8 +369,7 @@ function(input, output, session) {
       arquivo_header <- input$header
       arquivo_sep <- input$sep
       arquivo_quote <- input$quote
-      sp_data_csv <- sp_data [, 2:3]
-      occurrences <- sp_data_csv
+      occurrences <<- sp_data[, 2:3]
     }
     occurrences
   })
@@ -418,6 +402,7 @@ function(input, output, session) {
       latitude<-as.numeric(latitude)
       longitude<-as.character(occurrences$lon)
       longitude<-as.numeric(longitude)
+      
       map <- leaflet(occurrences) %>%
         addTiles() %>%
         addCircles(color = "red", lat = ~ latitude, lng = ~ longitude) %>%
@@ -495,6 +480,11 @@ function(input, output, session) {
   })
   
   ######### MODEL EXTENT #########
+  ext11 <- ext12 <- -90
+  ext21 <- ext22 <- -33
+  ext31 <- ext32 <- -32
+  ext41 <- ext42 <- 23
+  
   output$mapapontosextend <- renderLeaflet({
     input$btnapagar
     input$btneliminarduplicatas
@@ -819,7 +809,7 @@ function(input, output, session) {
           # Stack and crop environmental layers
           predictors.raw <- stack(env_data)
           ext <- extent(ext11, ext21, ext31, ext41)
-          predictors <<- crop(predictors.raw, ext)
+          predictors <<- crop(predictors.raw, ext) 
           
           if (length(envdata_timeproj) >= 1) {
             predictorsfuturo.raw <- stack(envdata_timeproj)
@@ -940,7 +930,6 @@ function(input, output, session) {
           maparesultado_ensemble()
         })
         
-       
       } else {
         showModal(modalDialog(
           title = "Error!",
@@ -951,27 +940,29 @@ function(input, output, session) {
     }
   })
   
-  
   observeEvent({ 
     input$btnModelar
     input$btnrefreshprojeto
   }, { 
+    if(exists("models_dir_sp")){
+      if (models_dir_sp != paste0(models_dir,"/")){
+        dirs <-reactiveValues()
+        dirs$present_files <- list.files(path =  paste0(models_dir_sp,"/present"), recursive = T, include.dirs=F, full.names= T)
+        dirs$metadatatxt <- grep("metadata.txt", dirs$present_files, value = T)
+        dirs$sdmdatatxt <- grep("sdmdata.txt", dirs$present_files, value = T)
+        dirs$sdmdatapng <- grep("sdmdata_.*png$", dirs$present_files, value = T)
+        dirs$imgs_png_bin <- grep("bin.*png$", dirs$present_files, value = T)
+        dirs$imgs_png_cont <- grep("cont.*png$", dirs$present_files, value = T)
+        dirs$list_partitions <- list.files(path = paste0(models_dir_sp,"/present/partitions"), recursive = T, full.names = T, pattern = ".tif")
+        dirs$list_final <-  list.files(path = paste0(models_dir_sp,"/present/final_models"), recursive = T, full.names = T, pattern = ".tif")
+        dirs$list_ensemble <-  list.files(path = paste0(models_dir_sp,"/present/ensemble"), recursive = T, full.names = T, pattern = ".tif")
+        dirs$stats.file <- list.files(path = paste0(models_dir_sp,"/present/final_models"), recursive = T, full.names= T, pattern = "final_statistics.csv")[1]
+      }
+    }else{
+      return()
+      }
     
-    if (models_dir_sp != paste0(models_dir,"/")){
-      
-      dirs <-reactiveValues()
-      dirs$present_files <- list.files(path =  paste0(models_dir_sp,"/present"), recursive = T, include.dirs=F, full.names= T)
-      dirs$metadatatxt <- grep("metadata.txt", dirs$present_files, value = T)
-      dirs$sdmdatatxt <- grep("sdmdata.txt", dirs$present_files, value = T)
-      dirs$sdmdatapng <- grep("sdmdata_.*png$", dirs$present_files, value = T)
-      dirs$imgs_png_bin <- grep("bin.*png$", dirs$present_files, value = T)
-      dirs$imgs_png_cont <- grep("cont.*png$", dirs$present_files, value = T)
-      dirs$list_partitions <- list.files(path = paste0(models_dir_sp,"/present/partitions"), recursive = T, full.names = T, pattern = ".tif")
-      dirs$list_final <-  list.files(path = paste0(models_dir_sp,"/present/final_models"), recursive = T, full.names = T, pattern = ".tif")
-      dirs$list_ensemble <-  list.files(path = paste0(models_dir_sp,"/present/ensemble"), recursive = T, full.names = T, pattern = ".tif")
-      dirs$stats.file <- list.files(path = paste0(models_dir_sp,"/present/final_models"), recursive = T, full.names= T, pattern = "final_statistics.csv")[1]
-      
-    }
+   
     
     ## metadata table ##
     output$metadata_table <- renderDataTable({
@@ -1039,6 +1030,5 @@ function(input, output, session) {
         ))
       })
     })
-    
   })
 }
