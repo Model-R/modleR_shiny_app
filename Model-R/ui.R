@@ -200,9 +200,9 @@ body <- dashboardBody(
                                                             tabPanel("Load occurrence dataset",
                                                                      column(width = 8,
                                                                             box(width = NULL,
-                                                                                DT::dataTableOutput('spdata_table'),
-                                                                                actionButton('btn_usedataset', "Use species dataset", icon = icon("next"))
-                                                                            )),
+                                                                                DT::dataTableOutput('spdata_table')),
+                                                                                actionButton('btn_saveDatasetRaw', "Save species dataset", icon = icon("next"))
+                                                                            ),
                                                                      
                                                                      column(width = 4,
                                                                             box(width = NULL, status = "warning",
@@ -256,8 +256,10 @@ body <- dashboardBody(
                                                                       max = 100,
                                                                       value = 0),
                                                          actionButton("btnapagar", "Delete selected ID", icon = icon("trash")),
-                                                         actionButton('btneliminarduplicatas', 'Delete duplicates', icon = icon("cubes"))
-                                                     ),
+                                                         actionButton('btneliminarduplicatas', 'Delete duplicates', icon = icon("cubes")),
+                                                        actionButton('btn_saveDatasetClean', "Save dataset", icon = icon("next"))
+
+                                                          ),
                                                      
                                                      box(width = NULL,
                                                          DT::dataTableOutput('dgbriddadosdatacleaning')
