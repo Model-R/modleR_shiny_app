@@ -141,9 +141,8 @@ body <- dashboardBody(
                                                                              "Open project:",
                                                                              choices = c(list_projects),
                                                                              choiceValues = c(list_projects),
-                                                                             selected = NULL),
-                                                                selectInput("Select_spdir", "Select input",
-                                                                            c("Sp A", "Sp B", "Sp C"))
+                                                                             selected = NULL)
+                                                                
                                                ),
                                                
                                                
@@ -724,7 +723,8 @@ body <- dashboardBody(
                        column(width = 12,
                               tabBox(
                                 side = "left",
-                                title = "",
+                                title = selectInput("Select_spdir", "Select species",
+                                                    c("Sp A", "Sp B", "Sp C")),
                                 width = NULL,
                                 id = "tabset2",
                                 

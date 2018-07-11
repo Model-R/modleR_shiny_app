@@ -41,11 +41,6 @@ ipak(c(
   "sdmpredictors"
 ))
 
-ModelR_check <- require(ModelR)
-if (ModelR_check == FALSE) {
-  install_github("Model-R/modelr_pkg", build_vignettes = FALSE, ref = "brt")
-}
-
 jdk_version <- list.files("/Library/Java/JavaVirtualMachines/")
 if (length(jdk_version) != 0) {
   dyn.load(paste0("/Library/Java/JavaVirtualMachines/", jdk_version, "/Contents/Home/lib/server/libjvm.dylib"))
@@ -53,9 +48,11 @@ if (length(jdk_version) != 0) {
   library("rJava")
 }
 
+ModelR_check <- require(ModelR)
+if (ModelR_check == FALSE) {
+  devtools::install_github("Model-R/modelr_pkg", build_vignettes = FALSE, ref = "brt")
+}
 library("ModelR")
-
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 jar <- paste0(system.file(package = "dismo"), "/java/maxent.jar")
 if (file.exists(jar) != T) {
@@ -64,6 +61,8 @@ if (file.exists(jar) != T) {
   unzip("maxent.zip", files = "maxent.jar", exdir = system.file("java", package = "dismo"))
   unlink("maxent.zip")
 }
+
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 panel.reg <- function(x, y, bg = NA, cex = 1, col.regres = "red", ...) {
   points(x, y, cex = cex)
@@ -100,9 +99,9 @@ mkdirs <- function(dir_path) {
 }
 
 getOccurrences_gbif <- function(species_name) {
-  key <- name_backbone(name = species_name)$speciesKey
+  key <- rgbif::name_backbone(name = species_name)$speciesKey
   if (!is.null(key)) {
-    gbif_data <- occ_search(
+    gbif_data <-rgbif::occ_search(
       hasCoordinate = TRUE,
       hasGeospatialIssue = F,
       taxonKey = key,
@@ -122,17 +121,15 @@ getOccurrences_gbif <- function(species_name) {
 }
 
 getOccurrences_jabot <- function(species_name) {
-  library("rjson")
   pTaxon <- gsub(" ", "_", species_name)
   json_file <- paste0("https://model-r.jbrj.gov.br/execjabot.php?especie=", pTaxon)
-  json_data <- fromJSON(file = json_file, method = "C")
+  json_data <- rjson::fromJSON(file = json_file, method = "C")
   final_data <- do.call(rbind, json_data)
   jabot_data <- final_data[, c("taxoncompleto", "longitude", "latitude")]
   occur.data <- data.frame(as.character(jabot_data[, 1]), as.numeric(jabot_data[, 2]), as.numeric(jabot_data[, 3]))
   colnames(occur.data) <- c("name", "lon", "lat")
   return(occur.data)
 }
-
 maparesultado_model <- function(algorithm = algorithm) {
   finaldir <- list.files(paste0(models_dir, "/", species_name, "/present/final_models/"))
   tif_file <- finaldir[finaldir == paste0(species_name, "_", algorithm, "_raw_mean.tif")]
@@ -171,44 +168,13 @@ maparesultado_ensemble <- function() {
       addRectangles(ext11, ext31, ext21, ext41, color = "red", fill = FALSE, dashArray = "5,5", weight = 2)
   }
 }
-
-refresh_results <- function() {
-  present_path <<- list.files(path = paste0(models_dir_sp, "/present"), recursive = T, include.dirs = F, full.names = T)
-  metadatatxt <<- read.delim(grep("metadata.txt", present_path, value = T), header = TRUE, sep = " ", dec = ".")
-  sdmdatatxt <<- read.delim(grep("sdmdata.txt", present_path, value = T), header = TRUE, sep = " ", dec = ".")
-  sdmdatapng <<- list(src = grep("sdmdata_.*png$", present_path, value = T),
-    contentType = "image/png",
-    height = 300,
-    alt = "This is alternate text")
-  # imgs_png_bin <- grep("bin.*png$", present_path, value = T)
-  #imgs_png_cont <- grep("cont.*png$", present_path, value = T)
-  # 
-  #species_name <<- input$Select_spdir
-  occurrences <<- sdmdatatxt[which(sdmdatatxt[,2] == 1),c(3,4)]
-}
-
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 options(shiny.maxRequestSize = 100 * 1024^2)
 dirColors <- c(`1` = "#595490", `2` = "#527525", `3` = "#A93F35", `4` = "#BA48AA")
 
 function(input, output, session) {
   
   ###### SET PROJECT DIRECTORY #####
-  
-  observe({
-    if (input$select_project == "load_proj") {
-      models_dir <- paste0("./www/results/", input$models_dir.load)
-      
-      if (models_dir != "./www/results/") {
-        sp_dirs <- list.dirs(models_dir, recursive = F, full.names = F)
-        updateSelectInput(session, "Select_spdir",
-                          label = paste("Select species"),
-                          choices = c(sp_dirs)
-        )
-        
-      }
-    }
-  })
-  
   observeEvent(input$btnrefreshprojeto, {
     
     # Create new project
@@ -237,34 +203,22 @@ function(input, output, session) {
           paste0("Project directory: ", models_dir),
           easyClose = TRUE
         ))
-        models_dir <<- paste0("./www/results/", input$models_dir.new)
-        models_dir_sp<<-NULL
+        models_dir <<- models_dir
       }
     }
     
     # Load previous project
     if (input$select_project == "load_proj") {
+      models_dir <- paste0("./www/results/", input$models_dir.load)
       
-      models_dir <<- paste0("./www/results/", input$models_dir.load)
-      
-        if (!is.null(length(list.dirs(models_dir)))) {
-          models_dir_sp <<- paste0("./www/results/", input$models_dir.load, "/", input$Select_spdir)
-          if(file.exists(paste0(models_dir_sp, "/present"))){
-            refresh_results()
-            showModal(modalDialog(
-              title = paste0("Project ", input$models_dir.load, " succefully loaded!"),
-              paste0("Output files are dispalyed at the 'Outputs' tab."),
-              easyClose = TRUE
-            ))
-          } else {
-            showModal(modalDialog(
-              title = paste0("Project ", input$models_dir.load, " succefully loaded!"),
-              paste0("Unable to find models for selected species."),
-              easyClose = TRUE
-            ))
-          
-        }
-      } else {
+      if(dir.exists(models_dir)){
+        showModal(modalDialog(
+          title = paste0("Project ", input$models_dir.load, " succefully loaded!"),
+          paste0("Output files are dispalyed at the 'Outputs' tab."),
+          easyClose = TRUE
+        ))
+        models_dir <<- models_dir
+         } else {
         showModal(modalDialog(
           title = paste0("Unable to load project"),
           paste0("Please check the models directory"),
@@ -959,12 +913,12 @@ function(input, output, session) {
           maparesultado_ensemble()
         })
         
-        if(file.exists(paste0(models_dir_sp, "/present"))){
-          refresh_results()
-        } else {
-          return()
-        }
-        #refresh_results(models_dir = models_dir, models_dir_sp = models_dir_sp)
+        # if(file.exists(paste0(models_dir_sp, "/present"))){
+        #   refresh_results()
+        # } else {
+        #   return()
+        # }
+        # #refresh_results(models_dir = models_dir, models_dir_sp = models_dir_sp)
         
         
       } else {
@@ -978,7 +932,16 @@ function(input, output, session) {
   })
   
   #### PLOTTING RESULTS ####
-  
+  observe({
+    req(input$btnrefreshprojeto)
+    if (models_dir != "./www/results/") {
+      sp_dirs <- list.dirs(models_dir, recursive = F, full.names = F)
+      updateSelectInput(session, "Select_spdir",
+                        label = paste("Select species"),
+                        choices = c(sp_dirs)
+      )
+    }
+  })
   
   
   # metadata table
