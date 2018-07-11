@@ -1,2 +1,0 @@
-"species_name" "original.n" "final.n" "buffer_type" "seed" "res.x" "res.y" "clean_dupl" "clean_nas" "geo_filt" "geo_filt_dist" "models_dir" "n_back" "partition" "boot_proportion" "boot_n" "cv_partitions" "cv_n"
-"1" "Leptodactylus flavopictus" 9 9 "mean" 512 0.166666666666667 0.166666666666667 FALSE TRUE FALSE NA "./www/results/6" 300 "crossvalidation" NA NA 9 1
