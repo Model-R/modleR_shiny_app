@@ -1,0 +1,2 @@
+"kappa" "spec_sens" "no_omission" "prevalence" "equal_sens_spec" "sensitivity" "AUC" "TSS" "algoritmo" "run" "partition"
+"Caesalpinia echinata 1 1 bioclim" 0.19662131 0.08186721 -1e-04 0.26219508 0.13104754 0.08186721 0.892 0.65 "bioclim" 1 1
