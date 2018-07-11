@@ -218,7 +218,7 @@ function(input, output, session) {
           easyClose = TRUE
         ))
         models_dir <<- models_dir
-         } else {
+      } else {
         showModal(modalDialog(
           title = paste0("Unable to load project"),
           paste0("Please check the models directory"),
@@ -941,25 +941,48 @@ function(input, output, session) {
                         choices = c(sp_dirs)
       )
     }
+    models_dir_sp <<- paste0(models_dir,"/", input$Select_spdir)
   })
   
+  observe({
+    req(input$btn)
+    if (models_dir != "./www/results/") {
+      sp_dirs <- list.dirs(models_dir, recursive = F, full.names = F)
+      updateSelectInput(session, "Select_spdir",
+                        label = paste("Select species"),
+                        choices = c(sp_dirs)
+      )
+    }
+    models_dir_sp <<- paste0(models_dir,"/", input$Select_spdir)
+  })
   
-  # metadata table
   output$metadata_table <- renderDataTable({
-    metadatatxt
+    metadata<-list.files(path = paste0(models_dir_sp, "/present"), recursive = T, full.names = T, pattern = "metadata.txt")[1]
+    read.delim(metadata, header = TRUE, sep = " ", dec = ".")
   }, options = list(scrollX = TRUE, scrollY = TRUE, searching = FALSE)
   )
   
-  #   # sdmdata txt table
+   # sdmdata txt table
   output$sdmdata_table <- renderDataTable({
-    sdmdatatxt
-  },options = list(scrollX = TRUE, searching = FALSE)
-  )
+    if (models_dir_sp != paste0(models_dir,"/") ) {
+      sdmdata<- list.files(path = paste0(models_dir_sp, "/present"), recursive = T, full.names = T, pattern = "sdmdata.txt")[1]
+      read.delim(sdmdata, header = TRUE, sep = " ", dec = ".")
+    }
+  },options = list(scrollX = TRUE, searching = FALSE))
   
-  #   # sdmdata png map
+# sdmdata png map
   output$sdmdata_png <- renderImage({
-    sdmdatapng
+    list(src = list.files(path = paste0(models_dir_sp, "/present"), recursive = T, full.names = T, pattern = "sdmdata_.*png$")[1],
+         contentType = "image/png",
+         alt = "This is alternate text")
   })
+  
+  ######### Stats #########
+    output$stats <- renderDataTable({
+      stats.file <- list.files(path = paste0(models_dir_sp, "/present/final_models"), recursive = T, full.names = T, pattern = "final_statistics.csv")[1]
+      read.csv(stats.file)
+    }, options = list(lengthMenu = c(5, 30, 50), pageLength = 10))
+  # 
   
   #   ########## Binary and Continuous models #########
   #   output$png <- renderUI({
@@ -975,12 +998,7 @@ function(input, output, session) {
   #     }
   #   })
   # 
-  #   ########## Stats #########
-  #   output$stats <- renderDataTable({
-  #     stats.file <- list.files(path = paste0(models_dir_sp, "/present/final_models"), recursive = T, full.names = T, pattern = "final_statistics.csv")[1]
-  #     read.csv(stats.file)
-  #   }, options = list(lengthMenu = c(5, 30, 50), pageLength = 10))
-  # 
+  #  
   #   ########## Output list #########
   #   # partitions dir
   #   output$partitions <- renderUI({
