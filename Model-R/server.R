@@ -13,7 +13,6 @@
 
 # Thanks to Steven Worthington for function ipak https://gist.github.com/stevenworthington/3178163 (HT Karlo Guidoni Martins)
 
-##### INSTALLING AND LOADING REQUIRED PACKAGES #####
 ipak <- function(pkg) {
   new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
   if (length(new.pkg)) {
@@ -42,18 +41,21 @@ ipak(c(
   "sdmpredictors"
 ))
 
+ModelR_check <- require(ModelR)
+if (ModelR_check == FALSE) {
+  install_github("Model-R/modelr_pkg", build_vignettes = FALSE, ref = "brt")
+}
+
 jdk_version <- list.files("/Library/Java/JavaVirtualMachines/")
 if (length(jdk_version) != 0) {
   dyn.load(paste0("/Library/Java/JavaVirtualMachines/", jdk_version, "/Contents/Home/lib/server/libjvm.dylib"))
-} else{
+} else {
   library("rJava")
 }
 
-ModelR_check <- require(ModelR)
-if(ModelR_check == FALSE){
-  install_github("Model-R/modelr_pkg", build_vignettes = FALSE, ref="brt")
-} 
 library("ModelR")
+
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 jar <- paste0(system.file(package = "dismo"), "/java/maxent.jar")
 if (file.exists(jar) != T) {
@@ -63,10 +65,6 @@ if (file.exists(jar) != T) {
   unlink("maxent.zip")
 }
 
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
-
-
-##### GLOBAL FUNCTIONS ######
 panel.reg <- function(x, y, bg = NA, cex = 1, col.regres = "red", ...) {
   points(x, y, cex = cex)
   abline(stats::lm(y ~ x), col = col.regres, ...)
@@ -104,10 +102,12 @@ mkdirs <- function(dir_path) {
 getOccurrences_gbif <- function(species_name) {
   key <- name_backbone(name = species_name)$speciesKey
   if (!is.null(key)) {
-    gbif_data <- occ_search(hasCoordinate = TRUE,
-                            hasGeospatialIssue = F,
-                            taxonKey = key,
-                            return = "data" )
+    gbif_data <- occ_search(
+      hasCoordinate = TRUE,
+      hasGeospatialIssue = F,
+      taxonKey = key,
+      return = "data"
+    )
     gbif_data <- subset(gbif_data, !is.na(decimalLongitude) & !is.na(decimalLatitude))
     occur.data <- cbind(gbif_data$name, gbif_data$decimalLongitude, gbif_data$decimalLatitude)
     colnames(occur.data) <- c("name", "lon", "lat")
@@ -125,8 +125,8 @@ getOccurrences_gbif <- function(species_name) {
 getOccurrences_jabot <- function(species_name) {
   library("rjson")
   pTaxon <- gsub(" ", "_", species_name)
-  json_file <- paste0 ("https://model-r.jbrj.gov.br/execjabot.php?especie=", pTaxon)
-  json_data <- rjson::fromJSON(file = json_file, method = "C")
+  json_file <- paste0("https://model-r.jbrj.gov.br/execjabot.php?especie=", pTaxon)
+  json_data <- fromJSON(file = json_file, method = "C")
   final_data <- do.call(rbind, json_data)
   jabot_data <- final_data[, c("taxoncompleto", "longitude", "latitude")]
   occur.data <- cbind(as.character(jabot_data[, 1]), as.numeric(jabot_data[, 2]), as.numeric(jabot_data[, 3]))
@@ -136,179 +136,107 @@ getOccurrences_jabot <- function(species_name) {
 
 maparesultado_model <- function(algorithm = algorithm) {
   finaldir <- list.files(paste0(models_dir, "/", species_name, "/present/final_models/"))
-  tif_file <- finaldir[finaldir==paste0(species_name, "_" , algorithm, "_raw_mean.tif")]
+  tif_file <- finaldir[finaldir == paste0(species_name, "_", algorithm, "_raw_mean.tif")]
   raw_mean_file <- list.files(paste0(models_dir, "/", species_name, "/present/final_models/"), pattern = tif_file, full.names = T)
-  
+
   if (file.exists(raw_mean_file)) {
     r <- raster::raster(raw_mean_file)
     pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(r), na.color = "transparent")
-    occ_points <- coordinates(occurrences)
-    lng <- occ_points[,1]
-    lat <-  occ_points[,2]
+    occ_points <<- coordinates(occurrences)
+    lng <<- occ_points[, 1]
+    lat <<- occ_points[, 2]
     map <- leaflet() %>%
       addTiles() %>%
       addRasterImage(r, colors = pal, opacity = 0.7) %>%
       addLegend(pal = pal, values = values(r), title = "") %>%
-      addCircles(color = "red",lat = lat, lng =lng, weight = 2, fill = TRUE) %>%
+      addCircles(color = "red", lat = lat, lng = lng, weight = 2, fill = TRUE) %>%
       addRectangles(ext11, ext31, ext21, ext41, color = "red", fill = FALSE, dashArray = "5,5", weight = 2)
   }
 }
 
 maparesultado_ensemble <- function() {
   finaldir <- list.files(paste0(models_dir, "/", species_name, "/present/ensemble/"))
-  tif_file <- finaldir[finaldir==paste0(species_name, "_raw_", "mean_ensemble_mean.tif")]
+  tif_file <- finaldir[finaldir == paste0(species_name, "_raw_", "mean_ensemble_mean.tif")]
   raw_mean_file <- list.files(paste0(models_dir, "/", species_name, "/present/ensemble/"), pattern = tif_file, full.names = T)
-  
+
   if (file.exists(raw_mean_file)) {
     r <- raster::raster(raw_mean_file)
     pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(r), na.color = "transparent")
     occ_points <<- coordinates(occurrences)
-    lng <- occ_points[,1]
-    lat <-  occ_points[,2]
+    lng <<- occ_points[, 1]
+    lat <<- occ_points[, 2]
     map <- leaflet() %>%
       addTiles() %>%
       addRasterImage(r, colors = pal, opacity = 0.7) %>%
       addLegend(pal = pal, values = values(r), title = "") %>%
-      addCircles(color = "red",lat = lat, lng =lng, weight = 2, fill = TRUE) %>%
+      addCircles(color = "red", lat = lat, lng = lng, weight = 2, fill = TRUE) %>%
       addRectangles(ext11, ext31, ext21, ext41, color = "red", fill = FALSE, dashArray = "5,5", weight = 2)
   }
 }
 
-modelagem <- function(){
-  
-  if(input$partition_type == 'crossvalidation'){
-    cv_n <- input$cv_n
-    cv_partitions <- input$cv_partitions
-    boot_n <- NULL
-    boot_proportion <- NULL
+refresh_results <- function(models_dir, models_dir_sp) {
+  if (models_dir_sp != paste0(models_dir, "/")) {
+    present_path <- list.files(path = paste0(models_dir_sp, "/present"), recursive = T, include.dirs = F, full.names = T)
+    metadatatxt <- grep("metadata.txt", present_path, value = T)
+    sdmdatatxt <- grep("sdmdata.txt", present_path, value = T)
+    sdmdatapng <- grep("sdmdata_.*png$", present_path, value = T)
+    imgs_png_bin <- grep("bin.*png$", present_path, value = T)
+    imgs_png_cont <- grep("cont.*png$", present_path, value = T)
   }
-  if(input$partition_type == 'bootstrap'){
-    cv_n <- NULL
-    cv_partitions <- NULL
-    boot_n <- input$boot_n
-    boot_proportion <- input$boot_proportion
-  } 
-  if(input$geo_filt == TRUE){
-    geo_filt_dist <- input$geo_filt_dist
-  } else {
-    geo_filt_dist <- NULL
-  }
-  
-  do_enm(
-    species_name = species_name,
-    occurrences = occurrences,
-    predictors = predictors,
-    models_dir = models_dir,
-    bioclim =  input$bioclim ,
-    domain =  input$domain,
-    glm =  input$glm,
-    mahal = input$mahal,
-    maxent = input$maxent,
-    rf = input$rf,  
-    svm.k =  input$svm.k ,
-    svm.e =  input$svm.e,
-    mindist = FALSE, 
-    centroid = FALSE, 
-    brt = input$brt,
-    real_absences = NULL, 
-    lon = "lon",
-    lat = "lat",
-    buffer_type = input$buffer_type,
-    seed = 512, 
-    clean_dupl = F, 
-    clean_nas = T, 
-    geo_filt = input$geo_filt,
-    geo_filt_dist = geo_filt_dist,
-    plot_sdmdata = T, 
-    n_back = input$n_back,
-    partition_type = input$partition_type,
-    boot_n = boot_n,
-    boot_proportion = boot_proportion,
-    cv_n = cv_n,
-    cv_partitions = cv_partitions
-  )
-  
-  final_model(
-    species_name = species_name,
-    algorithms = NULL, 
-    weight_par = NULL, 
-    select_partitions = TRUE, 
-    threshold = c("spec_sens"),
-    select_par = "TSS", 
-    select_par_val = input$TSS,
-    consensus_level = 0.5, 
-    models_dir = models_dir, 
-    final_dir = "final_models", 
-    which_models = c("raw_mean"),
-    write_png = T
-  )
-  
-  ensemble_model(
-    species_name = species_name,
-    occurrences = occurrences,
-    models_dir = models_dir, 
-    final_dir = "final_models",
-    ensemble_dir = "ensemble",
-    which_models = c("raw_mean"),
-    consensus = FALSE, 
-    consensus_level = 0.5, 
-    write_png = T,
-    write_raw_map = F 
-  )
 }
 
-##### STARTING SHINY SESSION #####
+ext11 <- ext12 <- -90
+ext21 <- ext22 <- -33
+ext31 <- ext32 <- -32
+ext41 <- ext42 <- 23
+
 options(shiny.maxRequestSize = 100 * 1024^2)
 dirColors <- c(`1` = "#595490", `2` = "#527525", `3` = "#A93F35", `4` = "#BA48AA")
 
 function(input, output, session) {
-  
-  ext11 <- ext12 <- -90
-  ext21 <- ext22 <- -33
-  ext31 <- ext32 <- -32
-  ext41 <- ext42 <- 23
-  
   ###### CREATE NEW/LOAD PROJECT #####
+
   observe({
     if (input$select_project == "load_proj") {
-      models_dir <- paste0("./www/results/", input$models_dir.load)
-      
+      models_dir <<- paste0("./www/results/", input$models_dir.load)
+
       if (models_dir != "./www/results/") {
-        
-        if (length(list.dirs(models_dir))>=1){
-          avaiable_sps <- list.dirs(models_dir, recursive = F, full.names = F)
-          avaiable_sps_dirs <- list.dirs(models_dir, recursive = F, full.names = T)
-          
-          updateSelectInput(session, "Choose_spdir",
-                            label = paste("Select species"),
-                            choices  = avaiable_sps)
+        if (!is.null(list.dirs(models_dir))) {
+          sp_dirs <<- list.dirs(models_dir, recursive = F, full.names = F)
+          updateSelectInput(session, "Select_spdir",
+            label = paste("Select species"),
+            choices = c(sp_dirs)
+          )
+
+          species_name <<- input$Select_spdir
+          models_dir_sp <<- paste0("./www/results/", input$models_dir.load, "/", species_name)
         }
       }
     }
   })
 
   observeEvent(input$btnrefreshprojeto, {
-    
-    # New project
+
+    # Create new project
     if (input$select_project == "new_proj") {
-      models_dir <<- paste0("./www/results/", input$models_dir.new)
-      
+      models_dir <- paste0("./www/results/", input$models_dir.new)
+
       if (models_dir == "./www/results/") {
         showModal(modalDialog(
-          title = "Unable to create project!",
-          paste0("Project name cannot be blank.Please enter a valid name."),
+          title = "Unable to create project",
+          paste0("Project name cannot be blank!", "Please enter a valid name."),
           easyClose = TRUE
         ))
       }
-      
+
       if (file.exists(models_dir)) {
         showModal(modalDialog(
-          title = "Unable to create project!",
+          title = "Unable to create project",
           paste0("Inserted name is already in use."),
           easyClose = TRUE
         ))
       }
-      
+
       if (!file.exists(models_dir)) {
         mkdirs(models_dir)
         showModal(modalDialog(
@@ -316,41 +244,39 @@ function(input, output, session) {
           paste0("Project directory: ", models_dir),
           easyClose = TRUE
         ))
+        models_dir <<- paste0("./www/results/", input$models_dir.new)
       }
     }
-    
-    # Load project
+
+    # Load previous project
     if (input$select_project == "load_proj") {
-      
-      models_dir <- paste0("./www/results/", input$models_dir.load)
-      models_dir_sp <- paste0(models_dir, "/", input$Choose_spdir )
-      
-      if (models_dir_sp != models_dir && dir.exists(paste0(models_dir_sp,"/present"))){
-        
-        models_dir <<-  models_dir
-        models_dir_sp <<- models_dir_sp
-        species_name <<- input$Choose_spdir
-        
+      if (length(list.files(models_dir_sp, recursive = F)) >= 1) {
+
+        # if (dir.exists(models_dir_sp) && models_dir_sp != models_dir ){
+        models_dir <<- models_dir
+
+        # refresh_results(models_dir = models_dir,
+        #                 models_dir_sp = models_dir_sp)
+
         showModal(modalDialog(
-          title = paste0("Project ", input$models_dir.load," succefully loaded!"),
+          title = paste0("Project ", input$models_dir.load, " succefully loaded!"),
           paste0("Output files are dispalyed at the 'Outputs' tab."),
           easyClose = TRUE
         ))
-        
       } else {
         showModal(modalDialog(
-          title = paste0("Unable to load project outputs"),
+          title = paste0("Unable to load outputs"),
           paste0("Please check models directory"),
           easyClose = TRUE
         ))
       }
     }
   })
-  
+
   #####  IMPORT SPECIES OCCURRENCE DATASET #####
   # Load species occurrence dataset from gbif/jabot databases
   loadspdata <- eventReactive(input$btnsearch_spdata, {
-    species_name <- input$species_name
+    species_name <<- input$species_name
     if (input$bio_datasource == "gbif") {
       occur.data <- getOccurrences_gbif(input$species_name)
       occur.data_gbif <- occur.data [, c(2, 3)]
@@ -366,10 +292,10 @@ function(input, output, session) {
     }
     occurrences
   })
-  
+
   # Browse occurrence dataset from local csv file
   loadspdata_csv <- eventReactive(input$btnsearch_spdatacsv, {
-    inFile <- input$file1
+    inFile <<- input$file1
     if (is.null(inFile)) {
       return(NULL)
     } else {
@@ -379,17 +305,17 @@ function(input, output, session) {
         sep = input$sep,
         quote = input$quote
       )
-      species_name <- as.character(sp_data[1,1])
+      species_name <<- as.character(sp_data[1, 1])
       arquivo_path <- inFile$datapath
       arquivo_header <- input$header
       arquivo_sep <- input$sep
       arquivo_quote <- input$quote
       sp_data_csv <- sp_data [, 2:3]
-      occurrences <- sp_data_csv
+      occurrences <<- sp_data_csv
     }
     occurrences
   })
-  
+
   # Exhibit table with occurrence records
   output$spdata_table <- DT::renderDataTable({
     progress <- shiny::Progress$new()
@@ -404,7 +330,15 @@ function(input, output, session) {
     }
     occurrences
   }, options = list(lengthMenu = c(5, 30, 50), pageLength = 5))
-  
+
+  # observeEvent(input$btn_usedataset,{
+  #   mkdirs(paste0(models_dir, "/", species_name))
+  #   save_raw<-data.frame(species_name, occurrences)
+  #   models_dir_sp<-paste0(models_dir, "/", species_name)
+  #   names(save_raw)<- c("name", "lon", "lat")
+  #   write.csv(save_raw, file=paste0(models_dir, "/", species_name, "/" ,"occurrences_raw.csv"), row.names = FALSE)
+  # })
+
   # Display map with loaded occurrence records
   output$mapadistribuicao <- renderLeaflet({
     input$btnsearch_spdatacsv
@@ -412,12 +346,12 @@ function(input, output, session) {
     progress <- shiny::Progress$new()
     progress$set(message = "Updating occurrence map...", value = 0)
     on.exit(progress$close())
-    
+
     if (!is.null(occurrences)) {
-      latitude<-as.character(occurrences$lat)
-      latitude<-as.numeric(latitude)
-      longitude<-as.character(occurrences$lon)
-      longitude<-as.numeric(longitude)
+      latitude <- as.character(occurrences$lat)
+      latitude <- as.numeric(latitude)
+      longitude <- as.character(occurrences$lon)
+      longitude <- as.numeric(longitude)
       map <- leaflet(occurrences) %>%
         addTiles() %>%
         addCircles(color = "red", lat = ~ latitude, lng = ~ longitude) %>%
@@ -431,14 +365,14 @@ function(input, output, session) {
       ))
     }
   })
-  
+
   #####  DATA CLEANING #####
-  output$dgbriddadosdatacleaning <- DT::renderDataTable({
+  output$dgbriddadosdatacleaning <- renderDataTable({
     input$btnapagar
     input$btneliminarduplicatas
     input$btnsearch_spdatacsv
     input$btnsearch_spdata
-    
+
     if (is.null(occurrences)) {
       n <- 0
     }
@@ -449,16 +383,16 @@ function(input, output, session) {
           progress <- shiny::Progress$new()
           progress$set(message = "Excluding duplicates...", value = 0)
           on.exit(progress$close())
-          occurrences <- unique(occurrences)
+          occurrences <<- unique(occurrences)
         }
-        
+
         isolate({
           input$edtelemento
           if (input$edtelemento != "0") {
             if (input$btnapagar == 0) {
               return()
             }
-            occurrences <- occurrences[-input$edtelemento, ]
+            occurrences <<- occurrences[-input$edtelemento, ]
           }
           rownames(occurrences) <- NULL
           occurrences$id <- 1:nrow(occurrences)
@@ -467,13 +401,19 @@ function(input, output, session) {
       }
     }
   }, options = list(searching = FALSE, lengthMenu = c(5, 30, 50), pageLength = 5))
-  
+
+  # eventReactive(input$saveDataset, {
+  #   save_cleandata<-data.frame("species_name", occurrences)
+  #   names(save_cleandata)<- c("name", "lon", "lat")
+  #   write.csv(save_cleandata, file=paste0(models_dir, "/", species_name, "/" ,"occurrences.csv"), row.names = FALSE)
+  # })
+
   output$mapadistribuicaodatacleaning <- renderLeaflet({
     input$btnapagar
     input$btneliminarduplicatas
     input$btnsearch_spdatacsv
     input$btnsearch_spdata
-    
+
     if (!is.null(occurrences)) {
       if (exists("occurrences")) {
         rownames(occurrences) <- NULL
@@ -493,31 +433,40 @@ function(input, output, session) {
       ))
     }
   })
-  
-  ######### MODEL EXTENT #########
+
+  # Update species occurrence dataset
+  datasetInput <- reactive({
+    if (exists("occurrences")) {
+      switch("occurrences", occurrences = occurrences)
+    }
+  })
+
+
+  #### Model Extent ####
   output$mapapontosextend <- renderLeaflet({
     input$btnapagar
     input$btneliminarduplicatas
     input$btnsearch_spdatacsv
     input$btnsearch_spdata
-    
+
     if (!is.null(occurrences)) {
-      ext11 <<- input$edtextend1
-      ext31 <<- input$edtextend3
-      ext21 <<- input$edtextend2
-      ext41 <<- input$edtextend4
-      
+      ext11 <<- input$edtextend11
+      ext31 <<- input$edtextend31
+      ext21 <<- input$edtextend21
+      ext41 <<- input$edtextend41
+
       map <- leaflet(occurrences) %>%
         addTiles() %>%
         addMarkers(clusterOptions = markerClusterOptions()) %>%
         addMarkers(~ lon, ~ lat) %>%
         addRectangles(ext11, ext31, ext21, ext41,
-                      color = "red",
-                      fill = TRUE, dashArray = "5,5", weight = 3)
+          color = "red",
+          fill = TRUE, dashArray = "5,5", weight = 3
+        )
       map
     }
   })
-  
+
   output$mapapontosextend2 <- renderLeaflet({
     input$btnapagar
     input$btneliminarduplicatas
@@ -528,19 +477,19 @@ function(input, output, session) {
       ext32 <<- input$edtextend32
       ext22 <<- input$edtextend22
       ext42 <<- input$edtextend42
-      
+
       map <- leaflet(occurrences) %>%
         addTiles() %>%
         addMarkers(clusterOptions = markerClusterOptions()) %>%
         addMarkers(~ lon, ~ lat) %>%
         addRectangles(ext12, ext32, ext22, ext42,
-                      color = "green", fill = TRUE, dashArray = "5,5",
-                      weight = 3
+          color = "green", fill = TRUE, dashArray = "5,5",
+          weight = 3
         )
       map
     }
   })
-  
+
   ######### ENVIRONMENTAL VARIABLES #########
   observeEvent(input$btnAtualizaSelecaoVariaveis, {
     environmental_data <- reactiveValues(
@@ -548,20 +497,20 @@ function(input, output, session) {
       data_current = list(),
       data_timeproj = list()
     )
-    
-    ##  WorldClim variables 
+
+    ##  WorldClim variables
     if (input$tipodadoabiotico == "CLIMA") {
       vars_selection <<- paste(input$pred_vars_wc)
       path_current <- paste0(getwd(), "/ex/clima/current/", input$resolution)
       checkfiles <- list()
-      
+
       if (length(vars_selection) >= 1) {
         for (i in c(1:length(input$pred_vars_wc))) {
           layer <- paste0(path_current, "/", vars_selection[i], ".bil")
           environmental_data$data_current <- c(environmental_data$data_current, layer)
           checkfiles <- c(checkfiles, file.exists(layer))
         }
-        
+
         # Check/Download layers - Current conditions
         if (length(vars_selection) >= 1 && any(checkfiles == F)) {
           if (input$resolution != "30s") {
@@ -574,7 +523,7 @@ function(input, output, session) {
             unzip(zip_current, exdir = path_current)
             unlink(zip_current)
           }
-          
+
           if (input$resolution == "30s") {
             group1 <- c(
               "bio1",
@@ -599,34 +548,34 @@ function(input, output, session) {
               "bio18",
               "bio19"
             )
-            
+
             if (any(group1 %in% input$pred_vars_wc)) {
               download.file("http://biogeo.ucdavis.edu/data/climate/worldclim/1_4/grid/cur/bio1-9_30s_bil.zip",
-                            "bio_30s1.zip",
-                            mode = "wb"
+                "bio_30s1.zip",
+                mode = "wb"
               )
               unzip("bio_30s1.zip", exdir = path_current)
               unlink("bio_30s1.zip")
             }
             if (any(group2 %in% input$pred_vars_wc)) {
               download.file("http://biogeo.ucdavis.edu/data/climate/worldclim/1_4/grid/cur/bio10-19_30s_bil.zip",
-                            "bio_30s2.zip",
-                            mode = "wb"
+                "bio_30s2.zip",
+                mode = "wb"
               )
               unzip("bio_30s2.zip", exdir = path_current)
               unlink("bio_30s2.zip")
             }
-            
+
             files <- paste0(path_current, "/", list.files(path_current))
             file.rename(from = files, to = sub(pattern = "bio_", replacement = "bio", files))
           }
         }
-        
+
         ### Include time projections ###
         if (input$forecasting_wc != "current_wc") {
           environmental_data$write_timeproj <- TRUE
           checkfiles_timeproj <- list()
-          
+
           ## Include future projections
           if (input$forecasting_wc == "future_wc") {
             timescale <<- "Future"
@@ -641,9 +590,9 @@ function(input, output, session) {
               "/",
               input$rcp_wc
             )
-            
+
             year <- sub(".*(\\d+{2}).*$", "\\1", input$future_dates_wc)
-            
+
             for (i in c(1:length(input$pred_vars_wc))) {
               nbi <- sub("bio", "", vars_selection[i])
               layer <- paste0(
@@ -660,19 +609,19 @@ function(input, output, session) {
               checkfiles_timeproj <- c(checkfiles_timeproj, file.exists(layer))
             }
           }
-          
+
           ## Include paleo projections
           if (input$forecasting_wc == "past_wc") {
             timescale <<- "Past"
-            
+
             if (input$past_dates_wc == "mid") {
               gcm_past <- input$gcm_past_wc_mid
             }
-            
+
             if (input$past_dates_wc == "lgm") {
               gcm_past <- input$gcm_past_wc_lgm
             }
-            
+
             path_past <- paste0(
               getwd(), "/ex/clima/",
               input$past_dates_wc,
@@ -681,7 +630,7 @@ function(input, output, session) {
               "/",
               gcm_past
             )
-            
+
             for (i in c(1:length(input$pred_vars_wc))) {
               nbi <- sub("bio", "", vars_selection[i])
               layer <- paste0(
@@ -697,10 +646,10 @@ function(input, output, session) {
               checkfiles_timeproj <- c(checkfiles_timeproj, file.exists(layer))
             }
           }
-          
+
           ### Check/Download layers - Future/Paleo Conditions ###
           if (any(checkfiles_timeproj == F)) {
-            
+
             # Download future layers
             if (input$forecasting_wc == "future_wc") {
               zip <- paste0(input$gcm_future_wc, input$rcp_wc, "bi", year, ".zip")
@@ -711,7 +660,7 @@ function(input, output, session) {
                   zip
                 )
               }
-              
+
               if (input$resolution != "2-5m") {
                 url <- paste0(
                   "http://biogeo.ucdavis.edu/data/climate/cmip5/",
@@ -720,12 +669,12 @@ function(input, output, session) {
                   zip
                 )
               }
-              
+
               download.file(url, zip, mode = "wb")
               unzip(zip, exdir = path_future)
               unlink(zip)
             }
-            
+
             # Download paleo layers
             if (input$forecasting_wc == "past_wc") {
               zip <- paste0(
@@ -749,16 +698,16 @@ function(input, output, session) {
         }
       }
     }
-    
-    ## Bio-ORACLE variables 
+
+    ## Bio-ORACLE variables
     if (input$tipodadoabiotico == "BIOORACLE") {
       path_current <- paste0(getwd(), "/ex/biooracle/current")
-      
+
       ## Include future projections ##
       if (input$forecasting_bo == "future_bo") {
         timescale <<- "Future"
         environmental_data$write_timeproj <- TRUE
-        
+
         if (input$future_dates_bo == "2100") {
           scenario_bo <- input$scenario_bo_2100
         }
@@ -767,7 +716,7 @@ function(input, output, session) {
         }
         path_future <- paste0(getwd(), "/ex/biooracle/", input$future_dates_bo, "/", scenario_bo)
         vars_selection <<- paste(input$pred_vars_bo_fut)
-        
+
         if (length(vars_selection) != 0) {
           for (i in c(1:length(vars_selection))) {
             # Future layers
@@ -789,8 +738,8 @@ function(input, output, session) {
         }
       }
     }
-    
-    ## Browse variables from local files 
+
+    ## Browse variables from local files
     if (input$tipodadoabiotico == "Others") {
       path_current <- paste(getwd(), "/ex/outros/", sep = "")
       vars_selection <<- paste(input$pred_vars_other)
@@ -799,7 +748,7 @@ function(input, output, session) {
         environmental_data$data_current <- c(environmental_data$data_current, layer)
       }
     }
-    
+
     if (length(vars_selection) == 0) {
       showModal(modalDialog(
         title = "Unable to load layers!",
@@ -813,22 +762,22 @@ function(input, output, session) {
         env_data <<- environmental_data$data_current
         write_timeproj <<- environmental_data$write_timeproj
         envdata_timeproj <<- environmental_data$data_timeproj
-        
+
         if (!is.null(env_data) && exists("occurrences")) {
-          
+
           # Stack and crop environmental layers
           predictors.raw <- stack(env_data)
           ext <- extent(ext11, ext21, ext31, ext41)
           predictors <<- crop(predictors.raw, ext)
-          
+
           if (length(envdata_timeproj) >= 1) {
             predictorsfuturo.raw <- stack(envdata_timeproj)
             pred_nffuturo <<- crop(predictorsfuturo.raw, ext)
           }
           ext2 <- extent(ext12, ext22, ext32, ext42)
           pred_nf2 <<- crop(predictors, ext2)
-          
-          # Calculate correlation between selected variables 
+
+          # Calculate correlation between selected variables
           if (length(env_data) > 1) {
             incProgress(2 / n, detail = paste0("Calculating corelation..."))
             presvals <- raster::extract(predictors, occurrences)
@@ -836,18 +785,18 @@ function(input, output, session) {
             colnames(backgr) <- c("lon", "lat")
             absvals <- raster::extract(predictors, backgr)
             sdmdata <<- data.frame(cbind(absvals))
-            
-            # Exhibit correlation panel 
+
+            # Exhibit correlation panel
             output$grafico_correlacao <- renderPlot({
               if (is.null(env_data) | length(env_data) <= 1) {
                 return(NULL)
               } else {
                 pairs(sdmdata,
-                      cex = 0.1,
-                      fig = TRUE,
-                      lower.panel = panel.reg,
-                      diag.panel = panel.hist,
-                      upper.panel = panel.cor
+                  cex = 0.1,
+                  fig = TRUE,
+                  lower.panel = panel.reg,
+                  diag.panel = panel.hist,
+                  upper.panel = panel.cor
                 )
                 output$dgbriddadoscorrelacao <- renderDataTable({
                   round(cor(sdmdata), 2)
@@ -864,7 +813,7 @@ function(input, output, session) {
       })
     }
   })
-  
+
   output$mapaabiotico <- renderPlot({
     input$btnAtualizaSelecaoVariaveis
     if (is.null(env_data)) {
@@ -873,74 +822,154 @@ function(input, output, session) {
       plot(predictors)
     }
   })
-  
+
   #### GROUPING ALL MODELING PROCESSES BY CLICKING THE EXECUTE BUTTON ####
   observeEvent(input$btnModelar, {
-    if(any
-       (input$domain,
-         input$maxent,
-         input$bioclim ,
-         input$mahal ,
-         input$glm ,
-         input$rf  ,
-         input$svm.e,
-         input$svm.k)
-    ){
-      
+    if (any
+    (
+      input$domain,
+      input$maxent,
+      input$bioclim,
+      input$mahal,
+      input$glm,
+      input$rf,
+      input$svm.e,
+      input$svm.k
+    )
+    ) {
       if (exists("occurrences") && exists("predictors") && exists("species_name")) {
         progress <<- shiny::Progress$new()
         progress$set(message = "Processing...", value = 0)
-        on.exit(progress$close()) 
-        
+
         models_dir_sp <<- paste0(models_dir, "/", species_name)
-        modelagem()
-        
+
+        on.exit(progress$close())
+
+        if (input$partition_type == "crossvalidation") {
+          cv_n <- input$cv_n
+          cv_partitions <- input$cv_partitions
+          boot_n <- NULL
+          boot_proportion <- NULL
+        }
+        if (input$partition_type == "bootstrap") {
+          cv_n <- NULL
+          cv_partitions <- NULL
+          boot_n <- input$boot_n
+          boot_proportion <- input$boot_proportion
+        }
+        if (input$geo_filt == TRUE) {
+          geo_filt_dist <- input$geo_filt_dist
+        } else {
+          geo_filt_dist <- NULL
+        }
+
+        do_enm(
+          species_name = species_name,
+          occurrences = occurrences,
+          predictors = predictors,
+          models_dir = models_dir,
+          bioclim = input$bioclim,
+          domain = input$domain,
+          glm = input$glm,
+          mahal = input$mahal,
+          maxent = input$maxent,
+          rf = input$rf,
+          svm.k = input$svm.k,
+          svm.e = input$svm.e,
+          mindist = FALSE,
+          centroid = FALSE,
+          brt = input$brt,
+          real_absences = NULL,
+          lon = "lon",
+          lat = "lat",
+          buffer_type = input$buffer_type,
+          seed = 512,
+          clean_dupl = F,
+          clean_nas = T,
+          geo_filt = input$geo_filt,
+          geo_filt_dist = geo_filt_dist,
+          plot_sdmdata = T,
+          n_back = input$n_back,
+          partition_type = input$partition_type,
+          boot_n = boot_n,
+          boot_proportion = boot_proportion,
+          cv_n = cv_n,
+          cv_partitions = cv_partitions
+        )
+
+        final_model(
+          species_name = species_name,
+          algorithms = NULL,
+          weight_par = NULL,
+          select_partitions = TRUE,
+          threshold = c("spec_sens"),
+          select_par = "TSS",
+          select_par_val = input$TSS,
+          consensus_level = 0.5,
+          models_dir = models_dir,
+          final_dir = "final_models",
+          which_models = c("raw_mean"),
+          write_png = T
+        )
+
+        ensemble_model(
+          species_name = species_name,
+          occurrences = occurrences,
+          models_dir = models_dir,
+          final_dir = "final_models",
+          ensemble_dir = "ensemble",
+          which_models = c("raw_mean"),
+          consensus = FALSE,
+          consensus_level = 0.5,
+          write_png = T,
+          write_raw_map = F
+        )
+
         output$maparesultadomax <- renderLeaflet({
           input$btnModelar
           maparesultado_model(algorithm = "maxent")
         })
-        
+
         output$maparesultadosvm.e <- renderLeaflet({
           input$btnModelar
           maparesultado_model(algorithm = "svm.k")
         })
-        
+
         output$maparesultadosvm.k <- renderLeaflet({
           input$btnModelar
           maparesultado_model(algorithm = "svm.e")
         })
-        
+
         output$maparesultadomh <- renderLeaflet({
           input$btnModelar
           maparesultado_model(algorithm = "mahal")
         })
-        
+
         output$maparesultadorf <- renderLeaflet({
           input$btnModelar
           maparesultado_model(algorithm = "rf")
         })
-        
+
         output$maparesultadoglm <- renderLeaflet({
           input$btnModelar
           maparesultado_model(algorithm = "glm")
         })
-        
+
         output$maparesultadobc <- renderLeaflet({
           input$btnModelar
           maparesultado_model(algorithm = "bioclim")
         })
-        
+
         output$maparesultadodo <- renderLeaflet({
           input$btnModelar
           maparesultado_model(algorithm = "domain")
         })
-        
+
         output$maparesultadoensemble <- renderLeaflet({
           input$btnModelar
           maparesultado_ensemble()
         })
-        
-       
+        refresh_results(models_dir = models_dir, models_dir_sp = models_dir_sp)
       } else {
         showModal(modalDialog(
           title = "Error!",
@@ -950,95 +979,93 @@ function(input, output, session) {
       }
     }
   })
-  
-  
-  observeEvent({ 
-    input$btnModelar
-    input$btnrefreshprojeto
-  }, { 
-    
-    if (models_dir_sp != paste0(models_dir,"/")){
-      
-      dirs <-reactiveValues()
-      dirs$present_files <- list.files(path =  paste0(models_dir_sp,"/present"), recursive = T, include.dirs=F, full.names= T)
-      dirs$metadatatxt <- grep("metadata.txt", dirs$present_files, value = T)
-      dirs$sdmdatatxt <- grep("sdmdata.txt", dirs$present_files, value = T)
-      dirs$sdmdatapng <- grep("sdmdata_.*png$", dirs$present_files, value = T)
-      dirs$imgs_png_bin <- grep("bin.*png$", dirs$present_files, value = T)
-      dirs$imgs_png_cont <- grep("cont.*png$", dirs$present_files, value = T)
-      dirs$list_partitions <- list.files(path = paste0(models_dir_sp,"/present/partitions"), recursive = T, full.names = T, pattern = ".tif")
-      dirs$list_final <-  list.files(path = paste0(models_dir_sp,"/present/final_models"), recursive = T, full.names = T, pattern = ".tif")
-      dirs$list_ensemble <-  list.files(path = paste0(models_dir_sp,"/present/ensemble"), recursive = T, full.names = T, pattern = ".tif")
-      dirs$stats.file <- list.files(path = paste0(models_dir_sp,"/present/final_models"), recursive = T, full.names= T, pattern = "final_statistics.csv")[1]
-      
-    }
-    
-    ## metadata table ##
+
+  #### PLOTTING RESULTS ####
+  observeEvent(input$btnModelar, {
+    refresh_results (models_dir = models_dir, models_dir_sp = models_dir_sp)
+
+    # metadata table
     output$metadata_table <- renderDataTable({
-      read.delim(dirs$metadatatxt, header = TRUE, sep = " ", dec = ".")
-    }, options = list(scrollX = TRUE,scrollY= TRUE, searching = FALSE))
-    
-    ## sdmdata txt table ##
+      file <- metadatatxt
+      read.delim(file, header = TRUE, sep = " ", dec = ".")
+    },
+    options = list(scrollX = TRUE, scrollY = TRUE, searching = FALSE)
+    )
+
+    # sdmdata txt table
     output$sdmdata_table <- renderDataTable({
-      read.delim( dirs$sdmdatatxt, header = TRUE, sep = " ", dec = ".")
-    }, options = list(scrollX = TRUE, searching = FALSE))
-    
-    ## sdmdata png map ##
+      file <- sdmdatatxt
+      read.delim(file, header = TRUE, sep = " ", dec = ".")
+    },
+    options = list(scrollX = TRUE, searching = FALSE)
+    )
+
+    # sdmdata png map
     output$sdmdata_png <- renderImage({
-      list(src = dirs$sdmdatapng,
-           contentType = 'image/png',
-           height = 300,
-           alt = "This is alternate text")
+      file <- sdmdatapng
+      list(
+        src = file,
+        contentType = "image/png",
+        height = 300,
+        alt = "This is alternate text"
+      )
     })
-    
-    ## Binary and Continuous models ##
-    output$png<- renderUI({
-      files <- c(dirs$imgs_png_bin, dirs$imgs_png_cont)
-      if(length(files)>=1){
-        list(src = files,
-             contentType = 'image/png',
-             width = 400,
-             alt = "This is alternate text")
+
+    ########## Binary and Continuous models #########
+    output$png <- renderUI({
+      files <- c(imgs_png_bin, imgs_png_cont)
+      if (length(files) >= 1) {
+        list(
+          src = files,
+          contentType = "image/png",
+          width = 400,
+          height = 300,
+          alt = "This is alternate text"
+        )
       }
     })
-    
-    ## Stats ##
+
+    ########## Stats #########
     output$stats <- renderDataTable({
-      read.csv(dirs$stats.file)
+      stats.file <- list.files(path = paste0(models_dir_sp, "/present/final_models"), recursive = T, full.names = T, pattern = "final_statistics.csv")[1]
+      read.csv(stats.file)
     }, options = list(lengthMenu = c(5, 30, 50), pageLength = 10))
-    
-    ##  Present: partitions dir ##
-    output$partitions <-renderUI({
-      lapply(1:length(sort(dirs$list_partitions)), function(i) {
+
+    ########## Output list #########
+    # partitions dir
+    output$partitions <- renderUI({
+      list_partitions <- list.files(path = paste0(models_dir, "/present/partitions"), recursive = T, full.names = T, pattern = ".tif")
+      lapply(1:length(sort(list_partitions)), function(i) {
         tags$div(tags$a(
-          href = dirs$list_partitions[i],
-          paste0(dirs$list_partitions[i]),
+          href = list_partitions[i],
+          paste0(list_partitions[i]),
           target = "_blank"
         ))
       })
     })
-    
-    ##  Present: final_models dir ##
+
+    # final_models dir
     output$final <- renderUI({
-      lapply (1:length(sort(dirs$list_final)), function(i) {
+      list_final <- list.files(path = paste0(models_dir, "/present/final_models"), recursive = T, full.names = T, pattern = ".tif")
+      lapply(1:length(sort(list_final)), function(i) {
         tags$div(tags$a(
-          href = dirs$list_final[i],
-          paste0(dirs$list_final[i]),
+          href = list_final[i],
+          paste0(list_final[i]),
           target = "_blank"
         ))
       })
     })
-    
-    ##  Present: ensemble dir ##
+
+    # ensemble dir
     output$ensemble <- renderUI({
-      lapply(1:length(sort(dirs$list_ensemble)), function(i) {
+      list_ensemble <- list.files(path = paste0(models_dir, "/present/ensemble"), recursive = T, full.names = T, pattern = ".tif")
+      lapply(1:length(sort(list_ensemble)), function(i) {
         tags$div(tags$a(
-          href = dirs$list_ensemble[i],
-          paste0(dirs$list_ensemble[i]),
+          href = list_ensemble[i],
+          paste0(list_ensemble[i]),
           target = "_blank"
         ))
       })
     })
-    
   })
 }

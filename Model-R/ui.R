@@ -21,8 +21,7 @@ ipak <- function(pkg) {
 }
 
 ipak(c("shinydashboard", 
-       "leaflet",
-       "DT"))
+       "leaflet"))
 
 
 bio_datasource <- c("GBif - The Global Biodiversity Information Facility" = "gbif",
@@ -143,7 +142,7 @@ body <- dashboardBody(
                                                                              choices = c(list_projects),
                                                                              choiceValues = c(list_projects),
                                                                              selected = NULL),
-                                                                selectInput("Choose_spdir", "Select input",
+                                                                selectInput("Select_spdir", "Select input",
                                                                             c("Sp A", "Sp B", "Sp C"))
                                                ),
                                                
@@ -341,7 +340,7 @@ body <- dashboardBody(
                                                                   box(width = NULL,
                                                                       status = "warning",
                                                                       numericInput(
-                                                                        "edtextend1",
+                                                                        "edtextend11",
                                                                         "West:",
                                                                         min = -180,
                                                                         max = 180,
@@ -349,7 +348,7 @@ body <- dashboardBody(
                                                                         step = 1
                                                                       ),
                                                                       numericInput(
-                                                                        "edtextend2",
+                                                                        "edtextend21",
                                                                         "East:",
                                                                         min = -180,
                                                                         max = 180,
@@ -357,7 +356,7 @@ body <- dashboardBody(
                                                                         step = 1
                                                                       ),
                                                                       numericInput(
-                                                                        "edtextend4",
+                                                                        "edtextend41",
                                                                         "North:",
                                                                         min = -90,
                                                                         max = 90,
@@ -365,7 +364,7 @@ body <- dashboardBody(
                                                                         step = 1
                                                                       ),
                                                                       numericInput(
-                                                                        "edtextend3",
+                                                                        "edtextend31",
                                                                         "South:",
                                                                         min = -90,
                                                                         max = 90,
@@ -730,13 +729,13 @@ body <- dashboardBody(
                                 tabPanel("Input data",
                                          box(width =12,
                                              column(width = 8,
-                                                        DT::dataTableOutput('sdmdata_table', width= NULL)
+                                                    DT::dataTableOutput('sdmdata_table', width= NULL)
                                                     
                                              ),
                                              
                                              column(width = 4,
-                                                        imageOutput('sdmdata_png', height = 300)
-                                                    )
+                                                    imageOutput('sdmdata_png', height = 300)
+                                             )
                                              
                                          ),
                                          column(width = 12,
