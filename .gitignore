@@ -8,3 +8,6 @@ teste.txt
 *.bil
 *.bil
 *.rds
+*.txt
+*.png
+*.csv
