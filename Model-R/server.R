@@ -130,7 +130,7 @@ getOccurrences_jabot <- function(species_name) {
   colnames(occur.data) <- c("name", "lon", "lat")
   return(occur.data)
 }
-maparesultado_model <- function(algorithm = algorithm) {
+MapPreview.algorithm <- function(algorithm = algorithm) {
   finaldir <- list.files(paste0(modelsDir, "/", species_name, "/present/final_models/"))
   tif_file <- finaldir[finaldir == paste0(species_name, "_", algorithm, "_raw_mean.tif")]
   raw_mean_file <- list.files(paste0(modelsDir, "/", species_name, "/present/final_models/"), pattern = tif_file, full.names = T)
@@ -150,7 +150,7 @@ maparesultado_model <- function(algorithm = algorithm) {
   }
 }
 
-maparesultado_ensemble <- function() {
+MapPreview.ensemble <- function() {
   finaldir <- list.files(paste0(modelsDir, "/", species_name, "/present/ensemble/"))
   tif_file <- finaldir[finaldir == paste0(species_name, "_raw_", "mean_ensemble_mean.tif")]
   raw_mean_file <- list.files(paste0(modelsDir, "/", species_name, "/present/ensemble/"), pattern = tif_file, full.names = T)
@@ -281,7 +281,7 @@ function(input, output, session) {
     } else {
       loadspdata()
     }
-    occurrences
+    format(occurrences, digits = 4, nsmall = 4)
   }, options = list(lengthMenu = c(5, 30, 50), pageLength = 5))
 
   observeEvent(input$btn_saveDatasetRaw, {
@@ -345,7 +345,7 @@ function(input, output, session) {
           rownames(occurrences) <- NULL
           occurrences$id <- 1:nrow(occurrences)
         })
-        occurrences
+        format(occurrences, digits = 4, nsmall = 4)
       }
     }
   }, options = list(searching = FALSE, lengthMenu = c(5, 30, 50), pageLength = 5))
@@ -440,7 +440,7 @@ function(input, output, session) {
     )
 
     ##  WorldClim variables
-    if (input$tipodadoabiotico == "CLIMA") {
+    if (input$tipodadoabiotico == "WorldClim") {
       vars_selection <<- paste(input$pred_vars_wc)
       path_current <- paste0(getwd(), "/ex/clima/current/", input$resolution)
       checkfiles <- list()
@@ -814,8 +814,8 @@ function(input, output, session) {
           rf = input$rf,
           svm.k = input$svm.k,
           svm.e = input$svm.e,
-          mindist = FALSE,
-          centroid = FALSE,
+          mindist = F,
+          centroid = F,
           brt = input$brt,
           real_absences = NULL,
           lon = "lon",
@@ -865,47 +865,47 @@ function(input, output, session) {
 
         output$maparesultadomax <- renderLeaflet({
           input$btnModelar
-          maparesultado_model(algorithm = "maxent")
+          MapPreview.algorithm(algorithm = "maxent")
         })
 
         output$maparesultadosvm.e <- renderLeaflet({
           input$btnModelar
-          maparesultado_model(algorithm = "svm.k")
+          MapPreview.algorithm(algorithm = "svm.k")
         })
 
         output$maparesultadosvm.k <- renderLeaflet({
           input$btnModelar
-          maparesultado_model(algorithm = "svm.e")
+          MapPreview.algorithm(algorithm = "svm.e")
         })
 
         output$maparesultadomh <- renderLeaflet({
           input$btnModelar
-          maparesultado_model(algorithm = "mahal")
+          MapPreview.algorithm(algorithm = "mahal")
         })
 
         output$maparesultadorf <- renderLeaflet({
           input$btnModelar
-          maparesultado_model(algorithm = "rf")
+          MapPreview.algorithm(algorithm = "rf")
         })
 
         output$maparesultadoglm <- renderLeaflet({
           input$btnModelar
-          maparesultado_model(algorithm = "glm")
+          MapPreview.algorithm(algorithm = "glm")
         })
 
         output$maparesultadobc <- renderLeaflet({
           input$btnModelar
-          maparesultado_model(algorithm = "bioclim")
+          MapPreview.algorithm(algorithm = "bioclim")
         })
 
         output$maparesultadodo <- renderLeaflet({
           input$btnModelar
-          maparesultado_model(algorithm = "domain")
+          MapPreview.algorithm(algorithm = "domain")
         })
 
         output$maparesultadoensemble <- renderLeaflet({
           input$btnModelar
-          maparesultado_ensemble()
+          MapPreview.ensemble()
         })
       } else {
         showModal(modalDialog(
@@ -944,14 +944,20 @@ function(input, output, session) {
     # metadata
     output$metadata_table <- renderDataTable({
       metadata <-list.files(path = paste0(modelsDir.sp, "/present"), recursive = T, full.names = T, pattern = "metadata.txt")[1]
-      read.delim(metadata, header = TRUE, sep = " ", dec = ".")
+      metadata <- data.frame(read.delim(metadata, header = TRUE, sep = " ", dec = "."))
+      metadata$res.x <-  format(metadata$res.x, digits = 3, nsmall = 3)
+      metadata$res.y <- format(metadata$res.y, digits = 3, nsmall = 3)
+      metadata
     }, options = list(scrollX = TRUE, scrollY = TRUE, searching = FALSE)
     )
 
     # sdmdata txt table
     output$sdmdata_table <- renderDataTable({
       sdmdata <- list.files(path = paste0(modelsDir.sp, "/present"), recursive = T, full.names = T, pattern = "sdmdata.txt")[1]
-      read.delim(sdmdata, header = TRUE, sep = " ", dec = ".")
+      sdmdata <- data.frame(read.delim(sdmdata, header = TRUE, sep = " ", dec = "."))
+      sdmdata$lon <-format(sdmdata$lon, digits = 3, nsmall = 3)
+      sdmdata$lat <-format(sdmdata$lat, digits = 3, nsmall = 3)
+      sdmdata
     },options = list(scrollX = TRUE, searching = FALSE))
 
     # sdmdata png map
@@ -964,24 +970,18 @@ function(input, output, session) {
     # stats
     output$stats <- renderDataTable({
       stats.file <- list.files(path = paste0(modelsDir.sp, "/present/final_models"), recursive = T, full.names = T, pattern = "final_statistics.csv")[1]
-      read.csv(stats.file)
+      stats.file <- read.csv(stats.file, row.names = 1)
+      for(i in c(1:ncol(stats.file))){
+        if(is.numeric(stats.file[,i])){
+          stats.file[,i] <- format(stats.file[,i], digits = 3, nsmall = 4)
+        }
+      }
+      stats.file
     }, options = list(lengthMenu = c(5, 30, 50), pageLength = 10))
 
     #    ####  Binary and Continuous models ####
 
-    #     files <- c(imgs_png_bin, imgs_png_cont)
-    #     if (length(files) >= 1) {
-    #       list(
-    #         src = files,
-    #         contentType = "image/png",
-    #         width = 400,
-    #         height = 300,
-    #         alt = "This is alternate text"
-    #       )
-    #     }
-    # })
-
-    #   #### Output list ####
+    #### Output list ####
 
     # partitions dir
     output$partitions <- renderUI({
