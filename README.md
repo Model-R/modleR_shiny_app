@@ -1,3 +1,5 @@
+# This is the page for the shiny app associated with the package. The R package is at https://github.com/Model-R/modelr_pkg 
+
 # Model-R shiny app
 
 ## Docker container installation
