@@ -101,7 +101,7 @@ mk.dirs <- function(dir_path) {
 getOccurrences_gbif <- function(species_name) {
   key <- rgbif::name_backbone(name = species_name)$speciesKey
   if (!is.null(key)) {
-    gbif_data <- rgbif::occ_search(
+    gbif_data <-rgbif::occ_search(
       hasCoordinate = TRUE,
       hasGeospatialIssue = F,
       taxonKey = key,
@@ -168,7 +168,6 @@ MapPreview.ensemble <- function() {
       addRectangles(ext11, ext31, ext21, ext41, color = "red", fill = FALSE, dashArray = "5,5", weight = 2)
   }
 }
-
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 options(shiny.maxRequestSize = 100 * 1024^2)
 dirColors <- c(`1` = "#595490", `2` = "#527525", `3` = "#A93F35", `4` = "#BA48AA")
@@ -197,14 +196,13 @@ function(input, output, session) {
       }
 
       if (!file.exists(modelsDir)) {
-
+        mk.dirs(modelsDir)
         showModal(modalDialog(
           title = "Project succesfully created!",
           paste0("Project directory: ", modelsDir),
           easyClose = TRUE
         ))
-        modelsDir <<-  paste0("./www/results/", input$modelsDir.new)
-        mk.dirs(modelsDir)
+        modelsDir <<- modelsDir
       }
     }
 
@@ -212,7 +210,7 @@ function(input, output, session) {
     if (input$select_project == "load_proj") {
       modelsDir <- paste0("./www/results/", input$modelsDir.load)
 
-      if (dir.exists(modelsDir)) {
+      if(dir.exists(modelsDir)){
         showModal(modalDialog(
           title = paste0("Project ", input$modelsDir.load, " succefully loaded!"),
           paste0("Output files are dispalyed at the 'Outputs' tab."),
@@ -287,9 +285,9 @@ function(input, output, session) {
   }, options = list(lengthMenu = c(5, 30, 50), pageLength = 5))
 
   observeEvent(input$btn_saveDatasetRaw, {
-    save_raw <- data.frame("species_name", occurrences)
+    save_raw <-data.frame("species_name", occurrences)
     names(save_raw) <- c("name", "lon", "lat")
-    write.csv(save_raw, file = paste0(modelsDir, "/occurrences_", input$bio_datasource, "_", species_name, ".csv"), row.names = FALSE)
+    write.csv(save_raw, file=paste0(modelsDir, "/occurrences_", input$bio_datasource, "_",species_name, ".csv"), row.names = FALSE)
   })
 
   # Display map with occurrence records
@@ -303,7 +301,7 @@ function(input, output, session) {
     if (!is.null(occurrences)) {
       map <- leaflet(occurrences) %>%
         addTiles() %>%
-        addCircles(color = "red", lat = ~lat, lng = ~lon) %>%
+        addCircles(color = "red", lat = ~ lat, lng = ~ lon) %>%
         setView(lng = -31.5, lat = -13.4, zoom = 3)
       map
     } else {
@@ -353,9 +351,9 @@ function(input, output, session) {
   }, options = list(searching = FALSE, lengthMenu = c(5, 30, 50), pageLength = 5))
 
   observeEvent(input$btn_saveDatasetClean, {
-    save_clean <- data.frame("species_name", occurrences)
-    names(save_clean) <- c("name", "lon", "lat")
-    write.csv(save_clean, file = paste0(modelsDir, "/occurrences_clean_", species_name, ".csv"), row.names = FALSE)
+    save_clean<-data.frame("species_name", occurrences)
+    names(save_clean)<- c("name", "lon", "lat")
+    write.csv(save_clean, file=paste0(modelsDir, "/occurrences_clean_",species_name, ".csv"), row.names = FALSE)
   })
 
   output$mapadistribuicaodatacleaning <- renderLeaflet({
@@ -370,9 +368,9 @@ function(input, output, session) {
         occurrences$id <- 1:nrow(occurrences)
         map <- leaflet(occurrences) %>%
           addTiles() %>%
-          addCircles(color = "red", lat = ~lat, lng = ~lon) %>%
+          addCircles(color = "red", lat = ~ lat, lng = ~ lon) %>%
           addMarkers(clusterOptions = markerClusterOptions()) %>%
-          addMarkers(~lon, ~lat, popup = ~as.character(id))
+          addMarkers(~ lon, ~ lat, popup = ~ as.character(id))
         map
       }
     } else {
@@ -401,7 +399,7 @@ function(input, output, session) {
       map <- leaflet(occurrences) %>%
         addTiles() %>%
         addMarkers(clusterOptions = markerClusterOptions()) %>%
-        addMarkers(~lon, ~lat) %>%
+        addMarkers(~ lon, ~ lat) %>%
         addRectangles(ext11, ext31, ext21, ext41,
           color = "red",
           fill = TRUE, dashArray = "5,5", weight = 3
@@ -424,7 +422,7 @@ function(input, output, session) {
       map <- leaflet(occurrences) %>%
         addTiles() %>%
         addMarkers(clusterOptions = markerClusterOptions()) %>%
-        addMarkers(~lon, ~lat) %>%
+        addMarkers(~ lon, ~ lat) %>%
         addRectangles(ext12, ext32, ext22, ext42,
           color = "green", fill = TRUE, dashArray = "5,5",
           weight = 3
@@ -768,16 +766,14 @@ function(input, output, session) {
 
   #### GROUPING ALL MODELING PROCESSES BY CLICKING THE EXECUTE BUTTON ####
   observeEvent(input$btnModelar, {
-    if (any(
-      input$domain,
+    if (any(input$domain,
       input$maxent,
       input$bioclim,
       input$mahal,
       input$glm,
       input$rf,
       input$svm.e,
-      input$svm.k
-    )
+      input$svm.k)
     ) {
       if (exists("occurrences") && exists("predictors") && exists("species_name")) {
         progress <<- shiny::Progress$new()
@@ -925,7 +921,7 @@ function(input, output, session) {
   observeEvent({
     input$btnrefreshprojeto
     input$btnModelar
-  }, {
+  },{
     sp_dirs <<- list.dirs(modelsDir, recursive = F, full.names = F)
     updateSelectInput(session, "Select_spdir",
       label = paste("Select species"),
@@ -937,51 +933,51 @@ function(input, output, session) {
     input$btnrefreshprojeto
     input$btnModelar
     input$Select_spdir
-  }, {
+  },{
     if (length(sp_dirs) == 0) {
       modelsDir.sp <<- NULL
+
     } else {
-      modelsDir.sp <<- paste0(modelsDir, "/", input$Select_spdir)
+      modelsDir.sp <<- paste0(modelsDir,"/", input$Select_spdir)
     }
 
     # metadata
     output$metadata_table <- renderDataTable({
-      metadata <- list.files(path = paste0(modelsDir.sp, "/present"), recursive = T, full.names = T, pattern = "metadata.txt")[1]
+      metadata <-list.files(path = paste0(modelsDir.sp, "/present"), recursive = T, full.names = T, pattern = "metadata.txt")[1]
       metadata <- data.frame(read.delim(metadata, header = TRUE, sep = " ", dec = "."))
-      metadata$res.x <- format(metadata$res.x, digits = 3, nsmall = 3)
+      metadata$res.x <-  format(metadata$res.x, digits = 3, nsmall = 3)
       metadata$res.y <- format(metadata$res.y, digits = 3, nsmall = 3)
       metadata
-    }, options = list(scrollX = TRUE, scrollY = TRUE, searching = FALSE))
+    }, options = list(scrollX = TRUE, scrollY = TRUE, searching = FALSE)
+    )
 
     # sdmdata txt table
     output$sdmdata_table <- renderDataTable({
       sdmdata <- list.files(path = paste0(modelsDir.sp, "/present"), recursive = T, full.names = T, pattern = "sdmdata.txt")[1]
       sdmdata <- data.frame(read.delim(sdmdata, header = TRUE, sep = " ", dec = "."))
-      sdmdata$lon <- format(sdmdata$lon, digits = 3, nsmall = 3)
-      sdmdata$lat <- format(sdmdata$lat, digits = 3, nsmall = 3)
+      sdmdata$lon <-format(sdmdata$lon, digits = 3, nsmall = 3)
+      sdmdata$lat <-format(sdmdata$lat, digits = 3, nsmall = 3)
       sdmdata
-    }, options = list(scrollX = TRUE, searching = FALSE))
+    },options = list(scrollX = TRUE, searching = FALSE))
 
     # sdmdata png map
     output$sdmdata_png <- renderImage({
-      list(
-        src = list.files(path = paste0(modelsDir.sp, "/present"), recursive = T, full.names = T, pattern = "sdmdata_.*png$")[1],
+      list(src = list.files(path = paste0(modelsDir.sp, "/present"), recursive = T, full.names = T, pattern = "sdmdata_.*png$")[1],
         contentType = "image/png",
-        alt = "This is alternate text"
-      )
+        alt = "This is alternate text")
     })
 
     # stats
     output$stats <- renderDataTable({
       stats.file <- list.files(path = paste0(modelsDir.sp, "/present/final_models"), recursive = T, full.names = T, pattern = "final_statistics.csv")[1]
       stats.file <- read.csv(stats.file, row.names = 1)
-      for (i in c(1:ncol(stats.file))) {
-        if (is.numeric(stats.file[, i])) {
-          stats.file[, i] <- format(stats.file[, i], digits = 3, nsmall = 4)
+      for(i in c(1:ncol(stats.file))){
+        if(is.numeric(stats.file[,i])){
+          stats.file[,i] <- format(stats.file[,i], digits = 3, nsmall = 4)
         }
       }
       stats.file
-    }, options = list(lengthMenu = c(5, 30, 50), pageLength = 10, scrollX = TRUE, searching = FALSE))
+    }, options = list(lengthMenu = c(5, 30, 50), pageLength = 10))
 
     #    ####  Binary and Continuous models ####
 
@@ -1022,5 +1018,11 @@ function(input, output, session) {
         ))
       })
     })
-  }, ignoreNULL = T, ignoreInit = T)
+
+  }, ignoreNULL = T,ignoreInit = T)
 }
+
+
+
+
+
