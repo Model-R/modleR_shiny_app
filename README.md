@@ -1,6 +1,6 @@
-# This is the page for the shiny app associated with the package. The R package is at https://github.com/Model-R/modelr_pkg 
+# This is the page for the shiny app associated with the package. The R package is at https://github.com/Model-R/modleR 
 
-# Model-R shiny app
+# ModleR shiny app
 
 ## Docker container installation
 
@@ -20,7 +20,7 @@
 
 
 ## To run from Shiny and RStudio
-1. Clone the Model-R repository https://github.com/Model-R/Model-R or download it and decompress the zip file
+1. Clone the Model-R repository https://github.com/Model-R/modleR_shiny_app or download it and decompress the zip file
 2. Open the server.R or the ui.R file in RStudio
 3. Click on Run App inside the RStudio interface
 
