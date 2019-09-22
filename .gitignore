@@ -1,13 +1,9 @@
-Model-R/www/projeto/Andrea
-Model-R/www/projeto
-final_data.csv
-teste.txt
 .Rhistory
 *.tif
 *.hdr
 *.bil
 *.bil
 *.rds
-*.txt
-*.png
-*.csv
+.Rproj.user
+.DS_Store
+/Model-R/www/results

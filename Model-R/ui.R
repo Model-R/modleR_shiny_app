@@ -1,5 +1,5 @@
 #############################
-## ----   MODEL-R    ----  ##
+## ----   modleR     ----  ##
 ##                         ##
 ## ANDREA SÁNCHEZ TAPIA    ##
 ## FELIPE SODRÉ BARROS     ##
@@ -7,34 +7,37 @@
 ## DIOGO SOUZA B. ROCHA    ##
 ## RAFAEL OLIVEIRA LIMA    ##
 ## RENATA DE T. CAPELLÃO   ##
+## SARA RIBEIRO MORTARA    ##
+## MARIA LUISA MONDELLI    ##
 ##                         ##
-## 08 DE FEVEREIRO DE 2018 ##
+## 21 DE SETEMBRO DE 2019  ##
 #############################
+
 
 # Thanks to Steven Worthington for function ipak https://gist.github.com/stevenworthington/3178163 (HT Karlo Guidoni Martins)
 
-ipak <- function(pkg) {
-  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
-  if (length(new.pkg)) {
-    install.packages(new.pkg, dependencies = TRUE)
-  }
-  sapply(pkg, require, character.only = TRUE)
-}
-
-ipak(c(
-  "shinydashboard",
-  "leaflet",
-  "DT"
-))
-
+# ast: isto tem que sair
+# ipak <- function(pkg) {
+#   new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+#   if (length(new.pkg)) {
+#     install.packages(new.pkg, dependencies = TRUE)
+#   }
+#   sapply(pkg, require, character.only = TRUE)
+# }
+#
+library(shinydashboard)
+library(leaflet)
+library(DT)
 #### VARIABLES ####
 bio_datasource <- c(
+    "The example dataset" = "package_dataset",
   "GBif - The Global Biodiversity Information Facility" = "gbif",
   "Jabot - JBRJ Database" = "jabot",
   "CSV - Comma Separated Values" = "csv"
 )
 
 env_datasource <- c(
+    "The example dataset" = "package_dataset",
   "WorldClim v.1.4" = "WorldClim",
   "Bio-ORACLE v.1" = "BIOORACLE",
   "Upload Dataset" = "Others"
@@ -105,8 +108,8 @@ future_bo_dates <- c(
   "2200" = "2200"
 )
 
-#### DASHBOARD ####
-header <- dashboardHeader(title = "Model-R 2.0")
+#### DASHBOARD #####why 2.0 but neyse
+header <- shinydashboard::dashboardHeader(title = "modleR 2.0")
 body <- dashboardBody(
   fluidRow(
     column(
@@ -119,37 +122,13 @@ body <- dashboardBody(
 
         #### WELCOME ####
         tabPanel(
-          "Welcome",
+          "Project",
           column(
             width = 12,
             tabPanel(
               "",
-              column(
-                width = 9,
-                box(
-                  width = NULL,
-                  column(
-                    width = 6,
-                    br(),
-                    img(src = "logo.png", width = 200)
-                  ),
-                  column(
-                    width = 9,
-                    h4("A workflow to perform Environmental Niche Modeling based on dismo")
-                  ),
-                  column(
-                    width = 12,
-                    br(),
-                    p("Please cite:"),
-                    br(),
-                    p(
-                      "Sánchez-Tapia, Andrea ; de Siqueira, Marinez Ferreira ; Lima, Rafael Oliveira ; Barros, Felipe Sodré M. ; Gall, Guilherme M. ; Gadelha, Luiz M. R. ; da Silva, Luís Alexandre E. ; Osthoff, Carla . Model-R: A Framework for Scalable and Reproducible Ecological Niche Modeling. Communications in Computer and Information Science. 1ed.: Springer International Publishing, 2018, v. 796, p. 218-232."
-                    ),
-                    br(),
-                    p("...ABSTRACT...")
-                  )
-                )
-              ),
+
+              #aqui a parte dos projetos, que deveria ser central----
               column(
                 width = 3,
                 box(
@@ -203,6 +182,33 @@ body <- dashboardBody(
                     )
                   }
                 )
+              ),#
+              #aqui a citação, que deveria ser menos importante no layout----
+              column(
+                  width = 9,
+                  box(
+                      width = NULL,
+                      column(
+                          width = 6,
+                          br(),
+                          img(src = "logo.png", width = 200)
+                      ),
+                      column(
+                          width = 9,
+                          h4("A workflow to perform Environmental Niche Modeling based on dismo")
+                      ),
+                      column(
+                          width = 12,
+                          br(),
+                          p("Please cite:"),
+                          br(),
+                          p(
+                              "Sánchez-Tapia, Andrea ; de Siqueira, Marinez Ferreira ; Lima, Rafael Oliveira ; Barros, Felipe Sodré M. ; Gall, Guilherme M. ; Gadelha, Luiz M. R. ; da Silva, Luís Alexandre E. ; Osthoff, Carla . Model-R: A Framework for Scalable and Reproducible Ecological Niche Modeling. Communications in Computer and Information Science. 1ed.: Springer International Publishing, 2018, v. 796, p. 218-232."
+                          ),
+                          br(),
+                          p("...ABSTRACT...")
+                      )
+                  )
               )
             )
           )
@@ -261,7 +267,7 @@ body <- dashboardBody(
                         box(
                           width = NULL, status = "warning",
                           helpText("Select species occurrence database or browse csv dataset"),
-                          selectInput("bio_datasource", "Occurrence data", bio_datasource, selected = "jabot"),
+                          selectInput("bio_datasource", "Occurrence data", bio_datasource, selected = "package_dataset"),
 
                           conditionalPanel(
                             "input.bio_datasource == 'csv' ",
@@ -293,7 +299,7 @@ body <- dashboardBody(
                           conditionalPanel(
                             "input.bio_datasource != 'csv' ",
                             helpText("Insert species scientific name"),
-                            textInput("species_name", label = "Species name:", value = "Caesalpinia echinata"),
+                            textInput("species_name", label = "Species name:", value = "Abarema_langsdorffii"),
                             actionButton("btnsearch_spdata", "Search", icon = icon("search"))
                           )
                         )
@@ -364,7 +370,7 @@ body <- dashboardBody(
                     box(
                       width = 12,
                       status = "warning",
-                      checkboxInput("project_ext", "Design on another extension", value = FALSE),
+                      checkboxInput("project_ext", "Project to another extension", value = FALSE),
 
                       conditionalPanel(
                         "input.project_ext",
@@ -379,7 +385,7 @@ body <- dashboardBody(
                           solidHeader = TRUE,
                           numericInput(
                             "edtextend12",
-                            "West:",
+                            "Min Lon:",
                             min = -180,
                             max = 180,
                             value = -90,
@@ -387,7 +393,7 @@ body <- dashboardBody(
                           ),
                           numericInput(
                             "edtextend22",
-                            "East:",
+                            "Max Lon:",
                             min = -180,
                             max = 180,
                             value = -32,
@@ -395,7 +401,7 @@ body <- dashboardBody(
                           ),
                           numericInput(
                             "edtextend42",
-                            "North:",
+                            "Max Lat:",
                             min = -90,
                             max = 90,
                             value = 23,
@@ -403,7 +409,7 @@ body <- dashboardBody(
                           ),
                           numericInput(
                             "edtextend32",
-                            "South:",
+                            "Min Lat:",
                             min = -90,
                             max = 90,
                             value = -33,
@@ -429,7 +435,7 @@ body <- dashboardBody(
                         status = "warning",
                         numericInput(
                           "edtextend11",
-                          "West:",
+                          "Min Lon:",
                           min = -180,
                           max = 180,
                           value = -90,
@@ -437,7 +443,7 @@ body <- dashboardBody(
                         ),
                         numericInput(
                           "edtextend21",
-                          "East:",
+                          "Max Lon:",
                           min = -180,
                           max = 180,
                           value = -32,
@@ -445,7 +451,7 @@ body <- dashboardBody(
                         ),
                         numericInput(
                           "edtextend41",
-                          "North:",
+                          "Max Lat:",
                           min = -90,
                           max = 90,
                           value = 23,
@@ -453,7 +459,7 @@ body <- dashboardBody(
                         ),
                         numericInput(
                           "edtextend31",
-                          "South:",
+                          "Min Lat:",
                           min = -90,
                           max = 90,
                           value = -33,
@@ -476,7 +482,7 @@ body <- dashboardBody(
                       "btnAtualizaSelecaoVariaveis",
                       "Update selected"
                     ),
-                    selectInput("tipodadoabiotico", "Variables dataset:", env_datasource, selected = "WorldClim"),
+                    selectInput("tipodadoabiotico", "Variables dataset:", env_datasource, selected = "package_dataset"),
 
                     conditionalPanel(
                       "input.tipodadoabiotico == 'Others' ",
@@ -674,7 +680,26 @@ body <- dashboardBody(
             )
           )
         ),
-
+        ####DATA CLEANING AND SETUP####
+        tabPanel("Data cleaning and setup",
+                 column(
+                     width = 6,
+                     tabBox(side = "left",
+                            title = "a",
+                            width = NULL,
+                            tabPanel("Occurrence data cleaning"),
+                            tabPanel("Modeling round setup"))
+                 )),
+        ####PROJECTION####
+        tabPanel("Projection",
+                 column(
+                     width = 6,
+                     tabBox(side = "left",
+                            title = "a",
+                            width = NULL,
+                            tabPanel("Projection extent"),
+                            tabPanel("Projection timescales"))
+                 )),
         #### MODELING ####
         tabPanel(
           "Modeling",

@@ -1,5 +1,5 @@
 #############################
-## ----   MODEL-R    ----  ##
+## ----   modleR     ----  ##
 ##                         ##
 ## ANDREA SÁNCHEZ TAPIA    ##
 ## FELIPE SODRÉ BARROS     ##
@@ -7,63 +7,58 @@
 ## DIOGO SOUZA B. ROCHA    ##
 ## RAFAEL OLIVEIRA LIMA    ##
 ## RENATA DE T. CAPELLÃO   ##
+## SARA RIBEIRO MORTARA    ##
+## MARIA LUISA MONDELLI    ##
 ##                         ##
-## 08 DE FEVEREIRO DE 2018 ##
+## 21 DE SETEMBRO DE 2019  ##
 #############################
 
 # Thanks to Steven Worthington for function ipak https://gist.github.com/stevenworthington/3178163 (HT Karlo Guidoni Martins)
 
-ipak <- function(pkg) {
-  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
-  if (length(new.pkg)) {
-    install.packages(new.pkg, dependencies = TRUE)
-  }
-  sapply(pkg, require, character.only = TRUE)
-}
-ipak(c(
+# ast: isto tem de sair porque o shiny tá invadindo o computador
+# ipak <- function(pkg) {
+#   new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+#   if (length(new.pkg)) {
+#     install.packages(new.pkg, dependencies = TRUE)
+#   }
+#   sapply(pkg, require, character.only = TRUE)
+# }
+pck <- c(
   "devtools",
-  "shinydashboard",
-  "leaflet",
-  "R.utils",
-  "raster",
-  "rjson",
-  "maps",
-  "rgdal",
-  "raster",
-  "dismo",
-  "rgbif",
-  "XML",
-  "randomForest",
-  "kernlab",
-  "data.table",
-  "DT",
-  "shinyjs",
-  "sdmpredictors"
-))
+"shinydashboard",
+"leaflet",
+"R.utils",
+"raster",
+"rjson",
+"maps",
+"rgdal",
+"raster",
+"dismo",
+"rgbif",
+"XML",
+"randomForest",
+"kernlab",
+"data.table",
+"DT",
+"shinyjs",
+"sdmpredictors",
+"rJava")
+sapply(pck, library, character.only = TRUE)
+#precisamos disto para testar
+devtools::load_all("../../modleR")
+#library("ModelR")
 
-jdk_version <- list.files("/Library/Java/JavaVirtualMachines/")
-if (length(jdk_version) != 0) {
-  dyn.load(paste0("/Library/Java/JavaVirtualMachines/", jdk_version, "/Contents/Home/lib/server/libjvm.dylib"))
-} else {
-  library("rJava")
-}
-
-ModelR.check <- require(ModelR)
-if (ModelR.check == FALSE) {
-  devtools::install_github("Model-R/modelr_pkg", build_vignettes = FALSE, ref = "brt")
-}
-library("ModelR")
-
-jar <- paste0(system.file(package = "dismo"), "/java/maxent.jar")
-if (file.exists(jar) != T) {
-  url <- "http://biodiversityinformatics.amnh.org/open_source/maxent/maxent.php?op=download"
-  download.file(url, destfile = "maxent.zip", mode = "wb")
-  unzip("maxent.zip", files = "maxent.jar", exdir = system.file("java", package = "dismo"))
-  unlink("maxent.zip")
-}
+#isto também tem que sair
+#jar <- paste0(system.file(package = "dismo"), "/java/maxent.jar")
+#if (file.exists(jar) != T) {
+ # url <- "http://biodiversityinformatics.amnh.org/open_source/maxent/maxent.php?op=download"
+  #download.file(url, destfile = "maxent.zip", mode = "wb")
+  #unzip("maxent.zip", files = "maxent.jar", exdir = system.file("java", package = "dismo"))
+  #unlink("maxent.zip")
+#}
 
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
-
+#funcoes ----
 panel.reg <- function(x, y, bg = NA, cex = 1, col.regres = "red", ...) {
   points(x, y, cex = cex)
   abline(stats::lm(y ~ x), col = col.regres, ...)
@@ -169,14 +164,13 @@ MapPreview.ensemble <- function() {
   }
 }
 
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 options(shiny.maxRequestSize = 100 * 1024^2)
 dirColors <- c(`1` = "#595490", `2` = "#527525", `3` = "#A93F35", `4` = "#BA48AA")
 
 function(input, output, session) {
 
   ###### SET PROJECT DIRECTORY #####
-  # Create new project
+  # Create new project----
   observeEvent(input$btnrefreshprojeto, {
     if (input$select_project == "new_proj") {
       modelsDir <- paste0("./www/results/", input$modelsDir.new)
@@ -197,7 +191,6 @@ function(input, output, session) {
       }
 
       if (!file.exists(modelsDir)) {
-
         showModal(modalDialog(
           title = "Project succesfully created!",
           paste0("Project directory: ", modelsDir),
@@ -208,14 +201,15 @@ function(input, output, session) {
       }
     }
 
-    # Load previous project
+    # Load previous project----
+      #ast: aqui só está setando um path e achando que já tudo foi modelado. mas nãõ carrega nada de sessões anteriores - tip oocorrencias, ambiente, a pessoa teria de fazer de novo tudo -tendo as coisas no hd. isto pode melhorar.
     if (input$select_project == "load_proj") {
       modelsDir <- paste0("./www/results/", input$modelsDir.load)
-
-      if (dir.exists(modelsDir)) {
+      #actually load things
+      if (dir.exists(modelsDir) & modelsDir != "./www/results/") {
         showModal(modalDialog(
           title = paste0("Project ", input$modelsDir.load, " succefully loaded!"),
-          paste0("Output files are dispalyed at the 'Outputs' tab."),
+          paste0("Output files are displayed at the 'Outputs' tab."),
           easyClose = TRUE
         ))
         modelsDir <<- modelsDir
@@ -230,18 +224,26 @@ function(input, output, session) {
   })
 
   #####  IMPORT SPECIES OCCURRENCE DATASET #####
+
+
   # Load species occurrence dataset from gbif/jabot databases
   loadspdata <- eventReactive(input$btnsearch_spdata, {
     species_name <<- input$species_name
+    if (input$bio_datasource == "package_dataset") {
+        occur.data <- modleR::coordenadas[[1]]#a primeira especie do dataset interno
+        occurrences <<- occur.data[,c(2,3)]
+    }
     if (input$bio_datasource == "gbif") {
       occur.data <- getOccurrences_gbif(input$species_name)
-      occur.data_gbif <- occur.data [, c(2, 3)]
+      occur.data_gbif <- occur.data[, c(2, 3)]
+      #occur.data_gbif <- occur.data
       occurrences <<- occur.data_gbif
     }
     if (input$bio_datasource == "jabot") {
       occur.data <- getOccurrences_jabot(input$species_name)
       occur.data <- as.data.frame(occur.data, stringsAsFactors = F)
       occur.data_jabot <- occur.data[, c(2, 3)]
+      #occur.data_jabot <- occur.data
       occurrences <<- occur.data_jabot
     }
     occurrences
@@ -287,9 +289,11 @@ function(input, output, session) {
   }, options = list(lengthMenu = c(5, 30, 50), pageLength = 5))
 
   observeEvent(input$btn_saveDatasetRaw, {
-    save_raw <- data.frame("species_name", occurrences)
-    names(save_raw) <- c("name", "lon", "lat")
-    write.csv(save_raw, file = paste0(modelsDir, "/occurrences_", input$bio_datasource, "_", species_name, ".csv"), row.names = FALSE)
+    save_raw <- data.frame(species_name, occurrences)
+    names(save_raw) <- c("species_name", "lon", "lat")
+    occ_folder <- paste(modelsDir, species_name, "occurrences", sep = "/")
+    dir.create(occ_folder, recursive = T)
+    write.csv(save_raw, file = paste0(occ_folder, "/occurrences_", input$bio_datasource, "_", species_name, ".csv"), row.names = FALSE)
   })
 
   # Display map with occurrence records
@@ -353,9 +357,11 @@ function(input, output, session) {
   }, options = list(searching = FALSE, lengthMenu = c(5, 30, 50), pageLength = 5))
 
   observeEvent(input$btn_saveDatasetClean, {
-    save_clean <- data.frame("species_name", occurrences)
+    save_clean <- data.frame(species_name, occurrences)
     names(save_clean) <- c("name", "lon", "lat")
-    write.csv(save_clean, file = paste0(modelsDir, "/occurrences_clean_", species_name, ".csv"), row.names = FALSE)
+    occ_folder <- paste(modelsDir, species_name, "occurrences", sep = "/")
+    dir.create(occ_folder, recursive = T, showWarnings = F)
+    write.csv(save_clean, file = paste0(occ_folder, "/occurrences_clean_", species_name, ".csv"), row.names = FALSE)
   })
 
   output$mapadistribuicaodatacleaning <- renderLeaflet({
