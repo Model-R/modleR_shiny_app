@@ -346,12 +346,60 @@ body <- dashboardBody(
               tabPanel(
                 "Modeling extent",
                 tabBox(
-                  side = "right",
+                  side = "left",
                   title = "",
                   width = NULL,
                   height = "600px",
                   selected = "Study area extent",
-
+                  tabPanel(
+                    "Study area extent",
+                    box(
+                      width = 8,
+                      solidHeader = TRUE,
+                      leafletOutput("mapapontosextend", height = 500)
+                    ),
+                    box(
+                      width = 4,
+                      solidHeader = TRUE,
+                      box(
+                        width = NULL,
+                        status = "warning",
+                        numericInput(
+                          "edtextend11",
+                          "Min Lon:",
+                          min = -180,
+                          max = 180,
+                          value = -60,
+                          step = 1
+                        ),
+                        numericInput(
+                          "edtextend21",
+                          "Max Lon:",
+                          min = -180,
+                          max = 180,
+                          value = -32,
+                          step = 1
+                        ),
+                        numericInput(
+                          "edtextend41",
+                          "Max Lat:",
+                          min = -90,
+                          max = 90,
+                          value = 5,
+                          step = 1
+                        ),
+                        numericInput(
+                          "edtextend31",
+                          "Min Lat:",
+                          min = -90,
+                          max = 90,
+                          value = -33,
+                          step = 1
+                        )
+                      )
+                    )
+                  )#ends study area extent
+                  ,
                   tabPanel(
                     "Projection extent",
                     box(
@@ -375,7 +423,7 @@ body <- dashboardBody(
                             "Min Lon:",
                             min = -180,
                             max = 180,
-                            value = -90,
+                            value = -60,#isto tem que ser reativo e igual ao valor selecionado pelo usuário
                             step = 1
                           ),
                           numericInput(
@@ -383,7 +431,7 @@ body <- dashboardBody(
                             "Max Lon:",
                             min = -180,
                             max = 180,
-                            value = -32,
+                            value = -32,#isto tem que ser reativo e igual ao valor selecionado pelo usuário
                             step = 1
                           ),
                           numericInput(
@@ -391,7 +439,7 @@ body <- dashboardBody(
                             "Max Lat:",
                             min = -90,
                             max = 90,
-                            value = 23,
+                            value = 5,#isto tem que ser reativo e igual ao valor selecionado pelo usuário
                             step = 1
                           ),
                           numericInput(
@@ -399,64 +447,15 @@ body <- dashboardBody(
                             "Min Lat:",
                             min = -90,
                             max = 90,
-                            value = -33,
+                            value = -33,#isto tem que ser reativo e igual ao valor selecionado pelo usuário
                             step = 1
                           )
                         )
                       )
                     )
-                  ),
-
-                  tabPanel(
-                    "Study area extent",
-                    box(
-                      width = 8,
-                      solidHeader = TRUE,
-                      leafletOutput("mapapontosextend", height = 500)
-                    ),
-                    box(
-                      width = 4,
-                      solidHeader = TRUE,
-                      box(
-                        width = NULL,
-                        status = "warning",
-                        numericInput(
-                          "edtextend11",
-                          "Min Lon:",
-                          min = -180,
-                          max = 180,
-                          value = -90,
-                          step = 1
-                        ),
-                        numericInput(
-                          "edtextend21",
-                          "Max Lon:",
-                          min = -180,
-                          max = 180,
-                          value = -32,
-                          step = 1
-                        ),
-                        numericInput(
-                          "edtextend41",
-                          "Max Lat:",
-                          min = -90,
-                          max = 90,
-                          value = 23,
-                          step = 1
-                        ),
-                        numericInput(
-                          "edtextend31",
-                          "Min Lat:",
-                          min = -90,
-                          max = 90,
-                          value = -33,
-                          step = 1
-                        )
-                      )
-                    )
-                  )
-                )
-              ),
+                  )#ends projection extent
+                )#ends study area extent
+              ),#ends modeling extent
 
               tabPanel(
                 "Select Predictors",
