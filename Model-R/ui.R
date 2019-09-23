@@ -219,96 +219,79 @@ body <- dashboardBody(
           "Species occurrence data",
           column(
             width = 12,
+            #el de import vs cleaning
             tabBox(
               side = "left",
               selected = "Import occurrence dataset",
               title = "",
               width = NULL,
               height = "600px",
-
+              #el de import vs. map pero queremos solo uno
               tabPanel(
                 "Import occurrence dataset",
+                #primera columna: el mapa----
                 column(
                   width = 12,
-                  tabBox(
-                    side = "right",
-                    selected = "Load occurrence dataset",
-                    title = "",
-                    width = NULL,
-                    height = "600px",
-                   # id = "tabset1",
-
-                    tabPanel(
-                      "View occurrence map",
-                      column(
-                        width = 12,
-                        box(
-                          width = NULL,
-                          solidHeader = TRUE,
-                          leafletOutput("mapadistribuicao"),
-                          height = 500
-                        )
-                      )
-                    ),
-
-                    tabPanel(
-                      "Load occurrence dataset",
-                      column(
-                        width = 8,
-                        box(
-                          width = NULL,
-                          DT::dataTableOutput("spdata_table")
-                        ),
-                        actionButton("btn_saveDatasetRaw", "Save species dataset", icon = icon("next"))
+                  solidHeader = TRUE,
+                  leafletOutput("mapadistribuicao"),
+                  height = 500
                       ),
-
-                      column(
-                        width = 4,
-                        box(
-                          width = NULL, status = "warning",
-                          helpText("Select species occurrence database or browse csv dataset"),
-                          selectInput("bio_datasource", "Occurrence data", bio_datasource, selected = "package_dataset"),
-
-                          conditionalPanel(
-                            "input.bio_datasource == 'csv' ",
-                            helpText("Format: [Species, Longitude, Latitude]"),
-                            fileInput("file1", "", accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")),
-                            checkboxInput("header", "Header", TRUE),
-                            radioButtons("sep", "Separator",
-                              c(
-                                "Comma" = ",",
-                                "Semicolon" = ";",
-                                "Tab" = "\t"
-                              ),
-                              ",",
-                              inline = TRUE
-                            ),
-
-                            radioButtons("quote", "Quote",
-                              c(
-                                "Without" = "",
-                                "Double" = '"',
-                                "Simple" = "'"
-                              ),
-                              '"',
-                              inline = TRUE
-                            ),
-                            actionButton("btnsearch_spdatacsv", "Viewer", icon = icon("search"))
-                          ),
-
-                          conditionalPanel(
-                            "input.bio_datasource != 'csv' ",
-                            helpText("Insert species scientific name"),
-                            textInput("species_name", label = "Species name:", value = "Abarema_langsdorffii"),
-                            actionButton("btnsearch_spdata", "Search", icon = icon("search"))
-                          )
-                        )
-                      )
+                #segunda columna: los datos----
+                # "Load occurrence dataset",
+                column(
+                  width = 8,
+                  box(
+                    width = NULL,
+                    DT::dataTableOutput("spdata_table")
+                    ),
+                  actionButton("btn_saveDatasetRaw", "Save species dataset",
+                               icon = icon("next"))
+                  ),
+                #tercera columna: la busqueda
+                column(
+                  width = 4,
+                  box(
+                    width = NULL, status = "warning",
+                    helpText("Select species occurrence database or browse csv dataset"),
+                    selectInput("bio_datasource", "Occurrence data", bio_datasource, selected = "package_dataset"),
+                    #dependiendo de lo que selecciona cambia
+                    conditionalPanel(
+                      "input.bio_datasource == 'csv' ",
+                      helpText("Format: [Species, Longitude, Latitude]"),
+                      fileInput("file1",
+                                "",
+                                accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")),
+                      checkboxInput("header", "Header", TRUE),
+                      radioButtons("sep",
+                                   "Separator",
+                                   c(
+                                     "Comma" = ",",
+                                     "Semicolon" = ";",
+                                     "Tab" = "\t"
+                                   ),
+                                   ",",
+                                   inline = TRUE),
+                      radioButtons("quote",
+                                   "Quote",
+                                   c(
+                                     "Without" = "",
+                                     "Double" = '"',
+                                     "Simple" = "'"
+                                   ),
+                                   '"',
+                                   inline = TRUE),
+                      actionButton("btnsearch_spdatacsv", "Viewer", icon = icon("search")))
+                    ,
+                    conditionalPanel(
+                      "input.bio_datasource != 'csv' ",
+                      helpText("Insert species scientific name"),
+                      textInput("species_name", label = "Species name:", value = "Abarema_langsdorffii"),
+                      actionButton("btnsearch_spdata", "Search", icon = icon("search"))
                     )
                   )
-                )
-              ),
-
+                      )#ends tercera columna
+                    ),#ends tabpanel
+              #aqui datacleaning velho
               tabPanel(
                 "Data Cleaning",
                 column(
@@ -333,16 +316,17 @@ body <- dashboardBody(
                     actionButton("btnapagar", "Delete selected ID", icon = icon("trash")),
                     actionButton("btneliminarduplicatas", "Delete duplicates", icon = icon("cubes")),
                     actionButton("btn_saveDatasetClean", "Save dataset", icon = icon("next"))
-                  ),
+                  ),#box
                   box(
                     width = NULL,
                     DT::dataTableOutput("dgbriddadosdatacleaning")
-                  )
-                )
-              )
-            )
-          )
-        ),
+                  )#box
+                )#column
+              )#tabpanel
+            )#tabbox
+          )#column
+                    ),#tabpanelsp occ data
+
 
         #### ENVIRONMENTAL DATA ####
         tabPanel(
@@ -1012,7 +996,6 @@ body <- dashboardBody(
     )
   )
 )
-
 dashboardPage(
   header,
   dashboardSidebar(disable = TRUE),
