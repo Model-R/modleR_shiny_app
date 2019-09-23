@@ -30,14 +30,14 @@ library(leaflet)
 library(DT)
 #### VARIABLES ####
 bio_datasource <- c(
-    "The example dataset" = "package_dataset",
+  "The example dataset" = "package_dataset",
   "GBif - The Global Biodiversity Information Facility" = "gbif",
   "Jabot - JBRJ Database" = "jabot",
   "CSV - Comma Separated Values" = "csv"
 )
 
 env_datasource <- c(
-    "The example dataset" = "package_dataset",
+  "The example dataset" = "package_dataset",
   "WorldClim v.1.4" = "WorldClim",
   "Bio-ORACLE v.1" = "BIOORACLE",
   "Upload Dataset" = "Others"
@@ -130,7 +130,7 @@ body <- dashboardBody(
 
               #aqui a parte dos projetos, que deveria ser central----
               column(
-                width = 3,
+                width = 6,
                 box(
                   width = NULL,
                   if (length(list.files("./www/results/") > 0)) {
@@ -185,7 +185,7 @@ body <- dashboardBody(
               ),#
               #aqui a citação, que deveria ser menos importante no layout----
               column(
-                  width = 9,
+                  width = 6,
                   box(
                       width = NULL,
                       column(
@@ -229,31 +229,16 @@ body <- dashboardBody(
               #el de import vs. map pero queremos solo uno
               tabPanel(
                 "Import occurrence dataset",
-                #primera columna: el mapa----
-                column(
-                  width = 12,
-                  solidHeader = TRUE,
-                  leafletOutput("mapadistribuicao"),
-                  height = 500
-                      ),
-                #segunda columna: los datos----
-                # "Load occurrence dataset",
-                column(
-                  width = 8,
-                  box(
-                    width = NULL,
-                    DT::dataTableOutput("spdata_table")
-                    ),
-                  actionButton("btn_saveDatasetRaw", "Save species dataset",
-                               icon = icon("next"))
-                  ),
-                #tercera columna: la busqueda
+                #primera columna: la busqueda
                 column(
                   width = 4,
                   box(
                     width = NULL, status = "warning",
                     helpText("Select species occurrence database or browse csv dataset"),
-                    selectInput("bio_datasource", "Occurrence data", bio_datasource, selected = "package_dataset"),
+                    selectInput("bio_datasource",
+                                "Occurrence data",
+                                bio_datasource,
+                                selected = "package_dataset"),
                     #dependiendo de lo que selecciona cambia
                     conditionalPanel(
                       "input.bio_datasource == 'csv' ",
@@ -289,7 +274,25 @@ body <- dashboardBody(
                       actionButton("btnsearch_spdata", "Search", icon = icon("search"))
                     )
                   )
-                      )#ends tercera columna
+                      ),#ends primera columna
+                #segunda columna: los datos----
+                # "Load occurrence dataset",
+                column(
+                  width = 8,
+                  box(
+                    width = NULL,
+                    DT::dataTableOutput("spdata_table")
+                    ),
+                  actionButton("btn_saveDatasetRaw", "Save species dataset",
+                               icon = icon("next"))
+                  ),#ends segunda columna
+                #tercera columna: el mapa----
+                column(
+                  width = 12,
+                  solidHeader = TRUE,
+                  leafletOutput("mapadistribuicao"),#isto só deveria aparecer quando o botão search for clicado - tipo um actionButton da vida, se não, dá erro de que não acha occurrences
+                  height = 500
+                )#ends tercera columna
                     ),#ends tabpanel
               #aqui datacleaning velho
               tabPanel(
