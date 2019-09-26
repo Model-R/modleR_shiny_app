@@ -28,6 +28,7 @@
 library(shinydashboard)
 library(leaflet)
 library(DT)
+devtools::load_all("../../modleR")
 #### VARIABLES ####
 bio_datasource <- c(
   "The example dataset" = "package_dataset",
@@ -131,11 +132,11 @@ body <- dashboardBody(
               #aqui a parte dos projetos, que deveria ser central----
               column(
                 width = 6,
-                box(
+                shinydashboard::box(
                   width = NULL,
                   if (length(list.files("./www/results/") > 0)) {
                     list_projects <- list.files("./www/results/", full.names = F, recursive = F)
-                    box(
+                    shinydashboard::box(
                       title = "Create/Open project",
                       status = "primary",
                       solidHeader = TRUE,
@@ -152,7 +153,7 @@ body <- dashboardBody(
                         "input.select_project == 'load_proj' ",
                         radioButtons("modelsDir.load",
                           "Open project:",
-                          choices = c(list_projects),
+                          choiceNames = c(list_projects),
                           choiceValues = c(list_projects),
                           selected = NULL
                         )
@@ -165,7 +166,7 @@ body <- dashboardBody(
                       actionButton("btnrefreshprojeto", "Submit", icon = icon(""))
                     )
                   } else {
-                    box(
+                    shinydashboard::box(
                       title = "Create/Open project",
                       status = "primary",
                       solidHeader = TRUE,
@@ -186,7 +187,7 @@ body <- dashboardBody(
               #aqui a citação, que deveria ser menos importante no layout----
               column(
                   width = 6,
-                  box(
+                  shinydashboard::box(
                       width = NULL,
                       column(
                           width = 6,
@@ -232,7 +233,7 @@ body <- dashboardBody(
                 #primera columna: la busqueda
                 column(
                   width = 4,
-                  box(
+                  shinydashboard::box(
                     width = NULL, status = "warning",
                     helpText("Select species occurrence database or browse csv dataset"),
                     selectInput("bio_datasource",
@@ -279,7 +280,7 @@ body <- dashboardBody(
                 # "Load occurrence dataset",
                 column(
                   width = 8,
-                  box(
+                  shinydashboard::box(
                     width = NULL,
                     DT::dataTableOutput("spdata_table")
                     ),
@@ -299,7 +300,7 @@ body <- dashboardBody(
                 "Data Cleaning",
                 column(
                   width = 6,
-                  box(
+                  shinydashboard::box(
                     width = NULL,
                     solidHeader = TRUE,
                     leafletOutput("mapadistribuicaodatacleaning", height = 500)
@@ -307,7 +308,7 @@ body <- dashboardBody(
                 ),
                 column(
                   width = 6,
-                  box(
+                  shinydashboard::box(
                     width = NULL,
                     status = "warning",
                     numericInput("edtelemento",
@@ -320,7 +321,7 @@ body <- dashboardBody(
                     actionButton("btneliminarduplicatas", "Delete duplicates", icon = icon("cubes")),
                     actionButton("btn_saveDatasetClean", "Save dataset", icon = icon("next"))
                   ),#box
-                  box(
+                  shinydashboard::box(
                     width = NULL,
                     DT::dataTableOutput("dgbriddadosdatacleaning")
                   )#box
@@ -353,15 +354,15 @@ body <- dashboardBody(
                   selected = "Study area extent",
                   tabPanel(
                     "Study area extent",
-                    box(
+                    shinydashboard::box(
                       width = 8,
                       solidHeader = TRUE,
                       leafletOutput("mapapontosextend", height = 500)
                     ),
-                    box(
+                    shinydashboard::box(
                       width = 4,
                       solidHeader = TRUE,
-                      box(
+                      shinydashboard::box(
                         width = NULL,
                         status = "warning",
                         numericInput(
@@ -402,20 +403,20 @@ body <- dashboardBody(
                   ,
                   tabPanel(
                     "Projection extent",
-                    box(
+                    shinydashboard::box(
                       width = 12,
                       status = "warning",
                       checkboxInput("project_ext", "Project to another extension", value = FALSE),
 
                       conditionalPanel(
                         "input.project_ext",
-                        box(
+                        shinydashboard::box(
                           width = 8,
                           solidHeader = TRUE,
                           leafletOutput("mapapontosextend2", height = 500)
                         ),
 
-                        box(
+                        shinydashboard::box(
                           width = 4,
                           solidHeader = TRUE,
                           numericInput(
@@ -456,169 +457,202 @@ body <- dashboardBody(
                   )#ends projection extent
                 )#ends study area extent
               ),#ends modeling extent
-
+# Select predictors----
               tabPanel(
                 "Select Predictors",
                 column(
                   width = 5,
-                  box(
+                  shinydashboard::box(
                     width = NULL,
                     status = "warning",
                     actionButton(
                       "btnAtualizaSelecaoVariaveis",
                       "Update selected"
                     ),
-                    selectInput("tipodadoabiotico", "Variables dataset:", env_datasource, selected = "package_dataset"),
-
+                    selectInput("tipodadoabiotico",
+                                "Variables dataset:",
+                                env_datasource,
+                                selected = "WorldClim"),
+                                #datos del paquete
+                        #        conditionalPanel(
+                      #"input.tipodadoabiotico == package_dataset",
+                      #checkboxGroupInput(inputId = "pred_vars_pac",
+                      #                   label = "Select variables: ",
+                      #                   choices = c("PC1" = "layer.1",
+                      #                               "PC2" = "layer.2",
+                      #                               "PC3" = "layer.3",
+                      #                               "PC4" = "layer.4",
+                      #                               "PC5" = "layer.5",
+                      #                               "PC6" = "layer.6"),
+                      #                   selected = c("layer.1", "layer.2", "layer.3", "layer.4", "layer.5", "layer.6"))#closes checkbox
+                    #),#ends datos del paquete
                     conditionalPanel(
+                      #others
                       "input.tipodadoabiotico == 'Others' ",
                       helpText("All layers should have the same spatial extent, resolution, origin, and projection"),
                       helpText(""),
                       helpText("Before loading multi-files extentions, make sure that all corresponding files are placed in the same directory."),
                       if (length(list.files("ex/outros/", full.names = T, pattern = c(".*")) > 0)) {
                         lista_outros <- list.files("ex/outros/", full.names = F, pattern = ".tif|.bil|.grd")
-                        checkboxGroupInput("pred_vars_other", "Select rasters: ", choiceNames = c(lista_outros), choiceValues = c(lista_outros))
+                        checkboxGroupInput("pred_vars_other",
+                                           "Select rasters: ",
+                                           choiceNames = c(lista_outros),
+                                           choiceValues = c(lista_outros))
                       }
-                    ),
+                    ),#ends others
 
-                    conditionalPanel(
-                      "input.tipodadoabiotico == 'BIOORACLE' ",
-                      selectInput("forecasting_bo",
-                        "Project model across timescales",
-                        c(
-                          "Future" = "future_bo",
-                          "None" = "current_bo"
-                        ),
-                        selected = "current_bo"
-                      ),
+                    #todo biooracle
+                    conditionalPanel("input.tipodadoabiotico == 'BIOORACLE' ",
+                                     selectInput(
+                                       "forecasting_bo",
+                                       "Project model across timescales",
+                                       c("Future" = "future_bo",
+                                         "None" = "current_bo"),
+                                       selected = "current_bo"
+                                     ),
+                                     conditionalPanel(
+                                       "input.forecasting_bo == 'future_bo'",
+                                       shinydashboard::box(
+                                         width = NULL,
+                                         collapsible = T,
+                                         collapsed = T,
+                                         title = "Forecasting parameters",
+                                         selectInput("future_bo_dates",
+                                                     "Choose dates",
+                                                     future_bo_dates,
+                                                     selected = "2100"),
+                                         conditionalPanel(
+                                           "input.future_bo_dates == '2100'",
+                                           selectInput(
+                                             "scenario_bo_2100",
+                                             "Scenario",
+                                             choices = c("A1B", "A2", "B1"),
+                                             selected = "A1B"
+                                           )
+                                         ),
+                                         conditionalPanel(
+                                           "input.future_bo_dates == '2200'",
+                                           selectInput(
+                                             "scenario_bo_2200",
+                                             "Scenario",
+                                             choices = c("A1B", "B1"),
+                                             selected = "A1B"
+                                           )
+                                         )
+                                       ),
+                                       checkboxGroupInput(
+                                         "pred_vars_bo_fut",
+                                         "Select variables: ",
+                                         choices = c(
+                                           "Temperature (Max) " = "sstmax",
+                                           "Temperature (Min) " = "sstmin",
+                                           "Temperature (Range)" = "sstrange",
+                                           "Temperature (Mean)" = "sstmean",
+                                           "Salinity" = "salinity"
+                                         )
+                                       )
+                                     ),
 
-                      conditionalPanel(
-                        "input.forecasting_bo == 'future_bo'",
-                        box(
-                          width = NULL,
-                          collapsible = T,
-                          collapsed = T,
-                          title = "Forcasting parameters",
-                          selectInput("future_bo_dates",
-                            "Choose dates",
-                            future_bo_dates,
-                            selected = "2100"
-                          ),
+                                     conditionalPanel(
+                                       "input.forecasting_bo == 'current_bo'",
+                                       checkboxGroupInput(
+                                         "pred_vars_bo",
+                                         "Select variables: ",
+                                         choices = c(
+                                           "Temperature (Max) " = "sstmax",
+                                           "Temperature (Min) " = "sstmin",
+                                           "Temperature (Range)" = "sstrange",
+                                           "Temperature (Mean)" = "sstmean",
+                                           "Salinity" = "salinity",
+                                           "Calcite" = "calcite",
+                                           "Nitrate" = "nitrate",
+                                           "pH" = "ph",
+                                           "Silicate" = "silicate",
+                                           "Phosphate" = "phosphate",
+                                           "Dissolved mol. oxygen" = "dissox",
+                                           "Chlorophyll (Min)" = "chlomin",
+                                           "Chlorophyll (Max)" = "chlomax",
+                                           "Chlorophyll (Range)" = "chlorange",
+                                           "Chlorophyll(Mean)" = "chlomean",
+                                           "Cloud cover (Mean)" = "cloudmean",
+                                           "Cloud cover (Max)" = "cloudmax",
+                                           "Cloud cover (Min)" = "cloudmin",
+                                           "Diffuse attenuation (Mean)" = "damean",
+                                           "Diffuse attenuation (Min)" = "damin",
+                                           "Diffuse attenuation (Max)" = "damax",
+                                           "Photosynt. Avail. Radiation (Max)" = "parmax",
+                                           "Photosynt. Avail. Radiation (Mean)" = "parmean"
+                                         )#choices
+                                       )#pred_vasr_bo
+                                     )#current_bo
+                                     ), #ends bioracle
+                   conditionalPanel(
+                     #worldclim
+                     "input.tipodadoabiotico == 'WorldClim' ",
+                     selectInput("resolution", "Resolution:", resolution, selected = "10min"),
+                     selectInput(
+                       "forecasting_wc",
+                       "Project model across timescales",
+                       c("Future" = "future_wc",
+                         "Past" = "past_wc",
+                         "None" = "current_wc"),
+                       selected = "current_wc"
+                     ),
+                     conditionalPanel(
+                       "input.forecasting_wc != 'current_wc'",
+                       shinydashboard::box(
+                         width = NULL,
+                         collapsible = T,
+                         collapsed = T,
+                         title = "Set time projetion parameters",
 
-                          conditionalPanel(
-                            "input.future_bo_dates == '2100'",
-                            selectInput("scenario_bo_2100",
-                              "Scenario",
-                              choices = c("A1B", "A2", "B1"),
-                              selected = "A1B"
-                            )
-                          ),
+                         conditionalPanel(
+                           "input.forecasting_wc == 'future_wc' ",
+                           selectInput("future_dates_wc", "Choose period: ", future_dates_wc),
+                           selectInput(
+                             "rcp_wc",
+                             "Emission Scenarios (RCP)",
+                             c(
+                               "rcp26" = "26",
+                               "rcp45" = "45",
+                               "rcp60" = "60",
+                               "rcp85" = "85"
+                             )
+                           ),
+                           selectInput(
+                             "gcm_future_wc",
+                             "General Circulation Models (GCM)",
+                             gcm_future_wc,
+                             selected = "bc"
+                           )
+                         ),
 
-                          conditionalPanel(
-                            "input.future_bo_dates == '2200'",
-                            selectInput("scenario_bo_2200",
-                              "Scenario",
-                              choices = c("A1B", "B1"),
-                              selected = "A1B"
-                            )
-                          )
-                        ),
-                        checkboxGroupInput("pred_vars_bo_fut",
-                          "Select variables: ",
-                          choices = c(
-                            "Temperature (Max) " = "sstmax",
-                            "Temperature (Min) " = "sstmin",
-                            "Temperature (Range)" = "sstrange",
-                            "Temperature (Mean)" = "sstmean",
-                            "Salinity" = "salinity"
-                          )
-                        )
-                      ),
+                         conditionalPanel(
+                           "input.forecasting_wc == 'past_wc'",
+                           selectInput("past_dates_wc", "Choose period: ", past_dates_wc, selected = "mid"),
+                           conditionalPanel(
+                             "input.past_dates_wc == 'mid'",
+                             selectInput(
+                               "gcm_past_wc_mid",
+                               "General Circulation Models (GCM)",
+                               gcm_past_wc_mid
+                             )
+                           ),
 
-                      conditionalPanel(
-                        "input.forecasting_bo == 'current_bo'",
-                        checkboxGroupInput("pred_vars_bo", "Select variables: ",
-                          choices = c(
-                            "Temperature (Max) " = "sstmax",
-                            "Temperature (Min) " = "sstmin",
-                            "Temperature (Range)" = "sstrange",
-                            "Temperature (Mean)" = "sstmean",
-                            "Salinity" = "salinity",
-                            "Calcite" = "calcite",
-                            "Nitrate" = "nitrate",
-                            "pH" = "ph",
-                            "Silicate" = "silicate",
-                            "Phosphate" = "phosphate",
-                            "Dissolved mol. oxygen" = "dissox",
-                            "Chlorophyll (Min)" = "chlomin",
-                            "Chlorophyll (Max)" = "chlomax",
-                            "Chlorophyll (Range)" = "chlorange",
-                            "Chlorophyll(Mean)" = "chlomean",
-                            "Cloud cover (Mean)" = "cloudmean",
-                            "Cloud cover (Max)" = "cloudmax",
-                            "Cloud cover (Min)" = "cloudmin",
-                            "Diffuse attenuation (Mean)" = "damean",
-                            "Diffuse attenuation (Min)" = "damin",
-                            "Diffuse attenuation (Max)" = "damax",
-                            "Photosynt. Avail. Radiation (Max)" = "parmax",
-                            "Photosynt. Avail. Radiation (Mean)" = "parmean"
-                          )
-                        )
-                      )
-                    ),
+                           conditionalPanel(
+                             "input.past_dates_wc == 'lgm' ",
+                             selectInput(
+                               "gcm_past_wc_lgm",
+                               "General Circulation Models (GCM)",
+                               gcm_past_wc_lgm
+                             )
+                           )
+                         )
+                       )
+                     ),
 
-                    conditionalPanel(
-                      "input.tipodadoabiotico == 'WorldClim' ",
-                      selectInput("resolution", "Resolution:", resolution, selected = "10min"),
-                      selectInput("forecasting_wc",
-                        "Project model across timescales",
-                        c(
-                          "Future" = "future_wc",
-                          "Past" = "past_wc",
-                          "None" = "current_wc"
-                        ),
-                        selected = "current_wc"
-                      ),
-
-                      conditionalPanel(
-                        "input.forecasting_wc != 'current_wc'",
-                        box(
-                          width = NULL,
-                          collapsible = T,
-                          collapsed = T,
-                          title = "Set time projetion parameters",
-
-                          conditionalPanel(
-                            "input.forecasting_wc == 'future_wc' ",
-                            selectInput("future_dates_wc", "Choose period: ", future_dates_wc),
-                            selectInput(
-                              "rcp_wc", "Emission Scenarios (RCP)",
-                              c(
-                                "rcp26" = "26",
-                                "rcp45" = "45",
-                                "rcp60" = "60",
-                                "rcp85" = "85"
-                              )
-                            ),
-                            selectInput("gcm_future_wc", "General Circulation Models (GCM)", gcm_future_wc, selected = "bc")
-                          ),
-
-                          conditionalPanel(
-                            "input.forecasting_wc == 'past_wc'",
-                            selectInput("past_dates_wc", "Choose period: ", past_dates_wc, selected = "mid"),
-                            conditionalPanel(
-                              "input.past_dates_wc == 'mid'",
-                              selectInput("gcm_past_wc_mid", "General Circulation Models (GCM)", gcm_past_wc_mid)
-                            ),
-
-                            conditionalPanel(
-                              "input.past_dates_wc == 'lgm' ",
-                              selectInput("gcm_past_wc_lgm", "General Circulation Models (GCM)", gcm_past_wc_lgm)
-                            )
-                          )
-                        )
-                      ),
-                      checkboxGroupInput("pred_vars_wc", "Select variables: ",
+                      checkboxGroupInput("pred_vars_wc",
+                                         "Select variables: ",
                         choices = c(
                           "(Bio1) Annual Mean Temperature" = "bio1",
                           "(Bio2) Mean Diurnal Range" = "bio2",
@@ -639,11 +673,12 @@ body <- dashboardBody(
                           "(Bio17) Precipitation of Driest Quarter" = "bio17",
                           "(Bio18) Precipitation of Warmest Quarter" = "bio18",
                           "(Bio19) Precipitation of Coldest Quarter" = "bio19"
-                        )
-                      )
-                    )
-                  )
-                ),
+                        ),#ends choices
+                        selected = c("bio1", "bio2", "bio3")
+                      )#ends checkbox
+                    )#ends worldclim
+                  )#ends box!
+                ),#ends column
                 column(
                   width = 7,
                   tabBox(
@@ -666,17 +701,107 @@ body <- dashboardBody(
             )
           )
         ),
+tabPanel("Data cleaning"),
         ####DATA CLEANING AND SETUP####
-        tabPanel("Data cleaning and setup",
+#ö faltan muchos parámetros
+        tabPanel("Data setup",
                  column(
-                     width = 6,
-                     tabBox(side = "left",
-                            title = "a",
-                            width = NULL,
-                            tabPanel("Occurrence data cleaning"),
-                            tabPanel("Modeling round setup"))
-                 )),
-        ####PROJECTION####
+                   width = 12,
+                   shinydashboard::box(
+                     width = NULL,
+                     height = "800px",
+                     shinydashboard::box(
+                       width = 6,
+                       height = 400,
+                       status = "warning",
+                       checkboxInput("geo_filt",
+                                     "Delete occurrence that are too close?",
+                                     value = FALSE),
+
+                       conditionalPanel(
+                         condition = "input.geo_filt",
+                         textInput(
+                           "geo_filt_dist",
+                           "Minimum distance between records (in km):",
+                           value = NULL
+                         )
+                       ),
+                       sliderInput(
+                         "n_back",
+                         "Pseudo-absence points:",
+                         min = 100,
+                         max = 2000,
+                         value = 300,
+                         step = 100
+                       ),
+                       radioButtons(
+                         "buffer_type",
+                         "Buffer type :",
+                         c(
+                           "Mean" = "mean",
+                           "Median" = "median",
+                           "Maximal" = "maximum"
+                         )
+                       ),
+                       selectInput(
+                         "partition_type",
+                         "Partitioning type",
+                         choices = c("crossvalidation",
+                                     "bootstrap")
+                       ),
+
+
+
+                       conditionalPanel(
+                         condition = "input.partition_type == 'crossvalidation'",
+                         sliderInput(
+                           "cv_n",
+                           "Number of crossvalidation runs",
+                           min = 1,
+                           max = 50,
+                           value = 1,
+                           step = 1
+                         ),
+                         sliderInput(
+                           "cv_partitions",
+                           "Number of partitions:",
+                           min = 1,
+                           max = 50,
+                           value = 3,
+                           step = 1
+                         )
+                       ),
+                       conditionalPanel(
+                         condition = "input.partition_type == 'bootstrap'",
+                         sliderInput(
+                           "boot_proportion",
+                           "Proportion of points to be sampled for bootstrap:",
+                           min = 0,
+                           max = 1,
+                           value = 0.8,
+                           step = 0.1
+                         ),
+                         sliderInput(
+                           "boot_n",
+                           "Number of bootstrap runs:",
+                           min = 1,
+                           max = 50,
+                           value = 1,
+                           step = 1
+                         )
+                       )
+                     ), #cierra el box de parametros de setup
+                     shinydashboard::box(
+                       width = 6,
+                       height = 400,
+                       status = "warning",
+                       actionButton("btnSetup", "Run", icon = icon("cogs"))
+                     )
+                   )#cierra un box
+                 )#fecha columna
+        ),  #fecha el tab setup
+
+####PROJECTION####
         tabPanel("Projection",
                  column(
                      width = 6,
@@ -687,212 +812,122 @@ body <- dashboardBody(
                             tabPanel("Projection timescales"))
                  )),
         #### MODELING ####
-        tabPanel(
-          "Modeling",
-          column(
-            width = 6,
-            tabBox(
-              side = "left",
-              title = "",
-              width = NULL,
+tabPanel("Modeling",
+         column(
+           width = 6,
+           tabBox(
+             side = "left",
+             title = "",
+             width = NULL,
 
-              tabPanel(
-                "BC",
-                column(
-                  width = 12,
-                  leafletOutput("maparesultadobc")
-                )
-              ),
+             tabPanel("bioclim",
+                      column(
+                        width = 12,
+                        leafletOutput("maparesultadobc")
+                      )),
+             tabPanel("brt",
+                      column(
+                        width = 12,
+                        leafletOutput("maparesultadobrt")
+                      )),
+             tabPanel("domain",
+                      column(
+                        width = 12,
+                        leafletOutput("maparesultadodo")
+                      )),
+             tabPanel("GLM",
+                      column(
+                        width = 12,
+                        leafletOutput("maparesultadoglm")
+                      )),
+             tabPanel("mahal",
+                      column(
+                        width = 12,
+                        leafletOutput("maparesultadomh")
+                      )),
+             tabPanel("maxent",
+                      column(
+                        width = 12,
+                        leafletOutput("maparesultadomax")
+                      )),
+             tabPanel("RF",
+                      column(
+                        width = 12,
+                        leafletOutput("maparesultadorf")
+                      )),
+             tabPanel("SVME",
+                      column(
+                        width = 12,
+                        leafletOutput("maparesultadosvme")
+                      )),
+             tabPanel("SVMK",
+                      column(
+                        width = 12,
+                        leafletOutput("maparesultadosvmk")
+                      ))#cierra svmk
+             #,
+             # tabPanel(
+             #   "ENSEMBLE",
+             #   column(
+             #     width = 12,
+             #     leafletOutput("maparesultadoensemble")
+             #   )
+             # )#fecha ensemble tab
+           )#fecha el box con los modelos
+         ),#fecha la columna con los tabs de los modelos
+         #aqui quité toda la columna de cosas que deberían ser setup
+         tabPanel("Algorithms",
+                  column(
+                    width = 6,
+                    shinydashboard::box(
+                      width = NULL,
+                      height = "800px",
+                      shinydashboard::box(
+                        width = 6,
+                        height = 400,
+                        status = "warning",
 
-              tabPanel(
-                "MH",
-                column(
-                  width = 12,
-                  leafletOutput("maparesultadomh")
-                )
-              ),
-
-              tabPanel(
-                "MX",
-                column(
-                  width = 12,
-                  leafletOutput("maparesultadomax")
-                )
-              ),
-
-              tabPanel(
-                "GLM",
-                column(
-                  width = 12,
-                  leafletOutput("maparesultadoglm")
-                )
-              ),
-
-              tabPanel(
-                "RF",
-                column(
-                  width = 12,
-                  leafletOutput("maparesultadorf")
-                )
-              ),
-
-              tabPanel(
-                "SVM.K",
-                column(
-                  width = 12,
-                  leafletOutput("maparesultadosvm.k")
-                )
-              ),
-
-              tabPanel(
-                "SVM.E",
-                column(
-                  width = 12,
-                  leafletOutput("maparesultadosvm.e")
-                )
-              ),
-
-              tabPanel(
-                "DO",
-                column(
-                  width = 12,
-                  leafletOutput("maparesultadodo")
-                )
-              ),
-
-              tabPanel(
-                "ENSEMBLE",
-                column(
-                  width = 12,
-                  leafletOutput("maparesultadoensemble")
-                )
-              )
-            )
-          ),
-          column(
-            width = 6,
-            box(
-              width = NULL,
-              height = "800px",
-              box(
-                width = 6,
-                height = 400,
-                status = "warning",
-                checkboxInput("geo_filt",
-                  "Delete occurrence that are too close?",
-                  value = FALSE
-                ),
-
-                conditionalPanel(
-                  condition = "input.geo_filt",
-                  textInput("geo_filt_dist",
-                    "Minimum distance between records (in km):",
-                    value = NULL
-                  )
-                ),
-                sliderInput(
-                  "n_back",
-                  "Pseudo-absences points:",
-                  min = 100,
-                  max = 2000,
-                  value = 300,
-                  step = 100
-                ),
-                sliderInput(
-                  "TSS",
-                  "TSS score cutoff:",
-                  min = 0,
-                  max = 1,
-                  value = 0.7,
-                  step = 0.1
-                ),
-                radioButtons(
-                  "buffer_type", "Buffer type :",
-                  c(
-                    "Mean" = "mean",
-                    "Median" = "median",
-                    "Maximal" = "maximal"
-                  )
-                ),
-                checkboxInput("brt",
-                  "Execute boosted regression trees?",
-                  value = FALSE
-                ),
-                selectInput("partition_type",
-                  "Partitioning type",
-                  choices = c(
-                    "crossvalidation",
-                    "bootstrap"
-                  )
-                ),
-
-                conditionalPanel(
-                  condition = "input.partition_type == 'crossvalidation'",
-                  sliderInput("cv_n",
-                    "Number of crossvalidation runs",
-                    min = 1,
-                    max = 50,
-                    value = 1,
-                    step = 1
-                  ),
-                  sliderInput("cv_partitions",
-                    "Number of partitions:",
-                    min = 1,
-                    max = 50,
-                    value = 3,
-                    step = 1
-                  )
-                ),
-
-                conditionalPanel(
-                  condition = "input.partition_type == 'bootstrap'",
-                  sliderInput("boot_proportion",
-                    "Proportion of points to be sampled for bootstrap:",
-                    min = 0,
-                    max = 1,
-                    value = 0.8,
-                    step = 0.1
-                  ),
-                  sliderInput("boot_n",
-                    "Number bootstrap runs:",
-                    min = 1,
-                    max = 50,
-                    value = 1,
-                    step = 1
-                  )
-                )
-              ),
-              box(
-                width = 6,
-                height = 400,
-                status = "warning",
-                actionButton("btnModelar", "Run", icon = icon("cogs")),
-                h4("Algorithms"),
-                checkboxInput("bioclim", "Bioclim", value = FALSE),
-                checkboxInput("mahal", "Mahalanobis", value = FALSE),
-                checkboxInput("maxent", "Maxent", value = FALSE),
-                checkboxInput("glm", "GLM", value = FALSE),
-                checkboxInput("rf", "RandomForest", value = FALSE),
-                checkboxInput("svm.k", "SVM.K", value = FALSE),
-                checkboxInput("svm.e", "SVM.E", value = FALSE),
-                checkboxInput("domain", "Domain", value = FALSE)
-              ),
-
-              conditionalPanel(
-                "input.project_ext",
-                box(
-                  title = "Projection ensemble",
-                  width = NULL,
-                  height = "320px",
-                  leafletOutput("maparesultado_proj",
-                    width = "100%",
-                    height = "250px"
-                  )
-                )
-              )
-            )
-          )
-        ),
+                        #esto es de final_model()
+                        sliderInput(
+                          "TSS",
+                          "TSS score cutoff:",
+                          min = 0,
+                          max = 1,
+                          value = 0.7,
+                          step = 0.1
+                        )
+                      ),
+                      shinydashboard::box(
+                        width = 6,
+                        height = 400,
+                        status = "warning",
+                        actionButton("btnModelar", "Run", icon = icon("cogs")),
+                        h4("Algorithms"),
+                        checkboxInput("bioclim", "Bioclim", value = FALSE),
+                        checkboxInput("brt", "BRT", value = FALSE),
+                        checkboxInput("domain", "Domain", value = FALSE),
+                        checkboxInput("glm", "GLM", value = FALSE),
+                        checkboxInput("mahal", "Mahalanobis", value = FALSE),
+                        checkboxInput("maxent", "Maxent", value = FALSE),
+                        checkboxInput("rf", "RandomForest", value = FALSE),
+                        checkboxInput("svme", "SVM (e1071)", value = FALSE),
+                        checkboxInput("svmk", "SVM (kernlab)", value = FALSE)
+                      ),
+                      conditionalPanel(
+                        "input.project_ext",
+                        shinydashboard::box(
+                          title = "Projection ensemble",
+                          width = NULL,
+                          height = "320px",
+                          leafletOutput("maparesultado_proj",
+                                        width = "100%",
+                                        height = "250px")
+                        )#cierra box
+                      )#cierra el conditional panel
+                    )#cierra el box
+                  )#cierra la columna),
+                 )#cierra el tab algorithm
+         ),#fecha el panel modeling
 
         #### RESULTS ####
         tabPanel(
@@ -909,7 +944,7 @@ body <- dashboardBody(
 
               tabPanel(
                 "Input data",
-                box(
+                shinydashboard::box(
                   width = 12,
                   h4("SDM data"),
                   column(
@@ -923,7 +958,7 @@ body <- dashboardBody(
                 ),
                 column(
                   width = 12,
-                  box(
+                  shinydashboard::box(
                     width = NULL,
                     h4("Metadata"),
                     DT::dataTableOutput("metadata_table")
@@ -933,7 +968,7 @@ body <- dashboardBody(
 
               tabPanel(
                 "Stats",
-                box(
+                shinydashboard::box(
                   width = 12,
                   DT::dataTableOutput("stats")
                 )
@@ -945,7 +980,7 @@ body <- dashboardBody(
                   width = 12,
                   column(
                     width = 4,
-                    box(
+                    shinydashboard::box(
                       width = NULL,
                       status = "warning",
                       h4("Partitions"),
@@ -954,7 +989,7 @@ body <- dashboardBody(
                   ),
                   column(
                     width = 4,
-                    box(
+                    shinydashboard::box(
                       width = NULL,
                       status = "warning",
                       h4("Final models"),
@@ -963,7 +998,7 @@ body <- dashboardBody(
                   ),
                   column(
                     width = 4,
-                    box(
+                    shinydashboard::box(
                       width = NULL,
                       status = "warning",
                       h4("Ensemble"),
@@ -971,7 +1006,7 @@ body <- dashboardBody(
                     )
                   )
                 )
-              ),
+              ),#output list
 
               tabPanel(
                 "Projections",
@@ -979,7 +1014,7 @@ body <- dashboardBody(
                   width = 12,
                   column(
                     width = 12,
-                    box(
+                    shinydashboard::box(
                       width = NULL,
                       status = "warning",
                       h4("Projections"),
@@ -987,10 +1022,10 @@ body <- dashboardBody(
                     )
                   )
                 )
-              )
-            )
-          )
-        ),
+              )#fecha tabPanel projections
+            )#tabbox
+          )#fecha column
+        ),#termina results
 
         #### HELP ####
         tabPanel("Help")

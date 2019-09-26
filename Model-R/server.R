@@ -125,40 +125,44 @@ getOccurrences_jabot <- function(species_name) {
   colnames(occur.data) <- c("name", "lon", "lat")
   return(occur.data)
 }
-MapPreview.algorithm <- function(algorithm = algorithm) {
-  finaldir <- list.files(paste0(modelsDir, "/", species_name, "/present/final_models/"))
-  tif_file <- finaldir[finaldir == paste0(species_name, "_", algorithm, "_raw_mean.tif")]
-  raw_mean_file <- list.files(paste0(modelsDir, "/", species_name, "/present/final_models/"), pattern = tif_file, full.names = T)
+MapPreview.final <- function(algorithm = algorithm) {
+  #finaldir <- list.files(paste0(modelsDir, "/", species_name, "/present/final_models/"), full.names = T, pattern = paste0(algorithm, "_raw_mean.tif^"))
+  #tif_file <- finaldir[finaldir == paste0(species_name, "_", algorithm, "_raw_mean.tif")]
+  raw_mean_file <- list.files(paste0(modelsDir, "/", species_name, "/present/final_models/"),
+                              pattern = paste0(algorithm, "_raw_mean.tif$"),
+                              full.names = T)
 
   if (file.exists(raw_mean_file)) {
     r <- raster::raster(raw_mean_file)
-    pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(r), na.color = "transparent")
+    pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), raster::values(r), na.color = "transparent")
     occ_points <<- coordinates(occurrences)
     lng <<- occ_points[, 1]
     lat <<- occ_points[, 2]
     map <- leaflet() %>%
       addTiles() %>%
       addRasterImage(r, colors = pal, opacity = 0.7) %>%
-      addLegend(pal = pal, values = values(r), title = "") %>%
+      addLegend(pal = pal, values = raster::values(r), title = "") %>%
       addCircles(color = "red", lat = lat, lng = lng, weight = 2, fill = TRUE) %>%
       addRectangles(ext11, ext31, ext21, ext41, color = "red", fill = FALSE, dashArray = "5,5", weight = 2)
+  } else {
+    message(paste0( "No final_models were selected for", algorithm))
   }
 }
 
 MapPreview.ensemble <- function() {
-  finaldir <- list.files(paste0(modelsDir, "/", species_name, "/present/ensemble/"))
-  tif_file <- finaldir[finaldir == paste0(species_name, "_raw_", "mean_ensemble_mean.tif")]
-  raw_mean_file <- list.files(paste0(modelsDir, "/", species_name, "/present/ensemble/"), pattern = tif_file, full.names = T)
+  #finaldir <- list.files(paste0(modelsDir, "/", species_name, "/present/ensemble/"))
+  #tif_file <- finaldir[finaldir == paste0(species_name, "_raw_mean_ensemble_mean.tif")]
+  raw_mean_file <- list.files(paste0(modelsDir, "/", species_name, "/present/ensemble/"), pattern = "_raw_mean_ensemble_mean.tif", full.names = T)
   if (file.exists(raw_mean_file)) {
     r <- raster::raster(raw_mean_file)
-    pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), values(r), na.color = "transparent")
+    pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), raster::values(r), na.color = "transparent")
     occ_points <<- coordinates(occurrences)
     lng <<- occ_points[, 1]
     lat <<- occ_points[, 2]
     map <- leaflet() %>%
       addTiles() %>%
       addRasterImage(r, colors = pal, opacity = 0.7) %>%
-      addLegend(pal = pal, values = values(r), title = "") %>%
+      addLegend(pal = pal, values = raster::values(r), title = "") %>%
       addCircles(color = "red", lat = lat, lng = lng, weight = 2, fill = TRUE) %>%
       addRectangles(ext11, ext31, ext21, ext41, color = "red", fill = FALSE, dashArray = "5,5", weight = 2)
   }
@@ -231,7 +235,7 @@ function(input, output, session) {
     species_name <<- input$species_name
     if (input$bio_datasource == "package_dataset") {
         occur.data <- modleR::coordenadas[[1]]#a primeira especie do dataset interno
-        occurrences <<- occur.data[,c(2,3)]
+        occurrences <<- occur.data[, c(2,3)]
     }
     if (input$bio_datasource == "gbif") {
       occur.data <- getOccurrences_gbif(input$species_name)
@@ -266,7 +270,7 @@ function(input, output, session) {
       arquivo_header <- input$header
       arquivo_sep <- input$sep
       arquivo_quote <- input$quote
-      sp_data_csv <- sp_data [, 2:3]
+      sp_data_csv <- sp_data[, 2:3]
       occurrences <<- sp_data_csv
     }
     occurrences
@@ -310,13 +314,14 @@ function(input, output, session) {
         addCircles(color = "red", lat = ~lat, lng = ~lon) %>%
         setView(lng = -31.5, lat = -13.4, zoom = 3)
       map
-    } else {
-      showModal(modalDialog(
-        title = "Error!",
-        "Please inform species occurrence dataset",
-        easyClose = TRUE
-      ))
-    }
+    } #else {
+      #showModal(modalDialog(
+      #  title = "Error!",
+      #  "Please inform species occurrence dataset",
+      #  easyClose = TRUE
+      #)
+  #)
+    #}
   })
 
 
@@ -446,6 +451,11 @@ function(input, output, session) {
       data_current = list(),
       data_timeproj = list()
     )
+    ## Package variables #ops no projection
+    if (input$tipodadoabiotico == "package_dataset") {
+      vars_selection <<- paste(input$pred_vars_pac)
+      environmental_data$data_current <<- raster::subset(modleR::example_vars, vars_selection)
+    }
 
     ##  WorldClim variables
     if (input$tipodadoabiotico == "WorldClim") {
@@ -733,14 +743,14 @@ function(input, output, session) {
             backgr <- randomPoints(predictors, 300)
             colnames(backgr) <- c("lon", "lat")
             absvals <- raster::extract(predictors, backgr)
-            sdmdata <<- data.frame(cbind(absvals))
+            envdata <<- data.frame(cbind(absvals))
 
             # Exhibit correlation panel
             output$grafico_correlacao <- renderPlot({
               if (is.null(env_data) | length(env_data) <= 1) {
                 return(NULL)
               } else {
-                pairs(sdmdata,
+                pairs(envdata,
                   cex = 0.1,
                   fig = TRUE,
                   lower.panel = panel.reg,
@@ -748,7 +758,7 @@ function(input, output, session) {
                   upper.panel = panel.cor
                 )
                 output$dgbriddadoscorrelacao <- renderDataTable({
-                  round(cor(sdmdata), 2)
+                  round(cor(envdata), 2)
                 }, options = list(
                   searching = FALSE,
                   rownames = TRUE,
@@ -772,8 +782,90 @@ function(input, output, session) {
     }
   })
 
+  ###setup é importante o suficiente para ter aba e botão independente e vai ser mais fácil tudo
+#btnSetup----
+  observeEvent(input$btnSetup, {
+    #chequear si algo es necesario aqui, que existan las cosas probablemente
+      #se há occurrences, preditores e species_name --aqui é que deveria ter no caso de carregar um projeto preexistente
+      if (exists("occurrences") && exists("predictors") && exists("species_name")) {
+        #rodar tudo
+        progress <<- shiny::Progress$new()
+        progress$set(message = "Processing...", value = 0)
+        modelsDir.sp <<- paste(modelsDir, species_name, sep = "/")
+        on.exit(progress$close())
+
+        if (input$partition_type == "crossvalidation") {
+          cv_n <- input$cv_n
+          cv_partitions <- input$cv_partitions
+          boot_n <- NULL
+          boot_proportion <- NULL
+        }
+        if (input$partition_type == "bootstrap") {
+          cv_n <- NULL
+          cv_partitions <- NULL
+          boot_n <- input$boot_n
+          boot_proportion <- input$boot_proportion
+        }
+        if (input$geo_filt == TRUE) {
+          geo_filt_dist <- input$geo_filt_dist
+        } else {
+          geo_filt_dist <- NULL
+        }
+        #setup_sdmdata
+        setup_sdmdata(
+          species_name = species_name,
+          occurrences = occurrences,
+          predictors = predictors,
+          models_dir = modelsDir,
+          real_absences = NULL,
+          lon = "lon",
+          lat = "lat",
+          buffer_type = input$buffer_type,
+          #dist_buf =
+          #env_buffer =
+          #env_distance = "centroid",
+          #dist_min = NULL,
+          #buffer_shape = NULL,
+          max_env_dist = 0.5,
+          write_buffer = T,
+          #seed = NULL,
+          #clean_dupl = T,
+          #clean_nas = T,
+          #clean_uni = T,
+          #geo_filt = input$geo_filt,
+          #geo_filt_dist = geo_filt_dist,
+          #select_variables = T
+          #cutoff = 0.8,
+          #percent = 0.8,
+          plot_sdmdata = T,
+          n_back = input$n_back,
+          partition_type = input$partition_type,
+          boot_n = boot_n,
+          boot_proportion = boot_proportion,
+          cv_n = cv_n,
+          cv_partitions = cv_partitions)
+
+#toca hacer algo similar a esto para mostrar el sdmdata y el buffer
+        #output$maparesultadomax <- renderLeaflet({
+        #  input$btnModelar
+        #  MapPreview.final(algorithm = "maxent")
+        #})
+
+      } else {
+        showModal(modalDialog(
+          title = "Error!",
+          "Please inform species occurrence data, predictor variables and species name.",
+          easyClose = TRUE
+        ))
+      }#error
+    } #termina el loop del setup
+  )#termina observeevent y btmsetup
+
   #### GROUPING ALL MODELING PROCESSES BY CLICKING THE EXECUTE BUTTON ####
+  #no estoy segura de que queramos esto
+# btnModelar-----
   observeEvent(input$btnModelar, {
+    #se algum algoritmo é marcado
     if (any(
       input$domain,
       input$maxent,
@@ -781,15 +873,15 @@ function(input, output, session) {
       input$mahal,
       input$glm,
       input$rf,
-      input$svm.e,
-      input$svm.k
-    )
-    ) {
+      input$svme,
+      input$svmk)) {
+      #se há occurrences, preditores e species_name --aqui é que deveria ter no caso de carregar um projeto preexistente
       if (exists("occurrences") && exists("predictors") && exists("species_name")) {
+        #rodar tudo
         progress <<- shiny::Progress$new()
         progress$set(message = "Processing...", value = 0)
 
-        modelsDir.sp <<- paste0(modelsDir, "/", species_name)
+        modelsDir.sp <<- paste(modelsDir, species_name, sep = "/")
 
         on.exit(progress$close())
 
@@ -810,122 +902,148 @@ function(input, output, session) {
         } else {
           geo_filt_dist <- NULL
         }
-
-        do_enm(
+#setup_sdmdata
+        setup_sdmdata(
           species_name = species_name,
           occurrences = occurrences,
           predictors = predictors,
           models_dir = modelsDir,
-          bioclim = input$bioclim,
-          domain = input$domain,
-          glm = input$glm,
-          mahal = input$mahal,
-          maxent = input$maxent,
-          rf = input$rf,
-          svm.k = input$svm.k,
-          svm.e = input$svm.e,
-          mindist = F,
-          centroid = F,
-          brt = input$brt,
           real_absences = NULL,
           lon = "lon",
           lat = "lat",
           buffer_type = input$buffer_type,
-          seed = 512,
-          clean_dupl = F,
-          clean_nas = T,
-          geo_filt = input$geo_filt,
-          geo_filt_dist = geo_filt_dist,
+          #dist_buf =
+          #env_buffer =
+          #env_distance = "centroid",
+          #dist_min = NULL,
+          #buffer_shape = NULL,
+          max_env_dist = 0.5,
+          write_buffer = T,
+          #seed = NULL,
+          #clean_dupl = T,
+          #clean_nas = T,
+          #clean_uni = T,
+          #geo_filt = input$geo_filt,
+          #geo_filt_dist = geo_filt_dist,
+          #select_variables = T
+          #cutoff = 0.8,
+          #percent = 0.8,
           plot_sdmdata = T,
           n_back = input$n_back,
           partition_type = input$partition_type,
           boot_n = boot_n,
           boot_proportion = boot_proportion,
           cv_n = cv_n,
-          cv_partitions = cv_partitions
-        )
-
+          cv_partitions = cv_partitions)
+#do_any/do_many #ainda falta ver o que é melhor
+        do_many(
+          species_name = species_name,#doğru
+          predictors = predictors,
+          models_dir = modelsDir,#doğru
+          bioclim = input$bioclim,
+          domain = input$domain,
+          glm = input$glm,
+          mahal = input$mahal,
+          maxent = input$maxent,
+          rf = input$rf,
+          svmk = input$svmk,
+          svme = input$svme,
+          brt = input$brt,
+          #project_model,
+          #proj_data_folder =
+          mask = NULL,
+          write_png = T,
+          write_bin_cut = T,
+          threshold = "spec_sens",
+          conf_mat = F,
+          equalize = T,
+          proc_threshold = 0.5)
+#final_model
         final_model(
           species_name = species_name,
           algorithms = NULL,
           weight_par = NULL,
           select_partitions = TRUE,
-          threshold = c("spec_sens"),
+          cut_level = c("spec_sens"),
+          scale_models = TRUE,
           select_par = "TSS",
           select_par_val = input$TSS,
-          consensus_level = 0.5,
-          models_dir = modelsDir,
+          consensus_level = 0.5,#parametrizar
+          models_dir = modelsDir,#doğru
           final_dir = "final_models",
+          proj_dir = "present", #parametrizar
           which_models = c("raw_mean"),
-          write_png = T
+          uncertainty = F, #parametrizar
+          write_png = T,
+          write_final = T,
+          overwrite = T
         )
-
+#ensemble
         ensemble_model(
           species_name = species_name,
           occurrences = occurrences,
-          models_dir = modelsDir,
+          models_dir = modelsDir,#doğru
           final_dir = "final_models",
           ensemble_dir = "ensemble",
-          which_models = c("raw_mean"),
-          consensus = FALSE,
+          proj_dir = "present",
+          which_final = c("raw_mean"),
+          consensus = T,
           consensus_level = 0.5,
-          write_png = T,
-          write_raw_map = F
+          write_ensemble = T,
+          overwrite = T
         )
-
-        output$maparesultadomax <- renderLeaflet({
-          input$btnModelar
-          MapPreview.algorithm(algorithm = "maxent")
-        })
-
-        output$maparesultadosvm.e <- renderLeaflet({
-          input$btnModelar
-          MapPreview.algorithm(algorithm = "svm.k")
-        })
-
-        output$maparesultadosvm.k <- renderLeaflet({
-          input$btnModelar
-          MapPreview.algorithm(algorithm = "svm.e")
-        })
-
-        output$maparesultadomh <- renderLeaflet({
-          input$btnModelar
-          MapPreview.algorithm(algorithm = "mahal")
-        })
-
-        output$maparesultadorf <- renderLeaflet({
-          input$btnModelar
-          MapPreview.algorithm(algorithm = "rf")
-        })
-
-        output$maparesultadoglm <- renderLeaflet({
-          input$btnModelar
-          MapPreview.algorithm(algorithm = "glm")
-        })
-
+#output mapas
         output$maparesultadobc <- renderLeaflet({
           input$btnModelar
-          MapPreview.algorithm(algorithm = "bioclim")
+          MapPreview.final(algorithm = "bioclim")
         })
-
+        output$maparesultadobrt <- renderLeaflet({
+          input$btnModelar
+          MapPreview.final(algorithm = "brt")
+        })
         output$maparesultadodo <- renderLeaflet({
           input$btnModelar
-          MapPreview.algorithm(algorithm = "domain")
+          MapPreview.final(algorithm = "domain")
         })
+        output$maparesultadoglm <- renderLeaflet({
+          input$btnModelar
+          MapPreview.final(algorithm = "glm")
+        })
+        output$maparesultadomh <- renderLeaflet({
+          input$btnModelar
+          MapPreview.final(algorithm = "mahal")
+        })
+        output$maparesultadomax <- renderLeaflet({
+          input$btnModelar
+          MapPreview.final(algorithm = "maxent")
+        })
+        output$maparesultadorf <- renderLeaflet({
+          input$btnModelar
+          MapPreview.final(algorithm = "rf")
+        })
+        output$maparesultadosvme <- renderLeaflet({
+          input$btnModelar
+          MapPreview.final(algorithm = "svme")
+        })
+        output$maparesultadosvmk <- renderLeaflet({
+          input$btnModelar
+          MapPreview.final(algorithm = "svmk")
+        })
+
 
         output$maparesultadoensemble <- renderLeaflet({
           input$btnModelar
           MapPreview.ensemble()
-        })
+        })#preview ensemble
       } else {
         showModal(modalDialog(
           title = "Error!",
           "Please inform species occurrence data, predictor variables and species name.",
           easyClose = TRUE
         ))
-      }
-    }
-  })
+      }#error
+    } #termina el loop del modelo geral los tres pasos, toca separar
+  })#termina observeevent y btmmodelar
 
   #### PLOTTING RESULTS ####
   observeEvent({
@@ -952,8 +1070,8 @@ function(input, output, session) {
 
     # metadata
     output$metadata_table <- renderDataTable({
-      metadata <- list.files(path = paste0(modelsDir.sp, "/present"), recursive = T, full.names = T, pattern = "metadata.txt")[1]
-      metadata <- data.frame(read.delim(metadata, header = TRUE, sep = " ", dec = "."))
+      metadata <- list.files(path = paste0(modelsDir.sp, "/present"), recursive = T, full.names = T, pattern = "metadata.csv")[1]
+      metadata <- data.frame(read.csv(metadata))
       metadata$res.x <- format(metadata$res.x, digits = 3, nsmall = 3)
       metadata$res.y <- format(metadata$res.y, digits = 3, nsmall = 3)
       metadata
@@ -961,8 +1079,8 @@ function(input, output, session) {
 
     # sdmdata txt table
     output$sdmdata_table <- renderDataTable({
-      sdmdata <- list.files(path = paste0(modelsDir.sp, "/present"), recursive = T, full.names = T, pattern = "sdmdata.txt")[1]
-      sdmdata <- data.frame(read.delim(sdmdata, header = TRUE, sep = " ", dec = "."))
+      sdmdata <- list.files(path = paste0(modelsDir.sp, "/present"), recursive = T, full.names = T, pattern = "sdmdata.csv")[1]
+      sdmdata <- data.frame(read.csv(sdmdata))
       sdmdata$lon <- format(sdmdata$lon, digits = 3, nsmall = 3)
       sdmdata$lat <- format(sdmdata$lat, digits = 3, nsmall = 3)
       sdmdata
