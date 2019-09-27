@@ -821,29 +821,29 @@ function(input, output, session) {
           lon = "lon",
           lat = "lat",
           buffer_type = input$buffer_type,
-          #dist_buf =
-          #env_buffer =
-          #env_distance = "centroid",
-          #dist_min = NULL,
-          #buffer_shape = NULL,
-          max_env_dist = 0.5,
+          dist_buf = input$buf_dist,
+          env_buffer = input$env_filt,
+          env_distance = input$env_dist,
+          dist_min = input$min_dist,
+          buffer_shape = input$user_shape,
+          max_env_dist = input$max_env_dist,
           write_buffer = T,
           #seed = NULL,
           #clean_dupl = T,
           #clean_nas = T,
           #clean_uni = T,
-          #geo_filt = input$geo_filt,
-          #geo_filt_dist = geo_filt_dist,
+          geo_filt = input$geo_filt,
+          geo_filt_dist = input$geo_filt_dist,
           #select_variables = T
           #cutoff = 0.8,
           #percent = 0.8,
-          plot_sdmdata = T,
           n_back = input$n_back,
           partition_type = input$partition_type,
-          boot_n = boot_n,
-          boot_proportion = boot_proportion,
-          cv_n = cv_n,
-          cv_partitions = cv_partitions)
+          boot_n = input$boot_n,
+          boot_proportion = input$boot_proportion,
+          cv_n = input$cv_n,
+          cv_partitions = input$cv_partitions,
+          plot_sdmdata = TRUE)
 
 #toca hacer algo similar a esto para mostrar el sdmdata y el buffer
         #output$maparesultadomax <- renderLeaflet({

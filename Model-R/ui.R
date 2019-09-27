@@ -705,52 +705,22 @@ tabPanel("Data cleaning"),
         ####DATA CLEANING AND SETUP####
 #ö faltan muchos parámetros
         tabPanel("Data setup",
-                 column(
-                   width = 12,
                    shinydashboard::box(
                      width = NULL,
                      height = "800px",
                      shinydashboard::box(
                        width = 6,
+                       title = "Data partitioning",
                        height = 400,
                        status = "warning",
-                       checkboxInput("geo_filt",
-                                     "Delete occurrence that are too close?",
-                                     value = FALSE),
-
-                       conditionalPanel(
-                         condition = "input.geo_filt",
-                         textInput(
-                           "geo_filt_dist",
-                           "Minimum distance between records (in km):",
-                           value = NULL
-                         )
-                       ),
-                       sliderInput(
-                         "n_back",
-                         "Pseudo-absence points:",
-                         min = 100,
-                         max = 2000,
-                         value = 300,
-                         step = 100
-                       ),
-                       radioButtons(
-                         "buffer_type",
-                         "Buffer type :",
-                         c(
-                           "Mean" = "mean",
-                           "Median" = "median",
-                           "Maximal" = "maximum"
-                         )
-                       ),
+                       ######
+                       #Partition type
                        selectInput(
                          "partition_type",
                          "Partitioning type",
                          choices = c("crossvalidation",
                                      "bootstrap")
                        ),
-
-
 
                        conditionalPanel(
                          condition = "input.partition_type == 'crossvalidation'",
@@ -790,6 +760,110 @@ tabPanel("Data cleaning"),
                            step = 1
                          )
                        )
+                       ),#fecha el primer box
+                     shinydashboard::box(
+                       width = 6,
+                       title = "Calibration area settings",
+                       height = 400,
+                       status = "warning",
+
+                       ######
+                       #####pseudoabsence sampling
+                       sliderInput(
+                         "n_back",
+                         "Number of pseudo-absence points:",
+                         min = 100,
+                         max = 2000,
+                         value = 300,
+                         step = 100
+                       ),
+                       #buffer_type
+                       radioButtons(
+                         "buffer_type",
+                         "Buffer type:",
+                         c(
+                           "Mean" = "mean",
+                           "Median" = "median",
+                           "Maximal" = "maximum",
+                           "Distance" = "distance",
+                           "User-defined shapefile" = "user"
+                         )
+                       ),
+                       conditionalPanel(
+                         condition = "input.buffer_type == 'distance'",
+                         sliderInput(inputId = "buf_dist",
+                                   label = "Distance buffer",
+                                   min = 1,
+                                   max = 20,
+                                   value = 4,
+                                   step = 1)
+                       ),
+                       conditionalPanel(
+                         condition = "input.buffer_type == 'user'",
+                         fileInput(inputId = "user_shape",
+                                   label = "User-defined shape",
+                                   multiple = FALSE,
+                                   accept = NULL,
+                                   width = NULL,
+                                   buttonLabel = "Browse...",
+                                   placeholder = "No file selected")
+                       ),
+                       #mindist
+                       checkboxInput("exclusion",
+                                     "Set a minimum distance from occurrences?",
+                                     value = FALSE),
+
+                       conditionalPanel(
+                         condition = "input.exclusion",
+                         sliderInput(
+                           "min_dist",
+                           "Minimum distance from occurrences:",
+                           min = 0,
+                           max = 30,
+                           value = 1,
+                           step = 1
+                         )
+                       ),
+                       #envfilt
+                       checkboxInput("env_filt",
+                                     "Set an environmental distance filter?",
+                                     value = FALSE),
+                       conditionalPanel(
+                         condition = "input.env_filt",
+                         selectInput("distance",
+                                     "env_dist",
+                                     choices = c("centroid", "mindist"),
+                                     selected = "centroid"),
+                         sliderInput(
+                           "max_env_dist",
+                           "Maximum environmental distance (quantiles)",
+                           min = 0,
+                           max = 1,
+                           value = 0.5,
+                           step = 0.1
+                         )
+                       )
+                       ),
+                     shinydashboard::box(
+                       width = 6,
+                       title = "Occurrence thining",
+                       height = 400,
+                       status = "warning",
+                       #geo_filt: occurrence thining
+                       checkboxInput("geo_filt",
+                                     "Thin occurrences that are too close?",
+                                     value = FALSE),
+
+                       conditionalPanel(
+                         condition = "input.geo_filt",
+                         textInput(#make it a slider?
+                           "geo_filt_dist",
+                           "Minimum distance between records (in km):",
+                           value = 10,
+                           width = "100px",
+                         )
+                       )
+                       )
                      ), #cierra el box de parametros de setup
                      shinydashboard::box(
                        width = 6,
@@ -797,8 +871,6 @@ tabPanel("Data cleaning"),
                        status = "warning",
                        actionButton("btnSetup", "Run", icon = icon("cogs"))
                      )
-                   )#cierra un box
-                 )#fecha columna
         ),  #fecha el tab setup
 
 ####PROJECTION####
