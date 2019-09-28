@@ -278,6 +278,8 @@ body <- dashboardBody(
                       ),#ends primera columna
                 #segunda columna: los datos----
                 # "Load occurrence dataset",
+                conditionalPanel(
+                  "btnsearch_spdata",
                 column(
                   width = 8,
                   shinydashboard::box(
@@ -286,14 +288,16 @@ body <- dashboardBody(
                     ),
                   actionButton("btn_saveDatasetRaw", "Save species dataset",
                                icon = icon("next"))
-                  ),#ends segunda columna
+                  )),#ends segunda columna
                 #tercera columna: el mapa----
+                conditionalPanel(
+                  "btnsearch_spdata",
                 column(
                   width = 12,
                   solidHeader = TRUE,
                   leafletOutput("mapadistribuicao"),#isto só deveria aparecer quando o botão search for clicado - tipo um actionButton da vida, se não, dá erro de que não acha occurrences
                   height = 500
-                )#ends tercera columna
+                ))#ends tercera columna
                     ),#ends tabpanel
               #aqui datacleaning velho
               tabPanel(
@@ -589,7 +593,8 @@ body <- dashboardBody(
                    conditionalPanel(
                      #worldclim
                      "input.tipodadoabiotico == 'WorldClim' ",
-                     selectInput("resolution", "Resolution:", resolution, selected = "10min"),
+                     selectInput("resolution", "Resolution:", resolution,
+                                 selected = "10min"),
                      selectInput(
                        "forecasting_wc",
                        "Project model across timescales",
@@ -608,7 +613,8 @@ body <- dashboardBody(
 
                          conditionalPanel(
                            "input.forecasting_wc == 'future_wc' ",
-                           selectInput("future_dates_wc", "Choose period: ", future_dates_wc),
+                           selectInput("future_dates_wc",
+                                       "Choose period: ", future_dates_wc),
                            selectInput(
                              "rcp_wc",
                              "Emission Scenarios (RCP)",
@@ -629,7 +635,8 @@ body <- dashboardBody(
 
                          conditionalPanel(
                            "input.forecasting_wc == 'past_wc'",
-                           selectInput("past_dates_wc", "Choose period: ", past_dates_wc, selected = "mid"),
+                           selectInput("past_dates_wc", "Choose period: ",
+                                       past_dates_wc, selected = "mid"),
                            conditionalPanel(
                              "input.past_dates_wc == 'mid'",
                              selectInput(
@@ -764,7 +771,7 @@ tabPanel("Data cleaning"),
                      shinydashboard::box(
                        width = 6,
                        title = "Calibration area settings",
-                       height = 400,
+                       height = 800,
                        status = "warning",
 
                        ######
@@ -847,7 +854,7 @@ tabPanel("Data cleaning"),
                      shinydashboard::box(
                        width = 6,
                        title = "Occurrence thining",
-                       height = 400,
+                       height = 100,
                        status = "warning",
                        #geo_filt: occurrence thining
                        checkboxInput("geo_filt",
@@ -859,22 +866,20 @@ tabPanel("Data cleaning"),
                          textInput(#make it a slider?
                            "geo_filt_dist",
                            "Minimum distance between records (in km):",
-                           value = 10,
-                           width = "100px",
+                           value = 10
                          )
                        )
-                       )
-                     ), #cierra el box de parametros de setup
+                       ),
                      shinydashboard::box(
                        width = 6,
-                       height = 400,
+                       height = 100,
                        status = "warning",
                        actionButton("btnSetup", "Run", icon = icon("cogs"))
                      )
-        ),  #fecha el tab setup
-
+                     ) #cierra el box de parametros de setup
+        ),
 ####PROJECTION####
-        tabPanel("Projection",
+tabPanel("Projection",
                  column(
                      width = 6,
                      tabBox(side = "left",
@@ -883,7 +888,7 @@ tabPanel("Data cleaning"),
                             tabPanel("Projection extent"),
                             tabPanel("Projection timescales"))
                  )),
-        #### MODELING ####
+#### MODELING ####
 tabPanel("Modeling",
          column(
            width = 6,

@@ -125,6 +125,7 @@ getOccurrences_jabot <- function(species_name) {
   colnames(occur.data) <- c("name", "lon", "lat")
   return(occur.data)
 }
+#map preview final ----
 MapPreview.final <- function(algorithm = algorithm) {
   #finaldir <- list.files(paste0(modelsDir, "/", species_name, "/present/final_models/"), full.names = T, pattern = paste0(algorithm, "_raw_mean.tif^"))
   #tif_file <- finaldir[finaldir == paste0(species_name, "_", algorithm, "_raw_mean.tif")]
@@ -885,56 +886,6 @@ function(input, output, session) {
 
         on.exit(progress$close())
 
-        if (input$partition_type == "crossvalidation") {
-          cv_n <- input$cv_n
-          cv_partitions <- input$cv_partitions
-          boot_n <- NULL
-          boot_proportion <- NULL
-        }
-        if (input$partition_type == "bootstrap") {
-          cv_n <- NULL
-          cv_partitions <- NULL
-          boot_n <- input$boot_n
-          boot_proportion <- input$boot_proportion
-        }
-        if (input$geo_filt == TRUE) {
-          geo_filt_dist <- input$geo_filt_dist
-        } else {
-          geo_filt_dist <- NULL
-        }
-#setup_sdmdata
-        setup_sdmdata(
-          species_name = species_name,
-          occurrences = occurrences,
-          predictors = predictors,
-          models_dir = modelsDir,
-          real_absences = NULL,
-          lon = "lon",
-          lat = "lat",
-          buffer_type = input$buffer_type,
-          #dist_buf =
-          #env_buffer =
-          #env_distance = "centroid",
-          #dist_min = NULL,
-          #buffer_shape = NULL,
-          max_env_dist = 0.5,
-          write_buffer = T,
-          #seed = NULL,
-          #clean_dupl = T,
-          #clean_nas = T,
-          #clean_uni = T,
-          #geo_filt = input$geo_filt,
-          #geo_filt_dist = geo_filt_dist,
-          #select_variables = T
-          #cutoff = 0.8,
-          #percent = 0.8,
-          plot_sdmdata = T,
-          n_back = input$n_back,
-          partition_type = input$partition_type,
-          boot_n = boot_n,
-          boot_proportion = boot_proportion,
-          cv_n = cv_n,
-          cv_partitions = cv_partitions)
 #do_any/do_many #ainda falta ver o que é melhor
         do_many(
           species_name = species_name,#doğru
@@ -978,20 +929,20 @@ function(input, output, session) {
           write_final = T,
           overwrite = T
         )
-#ensemble
-        ensemble_model(
-          species_name = species_name,
-          occurrences = occurrences,
-          models_dir = modelsDir,#doğru
-          final_dir = "final_models",
-          ensemble_dir = "ensemble",
-          proj_dir = "present",
-          which_final = c("raw_mean"),
-          consensus = T,
-          consensus_level = 0.5,
-          write_ensemble = T,
-          overwrite = T
-        )
+# #ensemble#está haciendo para todo lo que hay endisco entonces si una cosa cambia da error de extents. acabo de pedir solamente bioclim pero rodó todo. no tiene sentido.
+#         ensemble_model(
+#           species_name = species_name,
+#           occurrences = occurrences,
+#           models_dir = modelsDir,#doğru
+#           final_dir = "final_models",
+#           ensemble_dir = "ensemble",
+#           proj_dir = "present",
+#           which_final = c("raw_mean"),
+#           consensus = T,
+#           consensus_level = 0.5,
+#           write_ensemble = T,
+#           overwrite = T
+#         )
 #output mapas
         output$maparesultadobc <- renderLeaflet({
           input$btnModelar
@@ -1031,10 +982,10 @@ function(input, output, session) {
         })
 
 
-        output$maparesultadoensemble <- renderLeaflet({
-          input$btnModelar
-          MapPreview.ensemble()
-        })#preview ensemble
+        # output$maparesultadoensemble <- renderLeaflet({
+        #   input$btnModelar
+        #   MapPreview.ensemble()
+        # })#preview ensemble
       } else {
         showModal(modalDialog(
           title = "Error!",
@@ -1044,6 +995,141 @@ function(input, output, session) {
       }#error
     } #termina el loop del modelo geral los tres pasos, toca separar
   })#termina observeevent y btmmodelar
+
+  ###SOLO final model ----
+
+  # btnFinal-----
+  observeEvent(input$btnFinal, {
+    #se algum algoritmo é marcado
+    if (any(
+      input$domain,
+      input$maxent,
+      input$bioclim,
+      input$mahal,
+      input$glm,
+      input$rf,
+      input$svme,
+      input$svmk)) {
+      #se há occurrences, preditores e species_name --aqui é que deveria ter no caso de carregar um projeto preexistente
+      if (exists("occurrences") && exists("predictors") && exists("species_name")) {
+        #rodar tudo
+        progress <<- shiny::Progress$new()
+        progress$set(message = "Processing...", value = 0)
+
+        modelsDir.sp <<- paste(modelsDir, species_name, sep = "/")
+
+        on.exit(progress$close())
+
+#do_any/do_many #ainda falta ver o que é melhor
+        do_many(
+          species_name = species_name,#doğru
+          predictors = predictors,
+          models_dir = modelsDir,#doğru
+          bioclim = input$bioclim,
+          domain = input$domain,
+          glm = input$glm,
+          mahal = input$mahal,
+          maxent = input$maxent,
+          rf = input$rf,
+          svmk = input$svmk,
+          svme = input$svme,
+          brt = input$brt,
+          #project_model,
+          #proj_data_folder =
+          mask = NULL,
+          write_png = T,
+          write_bin_cut = T,
+          threshold = "spec_sens",
+          conf_mat = F,
+          equalize = T,
+          proc_threshold = 0.5)
+#final_model
+        final_model(
+          species_name = species_name,
+          algorithms = NULL,
+          weight_par = NULL,
+          select_partitions = TRUE,
+          cut_level = c("spec_sens"),
+          scale_models = TRUE,
+          select_par = "TSS",
+          select_par_val = input$TSS,
+          consensus_level = 0.5,#parametrizar
+          models_dir = modelsDir,#doğru
+          final_dir = "final_models",
+          proj_dir = "present", #parametrizar
+          which_models = c("raw_mean"),
+          uncertainty = F, #parametrizar
+          write_png = T,
+          write_final = T,
+          overwrite = T
+        )
+# #ensemble#está haciendo para todo lo que hay endisco entonces si una cosa cambia da error de extents. acabo de pedir solamente bioclim pero rodó todo. no tiene sentido.
+#         ensemble_model(
+#           species_name = species_name,
+#           occurrences = occurrences,
+#           models_dir = modelsDir,#doğru
+#           final_dir = "final_models",
+#           ensemble_dir = "ensemble",
+#           proj_dir = "present",
+#           which_final = c("raw_mean"),
+#           consensus = T,
+#           consensus_level = 0.5,
+#           write_ensemble = T,
+#           overwrite = T
+#         )
+#output mapas
+        output$maparesultadobc <- renderLeaflet({
+          input$btnModelar
+          MapPreview.final(algorithm = "bioclim")
+        })
+        output$maparesultadobrt <- renderLeaflet({
+          input$btnModelar
+          MapPreview.final(algorithm = "brt")
+        })
+        output$maparesultadodo <- renderLeaflet({
+          input$btnModelar
+          MapPreview.final(algorithm = "domain")
+        })
+        output$maparesultadoglm <- renderLeaflet({
+          input$btnModelar
+          MapPreview.final(algorithm = "glm")
+        })
+        output$maparesultadomh <- renderLeaflet({
+          input$btnModelar
+          MapPreview.final(algorithm = "mahal")
+        })
+        output$maparesultadomax <- renderLeaflet({
+          input$btnModelar
+          MapPreview.final(algorithm = "maxent")
+        })
+        output$maparesultadorf <- renderLeaflet({
+          input$btnModelar
+          MapPreview.final(algorithm = "rf")
+        })
+        output$maparesultadosvme <- renderLeaflet({
+          input$btnModelar
+          MapPreview.final(algorithm = "svme")
+        })
+        output$maparesultadosvmk <- renderLeaflet({
+          input$btnModelar
+          MapPreview.final(algorithm = "svmk")
+        })
+
+
+        # output$maparesultadoensemble <- renderLeaflet({
+        #   input$btnModelar
+        #   MapPreview.ensemble()
+        # })#preview ensemble
+      } else {
+        showModal(modalDialog(
+          title = "Error!",
+          "Please inform species occurrence data, predictor variables and species name.",
+          easyClose = TRUE
+        ))
+      }#error
+    } #termina el loop del modelo geral los tres pasos, toca separar
+  })#termina observeevent y btmmodelar
+
 
   #### PLOTTING RESULTS ####
   observeEvent({
