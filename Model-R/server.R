@@ -153,7 +153,7 @@ MapPreview.final <- function(algorithm = algorithm) {
 MapPreview.ensemble <- function() {
   #finaldir <- list.files(paste0(modelsDir, "/", species_name, "/present/ensemble/"))
   #tif_file <- finaldir[finaldir == paste0(species_name, "_raw_mean_ensemble_mean.tif")]
-  raw_mean_file <- list.files(paste0(modelsDir, "/", species_name, "/present/ensemble/"), pattern = "_raw_mean_ensemble_mean.tif", full.names = T)
+  raw_mean_file <- list.files(paste0(modelsDir, "/", species_name, "/present/ensemble/"), pattern = "_raw_mean_median.tif$", full.names = T)
   if (file.exists(raw_mean_file)) {
     r <- raster::raster(raw_mean_file)
     pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), raster::values(r), na.color = "transparent")
@@ -930,62 +930,62 @@ function(input, output, session) {
           overwrite = T
         )
 # #ensemble#está haciendo para todo lo que hay endisco entonces si una cosa cambia da error de extents. acabo de pedir solamente bioclim pero rodó todo. no tiene sentido.
-#         ensemble_model(
-#           species_name = species_name,
-#           occurrences = occurrences,
-#           models_dir = modelsDir,#doğru
-#           final_dir = "final_models",
-#           ensemble_dir = "ensemble",
-#           proj_dir = "present",
-#           which_final = c("raw_mean"),
-#           consensus = T,
-#           consensus_level = 0.5,
-#           write_ensemble = T,
-#           overwrite = T
-#         )
-#output mapas
-        output$maparesultadobc <- renderLeaflet({
+         ensemble_model(
+           species_name = species_name,
+           occurrences = occurrences,
+           models_dir = modelsDir,#doğru
+           final_dir = "final_models",
+           ensemble_dir = "ensemble",
+           proj_dir = "present",
+           which_final = c("raw_mean"),
+           consensus = T,
+           consensus_level = 0.5,
+           write_ensemble = T,
+           overwrite = T
+         )
+#output mapas finais ---.
+        output$mapafinalbc <- renderLeaflet({
           input$btnModelar
           MapPreview.final(algorithm = "bioclim")
         })
-        output$maparesultadobrt <- renderLeaflet({
+        output$mapafinalbrt <- renderLeaflet({
           input$btnModelar
           MapPreview.final(algorithm = "brt")
         })
-        output$maparesultadodo <- renderLeaflet({
+        output$mapafinaldo <- renderLeaflet({
           input$btnModelar
           MapPreview.final(algorithm = "domain")
         })
-        output$maparesultadoglm <- renderLeaflet({
+        output$mapafinalglm <- renderLeaflet({
           input$btnModelar
           MapPreview.final(algorithm = "glm")
         })
-        output$maparesultadomh <- renderLeaflet({
+        output$mapafinalmh <- renderLeaflet({
           input$btnModelar
           MapPreview.final(algorithm = "mahal")
         })
-        output$maparesultadomax <- renderLeaflet({
+        output$mapafinalmax <- renderLeaflet({
           input$btnModelar
           MapPreview.final(algorithm = "maxent")
         })
-        output$maparesultadorf <- renderLeaflet({
+        output$mapafinalrf <- renderLeaflet({
           input$btnModelar
           MapPreview.final(algorithm = "rf")
         })
-        output$maparesultadosvme <- renderLeaflet({
+        output$mapafinalsvme <- renderLeaflet({
           input$btnModelar
           MapPreview.final(algorithm = "svme")
         })
-        output$maparesultadosvmk <- renderLeaflet({
+        output$mapafinalsvmk <- renderLeaflet({
           input$btnModelar
           MapPreview.final(algorithm = "svmk")
         })
 
 
-        # output$maparesultadoensemble <- renderLeaflet({
-        #   input$btnModelar
-        #   MapPreview.ensemble()
-        # })#preview ensemble
+         output$mapaensemble <- renderLeaflet({
+           input$btnModelar
+           MapPreview.ensemble()
+         })#preview ensemble
       } else {
         showModal(modalDialog(
           title = "Error!",
@@ -1063,63 +1063,63 @@ function(input, output, session) {
           write_final = T,
           overwrite = T
         )
-# #ensemble#está haciendo para todo lo que hay endisco entonces si una cosa cambia da error de extents. acabo de pedir solamente bioclim pero rodó todo. no tiene sentido.
-#         ensemble_model(
-#           species_name = species_name,
-#           occurrences = occurrences,
-#           models_dir = modelsDir,#doğru
-#           final_dir = "final_models",
-#           ensemble_dir = "ensemble",
-#           proj_dir = "present",
-#           which_final = c("raw_mean"),
-#           consensus = T,
-#           consensus_level = 0.5,
-#           write_ensemble = T,
-#           overwrite = T
-#         )
+#ensemble#está haciendo para todo lo que hay endisco entonces si una cosa cambia da error de extents. acabo de pedir solamente bioclim pero rodó todo. no tiene sentido.
+        ensemble_model(
+          species_name = species_name,
+          occurrences = occurrences,
+          models_dir = modelsDir,#doğru
+          final_dir = "final_models",
+          ensemble_dir = "ensemble",
+          proj_dir = "present",
+          which_final = c("raw_mean"),
+          consensus = T,
+          consensus_level = 0.5,
+          write_ensemble = T,
+          overwrite = T
+        )
 #output mapas
-        output$maparesultadobc <- renderLeaflet({
+        output$mapafinalbc <- renderLeaflet({
           input$btnModelar
           MapPreview.final(algorithm = "bioclim")
         })
-        output$maparesultadobrt <- renderLeaflet({
+        output$mapafinalbrt <- renderLeaflet({
           input$btnModelar
           MapPreview.final(algorithm = "brt")
         })
-        output$maparesultadodo <- renderLeaflet({
+        output$mapafinaldo <- renderLeaflet({
           input$btnModelar
           MapPreview.final(algorithm = "domain")
         })
-        output$maparesultadoglm <- renderLeaflet({
+        output$mapafinalglm <- renderLeaflet({
           input$btnModelar
           MapPreview.final(algorithm = "glm")
         })
-        output$maparesultadomh <- renderLeaflet({
+        output$mapafinalmh <- renderLeaflet({
           input$btnModelar
           MapPreview.final(algorithm = "mahal")
         })
-        output$maparesultadomax <- renderLeaflet({
+        output$mapafinalmax <- renderLeaflet({
           input$btnModelar
           MapPreview.final(algorithm = "maxent")
         })
-        output$maparesultadorf <- renderLeaflet({
+        output$mapafinalrf <- renderLeaflet({
           input$btnModelar
           MapPreview.final(algorithm = "rf")
         })
-        output$maparesultadosvme <- renderLeaflet({
+        output$mapafinalsvme <- renderLeaflet({
           input$btnModelar
           MapPreview.final(algorithm = "svme")
         })
-        output$maparesultadosvmk <- renderLeaflet({
+        output$mapafinalsvmk <- renderLeaflet({
           input$btnModelar
           MapPreview.final(algorithm = "svmk")
         })
 
-
-        # output$maparesultadoensemble <- renderLeaflet({
-        #   input$btnModelar
-        #   MapPreview.ensemble()
-        # })#preview ensemble
+        #preview ensemble
+         output$mapaensemble <- renderLeaflet({
+           input$btnModelar
+           MapPreview.ensemble()
+         })
       } else {
         showModal(modalDialog(
           title = "Error!",
@@ -1127,8 +1127,8 @@ function(input, output, session) {
           easyClose = TRUE
         ))
       }#error
-    } #termina el loop del modelo geral los tres pasos, toca separar
-  })#termina observeevent y btmmodelar
+    } #
+  })#termina observeevent y btmfinal
 
 
   #### PLOTTING RESULTS ####

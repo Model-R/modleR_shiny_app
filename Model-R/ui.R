@@ -900,54 +900,54 @@ tabPanel("Modeling",
              tabPanel("bioclim",
                       column(
                         width = 12,
-                        leafletOutput("maparesultadobc")
+                        leafletOutput("mapafinalbc")
                       )),
              tabPanel("brt",
                       column(
                         width = 12,
-                        leafletOutput("maparesultadobrt")
+                        leafletOutput("mapafinalbrt")
                       )),
              tabPanel("domain",
                       column(
                         width = 12,
-                        leafletOutput("maparesultadodo")
+                        leafletOutput("mapafinaldo")
                       )),
              tabPanel("GLM",
                       column(
                         width = 12,
-                        leafletOutput("maparesultadoglm")
+                        leafletOutput("mapafinalglm")
                       )),
              tabPanel("mahal",
                       column(
                         width = 12,
-                        leafletOutput("maparesultadomh")
+                        leafletOutput("mapafinalmh")
                       )),
              tabPanel("maxent",
                       column(
                         width = 12,
-                        leafletOutput("maparesultadomax")
+                        leafletOutput("mapafinalmax")
                       )),
              tabPanel("RF",
                       column(
                         width = 12,
-                        leafletOutput("maparesultadorf")
+                        leafletOutput("mapafinalrf")
                       )),
              tabPanel("SVME",
                       column(
                         width = 12,
-                        leafletOutput("maparesultadosvme")
+                        leafletOutput("mapafinalsvme")
                       )),
              tabPanel("SVMK",
                       column(
                         width = 12,
-                        leafletOutput("maparesultadosvmk")
+                        leafletOutput("mapafinalsvmk")
                       ))#cierra svmk
              #,
              # tabPanel(
              #   "ENSEMBLE",
              #   column(
              #     width = 12,
-             #     leafletOutput("maparesultadoensemble")
+             #     leafletOutput("mapaensemble")
              #   )
              # )#fecha ensemble tab
            )#fecha el box con los modelos
@@ -979,7 +979,7 @@ tabPanel("Modeling",
                         height = 400,
                         status = "warning",
                         actionButton("btnModelar", "Run", icon = icon("cogs")),
-                        h4("Algorithms"),
+                        h4("Which algorithms do you want to fit?"),
                         checkboxInput("bioclim", "Bioclim", value = FALSE),
                         checkboxInput("brt", "BRT", value = FALSE),
                         checkboxInput("domain", "Domain", value = FALSE),
@@ -1005,8 +1005,52 @@ tabPanel("Modeling",
                   )#cierra la columna),
                  )#cierra el tab algorithm
          ),#fecha el panel modeling
+###tab final ----
+tabPanel("Final models",
+         column(
+           width = 6,
+           tabBox(
+             side = "left",
+             title = "",
+             width = NULL,
+             shinydashboard::box(
+               actionButton("btnFinal", "Run", icon = icon("cogs")),
+               checkboxGroupInput("which_models",
+                                  "Make final models for the following algorithms:",
+                                  choices = c("Bioclim" = "bioclim",
+                                              "BRT" = "brt" ,
+                                              "Domain" = "domain",
+                                              "GLM" = "glm",
+                                              "Mahalanobis" = "mahal",
+                                              "Maxent" = "maxent",
+                                              "RandomForest" = "rf",
+                                              "SVM (e1071)" = "svme",
+                                              "SVM (kernlab)" = "svmk"))),
 
-        #### RESULTS ####
+             tabPanel("bioclim",
+                      column(
+                        width = 12
+                      ))))),
+####ensemble----
+tabPanel("Ensemble models",
+         column(
+           width = 6,
+           tabBox(
+             side = "left",
+             title = "",
+             width = NULL,
+             tabPanel(
+            "e",
+            column(
+              width = 12,
+              leafletOutput("mapaensemble")
+            )
+             )
+           )
+          )#fecha ensemble tab
+         ),#fecha ensemble panel
+
+                        #### RESULTS ####
         tabPanel(
           "Results",
           column(
