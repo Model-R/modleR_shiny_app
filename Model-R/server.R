@@ -923,7 +923,7 @@ function(input, output, session) {
   # btnFinal-----
   observeEvent(input$btnFinal, {
     #se algum algoritmo é marcado
-    if (length(input$which_final) > 0)) {
+    if (length(input$which_final) > 0) {
       #se há occurrences, preditores e species_name --aqui é que deveria ter no caso de carregar um projeto preexistente
       if (exists("occurrences") && exists("predictors") && exists("species_name")) {
         #rodar tudo
