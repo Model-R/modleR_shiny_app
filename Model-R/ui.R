@@ -353,129 +353,130 @@ body <- dashboardBody(
           "Environmental data",
           column(
             width = 12,
-            tabBox(
+            tabsetPanel(
               side = "left",
               title = "",
-              width = NULL,
+              width = 12,
               height = "600px",
-              selected = "Modeling extent",
+              selected = "Select predictors",
 
-              tabPanel(
-                "Modeling extent",
-                tabBox(
-                  side = "left",
-                  title = "",
-                  width = NULL,
-                  height = "600px",
-                  selected = "Study area extent",
-                  tabPanel(
-                    "Study area extent",
-                    shinydashboard::box(
-                      width = 8,
-                      solidHeader = TRUE,
-                      leafletOutput("mapapontosextend", height = 500)
-                    ),
-                    shinydashboard::box(
-                      width = 4,
-                      solidHeader = TRUE,
-                      shinydashboard::box(
-                        width = NULL,
-                        status = "warning",
-                        numericInput(
-                          "edtextend11",
-                          "Min Lon:",
-                          min = -180,
-                          max = 180,
-                          value = -60,
-                          step = 1
-                        ),
-                        numericInput(
-                          "edtextend21",
-                          "Max Lon:",
-                          min = -180,
-                          max = 180,
-                          value = -32,
-                          step = 1
-                        ),
-                        numericInput(
-                          "edtextend41",
-                          "Max Lat:",
-                          min = -90,
-                          max = 90,
-                          value = 5,
-                          step = 1
-                        ),
-                        numericInput(
-                          "edtextend31",
-                          "Min Lat:",
-                          min = -90,
-                          max = 90,
-                          value = -33,
-                          step = 1
-                        )
-                      )
-                                )
-                              )#ends study area extent
-                              ,
-                              tabPanel(
-                                "Projection extent",
-                                shinydashboard::box(
-                                  width = 12,
-                                  status = "warning",
-                                  checkboxInput("project_ext", "Project to another extension", value = FALSE),
+####A SELECAO DE VARIAVEIS TEM QUE IR ANTES DO EXTENT POR ISSO ESTÁ DANDO EXTENTS DO NOT OVERLAP!!!!!
+tabPanel(
+  "Modeling extent",
+  tabBox(
+    side = "left",
+    title = "",
+    width = NULL,
+    height = "600px",
+    selected = "Study area extent",
+    tabPanel(
+      "Study area extent",
+      shinydashboard::box(
+        width = 8,
+        solidHeader = TRUE,
+        leafletOutput("mapapontosextend", height = 500)
+      ),
+      shinydashboard::box(
+        width = 4,
+        solidHeader = TRUE,
+        shinydashboard::box(
+          width = NULL,
+          status = "warning",
+          numericInput(
+            "edtextend11",
+            "Min Lon:",
+            min = -180,
+            max = 180,
+            value = -60,
+            step = 1
+          ),
+          numericInput(
+            "edtextend21",
+            "Max Lon:",
+            min = -180,
+            max = 180,
+            value = -32,
+            step = 1
+          ),
+          numericInput(
+            "edtextend41",
+            "Max Lat:",
+            min = -90,
+            max = 90,
+            value = 5,
+            step = 1
+          ),
+          numericInput(
+            "edtextend31",
+            "Min Lat:",
+            min = -90,
+            max = 90,
+            value = -33,
+            step = 1
+          )
+        )
+      )
+    )#ends study area extent
+    ,
+    tabPanel(
+      "Projection extent",
+      shinydashboard::box(
+        width = 12,
+        status = "warning",
+        checkboxInput("project_ext", "Project to another extension", value = FALSE),
 
-                                  conditionalPanel(
-                                    "input.project_ext",
-                                    shinydashboard::box(
-                                      width = 8,
-                                      solidHeader = TRUE,
-                                      leafletOutput("mapapontosextend2", height = 500)
-                                    ),
+        conditionalPanel(
+          "input.project_ext",
+          shinydashboard::box(
+            width = 8,
+            solidHeader = TRUE,
+            leafletOutput("mapapontosextend2", height = 500)
+          ),
 
-                                    shinydashboard::box(
-                                      width = 4,
-                                      solidHeader = TRUE,
-                                      numericInput(
-                                        "edtextend12",
-                                        "Min Lon:",
-                                        min = -180,
-                                        max = 180,
+          shinydashboard::box(
+            width = 4,
+            solidHeader = TRUE,
+            numericInput(
+              "edtextend12",
+              "Min Lon:",
+              min = -180,
+              max = 180,
                                         value = -60,#isto tem que ser reativo e igual ao valor selecionado pelo usuário
-                                        step = 1
-                                      ),
-                                      numericInput(
-                                        "edtextend22",
-                                        "Max Lon:",
-                                        min = -180,
-                                        max = 180,
+              step = 1
+            ),
+            numericInput(
+              "edtextend22",
+              "Max Lon:",
+              min = -180,
+              max = 180,
                                         value = -32,#isto tem que ser reativo e igual ao valor selecionado pelo usuário
-                                        step = 1
-                                      ),
-                                      numericInput(
-                                        "edtextend42",
-                                        "Max Lat:",
-                                        min = -90,
-                                        max = 90,
+              step = 1
+            ),
+            numericInput(
+              "edtextend42",
+              "Max Lat:",
+              min = -90,
+              max = 90,
                                         value = 5,#isto tem que ser reativo e igual ao valor selecionado pelo usuário
-                                        step = 1
-                                      ),
-                                      numericInput(
-                                        "edtextend32",
-                                        "Min Lat:",
-                                        min = -90,
-                                        max = 90,
+              step = 1
+            ),
+            numericInput(
+              "edtextend32",
+              "Min Lat:",
+              min = -90,
+              max = 90,
                                         value = -33,#isto tem que ser reativo e igual ao valor selecionado pelo usuário
-                                        step = 1
-                                      )
-                                    )
-                                  )
-                                )
-                              )#ends projection extent
-                            )#ends study area extent
-                          ),#ends modeling extent
+              step = 1
+            )
+          )
+        )
+      )
+    )#ends projection extent
+  )#ends study area extent
+),#ends modeling extent
                           # Select predictors----
                           tabPanel(
-                            "Select Predictors",
+                            "Select predictors",
                             column(
                               width = 5,
                               shinydashboard::box(
@@ -491,27 +492,15 @@ body <- dashboardBody(
                                   env_datasource,
                                   selected = "WorldClim"
                                 ),
-                                #datos del paquete
-                                #        conditionalPanel(
-                                #"input.tipodadoabiotico == package_dataset",
-                                #checkboxGroupInput(inputId = "pred_vars_pac",
-                                #                   label = "Select variables: ",
-                                #                   choices = c("PC1" = "layer.1",
-                                #                               "PC2" = "layer.2",
-                                #                               "PC3" = "layer.3",
-                                #                               "PC4" = "layer.4",
-                                #                               "PC5" = "layer.5",
-                                #                               "PC6" = "layer.6"),
-                                #                   selected = c("layer.1", "layer.2", "layer.3", "layer.4", "layer.5", "layer.6"))#closes checkbox
-                                #),#ends datos del paquete
-                                conditionalPanel(
+
                                   #others
+                                conditionalPanel(
                                   "input.tipodadoabiotico == 'Others' ",
                                   helpText("All layers should have the same spatial extent, resolution, origin, and projection"),
-                                  helpText(""),
                                   helpText(
                                     "Before loading multi-file variables, make sure that all corresponding files are placed in the same directory."
                                   ),
+                                  #fileInput(outros, "Select the folder with the environmental variables"),
                                   if (length(list.files("ex/outros/", full.names = T, pattern = c(".*")) > 0)) {
                                     lista_outros <- list.files("ex/outros/", full.names = F, pattern = ".tif|.bil|.grd")
                                     checkboxGroupInput(
@@ -707,26 +696,18 @@ body <- dashboardBody(
                                 )#ends worldclim
                               )#ends box!
                             ),#ends column
-                            column(
-                              width = 7,
-                              tabBox(
-                                width = NULL,
-                                side = "right",
-                                selected = "Check correlation",
-                                tabPanel(
-                                  "View raster layers",
-                                  plotOutput(outputId = "mapaabiotico", height = "400px")
-                                ),
-
-                                tabPanel(
-                                  "Check correlation",
-                                  plotOutput(outputId = "grafico_correlacao", width = "100%", height = "400px"),
-                                  DT::dataTableOutput("dgbriddadoscorrelacao")
-                                )#tabpan
-                              )#tabbox
-                            )#col
-                            )#tab panel select pred
-                        )#tabbox
+                            ), #tab panel select pred
+#aqui correlacion
+tabPanel(
+"Check correlation",
+plotOutput(outputId = "grafico_correlacao", width = "100%", height = "400px"),
+DT::dataTableOutput("dgbriddadoscorrelacao")
+),
+tabPanel(
+  "View raster layers",
+  plotOutput(outputId = "mapaabiotico", height = "400px")
+)
+                        )#tabsetpanel
                       )#end column
                       ),#ends env data
     ####DATA CLEANING AND SETUP####
@@ -918,7 +899,7 @@ body <- dashboardBody(
                  tabPanel("Projection timescales")
                )
              )
-             ),
+             ),#fecha projection
     #### MODELING ####
     tabPanel(
       "Modeling",
@@ -982,7 +963,7 @@ body <- dashboardBody(
             width = NULL,
             actionButton("btnFinal", "Run", icon = icon("cogs")),
             checkboxGroupInput(
-              "which_final",
+              "algorithms",
               "Make final models for the following algorithms:",
               choices = c(
                 "Bioclim" = "bioclim",
@@ -994,17 +975,17 @@ body <- dashboardBody(
                 "RandomForest" = "rf",
                 "SVM (e1071)" = "svme",
                 "SVM (kernlab)" = "svmk"
-              )
+                )
               )#fecha checkbox
             ),#fecha box run final
           shinydashboard::box(
             checkboxInput(
-              "selectpartitions",
+              "select_partitions",
               "Select the best partitions?",
               value = F
               ),
             conditionalPanel(
-              "input.selectpartitions",
+              "input.select_partitions",
               radioButtons(
                 "select_par",
                 "Select partitions by:",
@@ -1030,18 +1011,19 @@ body <- dashboardBody(
               radioButtons(
                 "weight_par",
                 "Weigh partitions by:",
-                choices = c("TSS", "AUC", "pROC")
+                choices = c("TSS", "AUC", "pROC"),
+                selected = "TSS"
               )
             ),#fecha cond
             checkboxGroupInput(
               "which_models_final",
               label = "Which output should be created?",
-              choices = c("raw_mean",
-                          "raw_mean_th",
-                          "raw_mean_cut",
-                          "bin_mean",
-                          "bin_consensus",
-                          "cut_mean"),
+              choices = c("raw_mean" = "raw_mean",
+                          "raw_mean_th" = "raw_mean_th",
+                          "raw_mean_cut" = "raw_mean_cut",
+                          "bin_mean" = "bin_mean",
+                          "bin_consensus" = "bin_consensus",
+                          "cut_mean" = "cut_mean"),
               selected = "raw_mean"
             ),#fecha check
             conditionalPanel(
