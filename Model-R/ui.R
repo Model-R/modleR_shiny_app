@@ -89,7 +89,7 @@ gcm_past_wc_mid <- c(
 
 gcm_past_wc_lgm <- c(
   "CCSM4" = "cc",
-                     "MIROC-ESM" = "mr",
+  "MIROC-ESM" = "mr",
   "MPI-ESM-P" = "me"
 )
 
@@ -99,6 +99,7 @@ rcp <- c(
   "rcp60" = "60",
   "rcp85" = "85"
 )
+
 past_dates_wc <- c(
   "Mid Holocene" = "mid",
   "Last Glacial Maximum" = "lgm"
@@ -109,17 +110,15 @@ future_bo_dates <- c(
   "2200" = "2200"
 )
 
-#### DASHBOARD #####why 2.0 but neyse
-header <- shinydashboard::dashboardHeader(title = "modleR 2.0")
+#### DASHBOARD ##### why 2.0 but neyse
+header <- shinydashboard::dashboardHeader(title = "modleR 3.0")
 body <- dashboardBody(
   fluidRow(
-    column(
-      width = 12,
       tabBox(
         side = "left",
         title = "Steps",
         width = NULL,
-        height = "1000px",
+        height = "1000px",#si esto no se pone queda gris detrás
 
         #### WELCOME ####
         tabPanel(
@@ -128,7 +127,6 @@ body <- dashboardBody(
             width = 12,
             tabPanel(
               "",
-
               #aqui a parte dos projetos, que deveria ser central----
               column(
                 width = 6,
@@ -138,7 +136,7 @@ body <- dashboardBody(
                     list_projects <- list.files("./www/results/", full.names = F, recursive = F)
                     shinydashboard::box(
                       title = "Create/Open project",
-                      status = "primary",
+                      status = "danger",
                       solidHeader = TRUE,
                       width = NULL,
                       selectInput("select_project",
@@ -170,7 +168,7 @@ body <- dashboardBody(
                     } else {
                       shinydashboard::box(
                         title = "Create/Open project",
-                        status = "primary",
+                        status = "danger",
                         solidHeader = TRUE,
                         width = NULL,
                         selectInput("select_project", "",
@@ -194,11 +192,11 @@ body <- dashboardBody(
                   column(
                     width = 6,
                     br(),
-                    img(src = "logo.png", width = 200)
+                    img(src = "modler.png", width = 200)
                     ),
                   column(
                     width = 9,
-                    h4("A workflow to perform Environmental Niche Modeling based on dismo")
+                    h4("A workflow to perform ecological niche modeling based on dismo")
                     ),
                   column(
                     width = 12,
@@ -207,9 +205,7 @@ body <- dashboardBody(
                     br(),
                     p(
                       "Sánchez-Tapia, Andrea ; de Siqueira, Marinez Ferreira ; Lima, Rafael Oliveira ; Barros, Felipe Sodré M. ; Gall, Guilherme M. ; Gadelha, Luiz M. R. ; da Silva, Luís Alexandre E. ; Osthoff, Carla . Model-R: A Framework for Scalable and Reproducible Ecological Niche Modeling. Communications in Computer and Information Science. 1ed.: Springer International Publishing, 2018, v. 796, p. 218-232."
-                          ),
-                    br(),
-                    p("...ABSTRACT...")
+                          )
                     )
                   )
                 )
@@ -236,7 +232,7 @@ body <- dashboardBody(
                      width = 4,
                      shinydashboard::box(
                        width = NULL,
-                       status = "warning",
+                       status = "danger",
                        helpText("Select species occurrence database or browse csv dataset"),
                        selectInput("bio_datasource",
                                    "Occurrence data",
@@ -309,40 +305,7 @@ body <- dashboardBody(
                        height = 500
                      )#ends columna
                    )#ends condpan
-                 ),#ends tabpanel
-                 #aqui datacleaning velho
-                 tabPanel(
-                   "Data Cleaning",
-                   column(
-                     width = 6,
-                     shinydashboard::box(
-                       width = NULL,
-                       solidHeader = TRUE,
-                       leafletOutput("mapadistribuicaodatacleaning", height = 500)
-                     )
-                   ),
-                   column(
-                     width = 6,
-                     shinydashboard::box(
-                       width = NULL,
-                       status = "warning",
-                       numericInput(
-                         "edtelemento",
-                         "Occurrence record ID:",
-                         min = 0,
-                         max = 100,
-                         value = 0
-                       ),
-                       actionButton("btnapagar", "Delete selected ID", icon = icon("trash")),
-                       actionButton("btneliminarduplicatas", "Delete duplicates", icon = icon("cubes")),
-                       actionButton("btn_saveDatasetClean", "Save dataset", icon = icon("next"))
-                     ),#box
-                     shinydashboard::box(
-                       width = NULL,
-                       DT::dataTableOutput("dgbriddadosdatacleaning")
-                       )#box
-                   )#column
-                 )#tabpanel
+                 )#ends tabpanel
                )#tabbox
              )#column
           ),#tabpanelsp occ data
@@ -353,7 +316,7 @@ body <- dashboardBody(
           "Environmental data",
           column(
             width = 12,
-            tabsetPanel(
+            tabPanel(
               side = "left",
               title = "",
               width = 12,
@@ -376,12 +339,12 @@ tabPanel(
         solidHeader = TRUE,
         leafletOutput("mapapontosextend", height = 500)
       ),
-      shinydashboard::box(
+      column(
         width = 4,
         solidHeader = TRUE,
         shinydashboard::box(
           width = NULL,
-          status = "warning",
+          status = "danger",
           numericInput(
             "edtextend11",
             "Min Lon:",
@@ -418,70 +381,15 @@ tabPanel(
       )
     )#ends study area extent
     ,
-    tabPanel(
-      "Projection extent",
-      shinydashboard::box(
-        width = 12,
-        status = "warning",
-        checkboxInput("project_ext", "Project to another extension", value = FALSE),
 
-        conditionalPanel(
-          "input.project_ext",
-          shinydashboard::box(
-            width = 8,
-            solidHeader = TRUE,
-            leafletOutput("mapapontosextend2", height = 500)
-          ),
-
-          shinydashboard::box(
-            width = 4,
-            solidHeader = TRUE,
-            numericInput(
-              "edtextend12",
-              "Min Lon:",
-              min = -180,
-              max = 180,
-                                        value = -60,#isto tem que ser reativo e igual ao valor selecionado pelo usuário
-              step = 1
-            ),
-            numericInput(
-              "edtextend22",
-              "Max Lon:",
-              min = -180,
-              max = 180,
-                                        value = -32,#isto tem que ser reativo e igual ao valor selecionado pelo usuário
-              step = 1
-            ),
-            numericInput(
-              "edtextend42",
-              "Max Lat:",
-              min = -90,
-              max = 90,
-                                        value = 5,#isto tem que ser reativo e igual ao valor selecionado pelo usuário
-              step = 1
-            ),
-            numericInput(
-              "edtextend32",
-              "Min Lat:",
-              min = -90,
-              max = 90,
-                                        value = -33,#isto tem que ser reativo e igual ao valor selecionado pelo usuário
-              step = 1
-            )
-          )
-        )
-      )
-    )#ends projection extent
-  )#ends study area extent
-),#ends modeling extent
                           # Select predictors----
                           tabPanel(
                             "Select predictors",
                             column(
-                              width = 5,
+                              width = 4,
                               shinydashboard::box(
                                 width = NULL,
-                                status = "warning",
+                                status = "danger",
                                 actionButton(
                                   "btnAtualizaSelecaoVariaveis",
                                              "Update selected"
@@ -598,7 +506,8 @@ tabPanel(
                                     )#pred_vasr_bo
                                   )#current_bo
                                 ),#ends bioracle
-                                conditionalPanel(#worldclim
+                                #worldclim
+                                conditionalPanel(
                                   "input.tipodadoabiotico == 'WorldClim' ",
                                   selectInput("resolution", "Resolution:", resolution,
                                               selected = "10min"),
@@ -696,86 +605,128 @@ tabPanel(
                                 )#ends worldclim
                               )#ends box!
                             ),#ends column
-                            ), #tab panel select pred
-#aqui correlacion
-tabPanel(
-"Check correlation",
-plotOutput(outputId = "grafico_correlacao", width = "100%", height = "400px"),
-DT::dataTableOutput("dgbriddadoscorrelacao")
-),
-tabPanel(
-  "View raster layers",
-  plotOutput(outputId = "mapaabiotico", height = "400px")
+                            #aqui correlacion
+                            column(
+                              width = 8,
+                              shinydashboard::box(
+                                "Check correlation",
+                                plotOutput(
+                                  outputId = "grafico_correlacao",
+                                  width = "100%",
+                                  height = "400px"
+                                ),
+                                DT::dataTableOutput("dgbriddadoscorrelacao")
+                              ),
+                              shinydashboard::box(
+                                "View raster layers",
+                                plotOutput(outputId = "mapaabiotico", height = "400px")
+                              )
+                            )#column
+                          )#panel select prd
+  )
+  )
 )
-                        )#tabsetpanel
-                      )#end column
-                      ),#ends env data
+)
+),#ends env data
     ####DATA CLEANING AND SETUP####
-    tabPanel("Data cleaning"),
+    tabPanel("Data cleaning",
+             column(
+               width = 6,
+               shinydashboard::box(
+                 width = NULL,
+                 solidHeader = TRUE,
+                 leafletOutput("mapadistribuicaodatacleaning", height = 500)
+                 )
+               ),
+               column(
+                 width = 6,
+                 shinydashboard::box(
+                   width = NULL,
+                   status = "danger",
+                   numericInput(
+                     "edtelemento",
+                     "Occurrence record ID:",
+                     min = 0,
+                     max = 100,
+                     value = 0
+                   ),
+                   actionButton("btnapagar", "Delete selected ID", icon = icon("trash")),
+                   actionButton("btneliminarduplicatas", "Delete duplicates", icon = icon("cubes")),
+                   actionButton("btn_saveDatasetClean", "Save dataset", icon = icon("next"))
+                 ),#box
+                 shinydashboard::box(
+                   width = NULL,
+                   DT::dataTableOutput("dgbriddadosdatacleaning")
+                 )#box
+               )#column
+             )#tabpanel
+             ,
     #ö faltan muchos parámetros
     ####DATA SETUP####
     tabPanel(
       "Data setup",
-      shinydashboard::box(
-        width = NULL,
-        height = "800px",
+      #column(
+        #width = 12,
         shinydashboard::box(
-          width = 6,
-          title = "Data partitioning",
-          height = 400,
-          status = "warning",
-          ######
-          #Partition type
-          selectInput(
-            "partition_type",
-            "Partitioning type",
-            choices = c("crossvalidation",
-                        "bootstrap")
-          ),
-          conditionalPanel(
-            condition = "input.partition_type == 'crossvalidation'",
-            sliderInput(
-              "cv_n",
-              "Number of crossvalidation runs",
-              min = 1,
-              max = 50,
-              value = 1,
-              step = 1
+          width = NULL,
+          #height = "800px",
+          shinydashboard::box(
+            #width = 4,
+            title = "Data partitioning",
+            #height = 400,
+            status = "danger",
+            ######
+            #Partition type
+            selectInput(
+              "partition_type",
+              "Partitioning type",
+              choices = c("crossvalidation",
+                          "bootstrap")
             ),
-            sliderInput(
-              "cv_partitions",
-              "Number of partitions:",
-              min = 1,
-              max = 50,
-              value = 3,
-              step = 1
-            )
-          ),
-          conditionalPanel(
-            condition = "input.partition_type == 'bootstrap'",
-            sliderInput(
-              "boot_proportion",
-              "Proportion of points to be sampled for bootstrap:",
-              min = 0,
-              max = 1,
-              value = 0.8,
-              step = 0.1
+            conditionalPanel(
+              condition = "input.partition_type == 'crossvalidation'",
+              sliderInput(
+                "cv_n",
+                "Number of crossvalidation runs",
+                min = 1,
+                max = 50,
+                value = 1,
+                step = 1
+              ),
+              sliderInput(
+                "cv_partitions",
+                "Number of partitions:",
+                min = 1,
+                max = 50,
+                value = 3,
+                step = 1
+              )
             ),
-            sliderInput(
-              "boot_n",
-              "Number of bootstrap runs:",
-              min = 1,
-              max = 50,
-              value = 1,
-              step = 1
+            conditionalPanel(
+              condition = "input.partition_type == 'bootstrap'",
+              sliderInput(
+                "boot_proportion",
+                "Proportion of points to be sampled for bootstrap:",
+                min = 0,
+                max = 1,
+                value = 0.8,
+                step = 0.1
+              ),
+              sliderInput(
+                "boot_n",
+                "Number of bootstrap runs:",
+                min = 1,
+                max = 50,
+                value = 1,
+                step = 1
+              )
             )
-          )
-        ), #fecha el primer box
+          ), #fecha el primer box
         shinydashboard::box(
-          width = 6,
+          #width = 4,
           title = "Calibration area settings",
-          height = 800,
-          status = "warning",
+          #height = 800,
+          status = "danger",
 
           ######
           #####pseudoabsence sampling
@@ -861,10 +812,10 @@ tabPanel(
           )
         ),
         shinydashboard::box(
-          width = 6,
+          #width = 4,
           title = "Occurrence thining",
-          height = 100,
-          status = "warning",
+          #height = 100,
+          status = "danger",
           #geo_filt: occurrence thining
           checkboxInput("geo_filt",
                         "Thin occurrences that are too close?",
@@ -880,45 +831,95 @@ tabPanel(
           )
         ), #box
         shinydashboard::box(
-          width = 6,
-          height = 100,
-          status = "warning",
+          #width = 6,
+          #height = 100,
+          status = "danger",
           actionButton("btnSetup", "Run", icon = icon("cogs"))
         )
       ) #cierra el box de parametros de setup
-    ), #cierra pan setup
+      #)
+      ), #cierra pan setup
     ####PROJECTION####
-    tabPanel("Projection",
-             column(
+    tabPanel("Projection setup",
+             tabBox(
                width = 12,
-               tabBox(
-                 side = "left",
-                 title = "a",
-                 width = NULL,
-                 tabPanel("Projection extent"),
-                 tabPanel("Projection timescales")
-               )
-             )
-             ),#fecha projection
+                 tabPanel("Project to another extent",
+                          height = 1000,
+                            shinydashboard::box(
+                              #width = 12,
+                              status = "danger",
+                              checkboxInput("project_ext",
+                                            "Project to another geographical extent",
+                                            value = FALSE),
+                              conditionalPanel(
+                                "input.project_ext",
+                                shinydashboard::box(
+                                  width = 8,
+                                  solidHeader = TRUE,
+                                  leafletOutput("mapapontosextend2", height = 500)
+                                ),
+
+                                shinydashboard::box(
+                                  width = 4,
+                                  solidHeader = TRUE,
+                                  numericInput(
+                                    "edtextend12",
+                                    "Min Lon:",
+                                    min = -180,
+                                    max = 180,
+                                    value = -60,#isto tem que ser reativo e igual ao valor selecionado pelo usuário
+                                    step = 1
+                                  ),
+                                  numericInput(
+                                    "edtextend22",
+                                    "Max Lon:",
+                                    min = -180,
+                                    max = 180,
+                                    value = -32,#isto tem que ser reativo e igual ao valor selecionado pelo usuário
+                                    step = 1
+                                  ),
+                                  numericInput(
+                                    "edtextend42",
+                                    "Max Lat:",
+                                    min = -90,
+                                    max = 90,
+                                    value = 5,#isto tem que ser reativo e igual ao valor selecionado pelo usuário
+                                    step = 1
+                                  ),
+                                  numericInput(
+                                    "edtextend32",
+                                    "Min Lat:",
+                                    min = -90,
+                                    max = 90,
+                                    value = -33,#isto tem que ser reativo e igual ao valor selecionado pelo usuário
+                                    step = 1
+                                  )
+                                )#fecha box
+                              )#fecha cond pan
+                            )#fecha box
+                          ),#ends projection extent
+                 tabPanel("Project to another timescale",
+                          height = 1000,
+                          shinydashboard::box(
+                            #width = 12,
+                            status = "danger",
+                            checkboxInput("project_ext",
+                                          "Project to another timescale",
+                                          value = FALSE)))
+               )#fecha coluna
+             ),#fecha projection setup
     #### MODELING ####
     tabPanel(
       "Modeling",
       column(
         width = 12,
-        tabBox(
-          side = "left",
-          title = "",
-          width = 6,
-          tabPanel(
-            "Algorithms",
-            column(width = 6,
                    shinydashboard::box(
                      width = NULL,
                      height = "800px",
                      shinydashboard::box(
                        width = 6,
                        height = 400,
-                       status = "warning",
+                       status = "danger",
                        actionButton("btnModelar", "Run", icon = icon("cogs")),
                        h4("Which algorithms do you want to fit?"),
                        checkboxInput("bioclim", "Bioclim", value = FALSE),
@@ -931,34 +932,46 @@ tabPanel(
                        checkboxInput("svme", "SVM (e1071)", value = FALSE),
                        checkboxInput("svmk", "SVM (kernlab)", value = FALSE)
                      ),
-                     conditionalPanel(
-                       "input.project_ext",
-                       shinydashboard::box(
-                         title = "Projection ensemble",
-                         width = NULL,
-                         height = "320px",
-                         leafletOutput(
-                           "maparesultado_proj",
-                           width = "100%",
-                           height = "250px"
-                         )
-                         )
-                       )#cierra el conditional panel
+                     shinydashboard::box(
+                       checkboxGroupInput(
+                         "threshold",
+                         "Which threshold do you want to use to generate binary models?",
+                         choices = c("maxTSS")
+                       )
+                     )
+
                      )#cierra el box
                    )#cierra la columna
-                        )#cierra el tab algorithm
-        )
-      )
           ),#fecha el panel modeling
+    tabPanel("Projection results?",
+             column(
+               width = 12,
+               tabBox(
+                 side = "left",
+                 title = "a",
+                 width = NULL,
+                 conditionalPanel(
+                    "input.project_ext",
+                    shinydashboard::box(
+                      title = "Projection ensemble",
+                      width = NULL,
+                      height = "320px",
+                      leafletOutput(
+                        "maparesultado_proj",
+                        width = "100%",
+                        height = "250px"
+                     )
+               )
+             )#cierra el conditional panel
+               )
+             )
+             ),#fecha projection
     ###tab final ----
     tabPanel(
       "Final models",
       column(
         width = 12,
-        tabPanel(
-          "",
-          side = "left",
-          width = 3,
+
           shinydashboard::box(
             width = NULL,
             actionButton("btnFinal", "Run", icon = icon("cogs")),
@@ -1038,7 +1051,7 @@ tabPanel(
               )
               )#fecha conditional consensus
             )#fecha box parametros final
-          ),#fecha tabbox
+          ,
         tabPanel("bioclim",
                  column(width = 12,
                         leafletOutput("mapafinalbc"))),
@@ -1133,7 +1146,7 @@ tabPanel(
                 width = 4,
                 shinydashboard::box(
                   width = NULL,
-                  status = "warning",
+                  status = "danger",
                   h4("Partitions"),
                   htmlOutput("partitions")
                 )#box
@@ -1142,7 +1155,7 @@ tabPanel(
                 width = 4,
                 shinydashboard::box(
                   width = NULL,
-                  status = "warning",
+                  status = "danger",
                   h4("Final models"),
                   htmlOutput("final")
                 )
@@ -1151,7 +1164,7 @@ tabPanel(
                 width = 4,
                 shinydashboard::box(
                   width = NULL,
-                  status = "warning",
+                  status = "danger",
                   h4("Ensemble"),
                   htmlOutput("ensemble")
                   )#box
@@ -1165,7 +1178,7 @@ tabPanel(
               width = 12,
                 shinydashboard::box(
                   width = NULL,
-                  status = "warning",
+                  status = "danger",
                   h4("Projections"),
                   htmlOutput("projections")
                 )#box
@@ -1175,10 +1188,10 @@ tabPanel(
       )#fecha column results 12
     )#termina results
   )#cierra steps
-)#cierra columna 12
 )#cierra fluid row
 )#cierra dashboard body
 dashboardPage(
+  skin = "red",
   header,
   dashboardSidebar(disable = TRUE),
   body
