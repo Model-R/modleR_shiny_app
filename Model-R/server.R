@@ -15,34 +15,27 @@
 
 # Thanks to Steven Worthington for function ipak https://gist.github.com/stevenworthington/3178163 (HT Karlo Guidoni Martins)
 
-# ast: isto tem de sair porque o shiny tá invadindo o computador
-# ipak <- function(pkg) {
-#   new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
-#   if (length(new.pkg)) {
-#     install.packages(new.pkg, dependencies = TRUE)
-#   }
-#   sapply(pkg, require, character.only = TRUE)
-# }
 pck <- c(
   "devtools",
-"shinydashboard",
-"leaflet",
-"R.utils",
-"raster",
-"rjson",
-"maps",
-"rgdal",
-"raster",
-"dismo",
-"rgbif",
-"XML",
-"randomForest",
-"kernlab",
-"data.table",
-"DT",
-"shinyjs",
-"sdmpredictors",
-"rJava")
+  "shinydashboard",
+  "leaflet",
+  "R.utils",
+  "raster",
+  "rjson",
+  "maps",
+  "rgdal",
+  "raster",
+  "dismo",
+  "rgbif",
+  "XML",
+  "randomForest",
+  "kernlab",
+  "data.table",
+  "DT",
+  "shinyjs",
+  "sdmpredictors",
+  "rJava"
+)
 sapply(pck, library, character.only = TRUE)
 #precisamos disto para testar
 devtools::load_all("../../modleR")
@@ -124,6 +117,31 @@ getOccurrences_jabot <- function(species_name) {
   occur.data <- data.frame(as.character(jabot_data[, 1]), as.numeric(jabot_data[, 2]), as.numeric(jabot_data[, 3]))
   colnames(occur.data) <- c("name", "lon", "lat")
   return(occur.data)
+}
+
+#map preview partitions ----
+MapPreview.partitions <- function(algorithm = algorithm, part = 1) {
+  #finaldir <- list.files(paste0(modelsDir, "/", species_name, "/present/final_models/"), full.names = T, pattern = paste0(algorithm, "_raw_mean.tif^"))
+  #tif_file <- finaldir[finaldir == paste0(species_name, "_", algorithm, "_raw_mean.tif")]
+  part_file <- list.files(paste0(modelsDir, "/", species_name, "/present/partitions/"),
+                              pattern = paste0(algorithm, ".tif$"),
+                              full.names = T)[part]
+
+  if (file.exists(raw_mean_file)) {
+    r <- raster::raster(raw_mean_file)
+    pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), raster::values(r), na.color = "transparent")
+    occ_points <<- coordinates(occurrences)
+    lng <<- occ_points[, 1]
+    lat <<- occ_points[, 2]
+    map <- leaflet() %>%
+      addTiles() %>%
+      addRasterImage(r, colors = pal, opacity = 0.7) %>%
+      addLegend(pal = pal, values = raster::values(r), title = "") %>%
+      addCircles(color = "red", lat = lat, lng = lng, weight = 2, fill = TRUE) %>%
+      addRectangles(ext11, ext31, ext21, ext41, color = "red", fill = FALSE, dashArray = "5,5", weight = 2)
+  } else {
+    message(paste0( "No paritions were found for", algorithm))
+  }
 }
 #map preview final ----
 MapPreview.final <- function(algorithm = algorithm) {
@@ -310,13 +328,14 @@ function(input, output, session) {
     progress$set(message = "Updating occurrence map...", value = 0)
     on.exit(progress$close())
 
-    if (!is.null(occurrences)) {
-      map <- leaflet(occurrences) %>%
+    #if (!is.null(occurrences)) {
+    req(occurrences)
+     map <- leaflet(occurrences) %>%
         addTiles() %>%
         addCircles(color = "red", lat = ~lat, lng = ~lon) %>%
         setView(lng = -31.5, lat = -13.4, zoom = 3)
       map
-    } #else {
+    #} #else {
       #showModal(modalDialog(
       #  title = "Error!",
       #  "Please inform species occurrence dataset",
@@ -363,7 +382,8 @@ function(input, output, session) {
       }
     }
   }, options = list(searching = FALSE, lengthMenu = c(5, 30, 50), pageLength = 5))
-#save dataset
+
+  #save dataset
   observeEvent(input$btn_saveDatasetClean, {
     save_clean <- data.frame(species_name, occurrences)
     names(save_clean) <- c("name", "lon", "lat")
@@ -456,7 +476,8 @@ function(input, output, session) {
     ## Package variables #ops no projection
     if (input$tipodadoabiotico == "package_dataset") {
       vars_selection <<- paste(input$pred_vars_pac)
-      environmental_data$data_current <<- raster::subset(modleR::example_vars, vars_selection)
+      environmental_data$data_current <<-
+        raster::subset(modleR::example_vars, vars_selection)
     }
 
     ##  WorldClim variables
@@ -923,7 +944,7 @@ function(input, output, session) {
   # btnFinal-----
   observeEvent(input$btnFinal, {
     #se algum algoritmo é marcado
-    if (length(input$which_final) > 0) {
+    if (length(input$algorithms) > 0) {
       #se há occurrences, preditores e species_name --aqui é que deveria ter no caso de carregar um projeto preexistente
       if (exists("occurrences") && exists("predictors") && exists("species_name")) {
         #rodar tudo
@@ -935,20 +956,30 @@ function(input, output, session) {
         on.exit(progress$close())
 
 #final_model
+        algof <<- paste(input$algorithms)
+        #wp <<- input$weight_par
+        #sp <<- input$select_partitions
+        #spp <<- input$select_par
+        #spv <<- input$select_par_val
+        #cl <<- input$consensus_level
+      #wmf <<- paste(input$which_models_final, collapse = ",")
+      #wmf <<- paste(input$which_models_final)
+        #uf <<- input$incertidumbre
+
         final_model(
           species_name = species_name,
-          algorithms = input$which_final,
-          weight_par = input$weight_par,
-          select_partitions = input$selectpartitions,
-          cut_level = c("spec_sens"),
+          algorithms = algof,
+          weight_par = NULL,#wp,
+          select_partitions = F, #sp,
+          select_par = NULL,#spp,
+          select_par_val = NULL,#spv,
+          cut_level = c("spec_sens"),#note to self não sei se gosto de cut_level como nome do parametro nunca lembro o que é
           scale_models = TRUE,
-          select_par = input$select_par,
-          select_par_val = input$select_par_val,
-          consensus_level = input$consensus_level,#parametrizar
-          models_dir = modelsDir,#doğru
+          consensus_level = 0.5,#cl,
+          models_dir = modelsDir,
           final_dir = "final_models",
           proj_dir = "present", #parametrizar
-          which_models = input$which_models_final,
+          which_models = "raw_mean",#wmf,
           uncertainty = F, #parametrizar
           write_png = T,
           write_final = T,

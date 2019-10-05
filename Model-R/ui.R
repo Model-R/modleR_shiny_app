@@ -13,22 +13,12 @@
 ## 21 DE SETEMBRO DE 2019  ##
 #############################
 
-
-# Thanks to Steven Worthington for function ipak https://gist.github.com/stevenworthington/3178163 (HT Karlo Guidoni Martins)
-
-# ast: isto tem que sair
-# ipak <- function(pkg) {
-#   new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
-#   if (length(new.pkg)) {
-#     install.packages(new.pkg, dependencies = TRUE)
-#   }
-#   sapply(pkg, require, character.only = TRUE)
-# }
-#
+#pacotes----
 library(shinydashboard)
 library(leaflet)
 library(DT)
 devtools::load_all("../../modleR")
+
 #### VARIABLES ####
 bio_datasource <- c(
   "The example dataset" = "package_dataset",
@@ -110,7 +100,7 @@ future_bo_dates <- c(
   "2200" = "2200"
 )
 
-#### DASHBOARD ##### why 2.0 but neyse
+#### DASHBOARD #####
 header <- shinydashboard::dashboardHeader(title = "modleR 3.0")
 body <- dashboardBody(
   fluidRow(
@@ -192,7 +182,7 @@ body <- dashboardBody(
                   column(
                     width = 6,
                     br(),
-                    img(src = "modler.png", width = 200)
+                    img(src = "modleR_Miriam_Libre.png", width = 200)
                     ),
                   column(
                     width = 9,
@@ -970,10 +960,8 @@ tabPanel(
     tabPanel(
       "Final models",
       column(
-        width = 12,
-
+        width = 4,
           shinydashboard::box(
-            width = NULL,
             actionButton("btnFinal", "Run", icon = icon("cogs")),
             checkboxGroupInput(
               "algorithms",
@@ -1002,14 +990,15 @@ tabPanel(
               radioButtons(
                 "select_par",
                 "Select partitions by:",
-                choices = c("TSS", "AUC", "pROC")
+                choices = c("TSS", "AUC", "pROC"),
+                selected = "TSS"
                 ),
               sliderInput(
                 "select_par_val",
-                "over",
+                paste("select partitions with", "input.select_par", "over"),
                 min = 0,
                 max = 1,
-                value = 0.7,
+                value = 0.5,
                 step = 0.1
                 )
               ),#fecha cond
@@ -1025,7 +1014,6 @@ tabPanel(
                 "weight_par",
                 "Weigh partitions by:",
                 choices = c("TSS", "AUC", "pROC"),
-                selected = "TSS"
               )
             ),#fecha cond
             checkboxGroupInput(
@@ -1049,9 +1037,14 @@ tabPanel(
                 value = 0.5,
                 step = 0.1
               )
-              )#fecha conditional consensus
+              ),
+            checkboxInput(
+              "incertidumbre",
+              "Calculate uncertainty?",
+              value = F)
+
             )#fecha box parametros final
-          ,
+          ),#fecha col
         tabPanel("bioclim",
                  column(width = 12,
                         leafletOutput("mapafinalbc"))),
@@ -1079,7 +1072,6 @@ tabPanel(
         tabPanel("SVMK",
                  column(width = 12,
                         leafletOutput("mapafinalsvmk")))#cierra svmk
-        )#cierra col
       ),#fecha final panel
     ####ensemble----
     tabPanel(
@@ -1196,3 +1188,4 @@ dashboardPage(
   dashboardSidebar(disable = TRUE),
   body
   )
+
