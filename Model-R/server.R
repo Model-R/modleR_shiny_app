@@ -149,6 +149,7 @@ MapPreview.final <- function(algorithm = algorithm) {
   #tif_file <- finaldir[finaldir == paste0(species_name, "_", algorithm, "_raw_mean.tif")]
   raw_mean_file <- list.files(paste0(modelsDir, "/", species_name, "/present/final_models/"),
                               pattern = paste0(algorithm, "_raw_mean.tif$"),
+                              ##ö this has to be which, not only raw_mean
                               full.names = T)
 
   if (file.exists(raw_mean_file)) {
@@ -908,9 +909,9 @@ function(input, output, session) {
 
 #do_any/do_many #ainda falta ver o que é melhor
         do_many(
-          species_name = species_name,#doğru
+          species_name = species_name,
           predictors = predictors,
-          models_dir = modelsDir,#doğru
+          models_dir = modelsDir,
           bioclim = input$bioclim,
           domain = input$domain,
           glm = input$glm,
@@ -957,7 +958,7 @@ function(input, output, session) {
 
 #final_model
         algof <<- paste(input$algorithms)
-        #wp <<- input$weight_par
+        #wp <<- paste(ifelse(input$weigh_yesno == F, NULL, input$weight_par))
         #sp <<- input$select_partitions
         #spp <<- input$select_par
         #spv <<- input$select_par_val
@@ -969,7 +970,7 @@ function(input, output, session) {
         final_model(
           species_name = species_name,
           algorithms = algof,
-          weight_par = NULL,#wp,
+          weight_par = NULL,
           select_partitions = F, #sp,
           select_par = NULL,#spp,
           select_par_val = NULL,#spv,
@@ -1051,7 +1052,7 @@ function(input, output, session) {
  modleR::ensemble_model(
     species_name = species_name,
     occurrences = occurrences,
-    models_dir = modelsDir,#doğru
+    models_dir = modelsDir,
     final_dir = "final_models",
     ensemble_dir = "ensemble",
     proj_dir = "present",

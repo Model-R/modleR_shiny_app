@@ -655,8 +655,8 @@ tabPanel(
     ####DATA SETUP####
     tabPanel(
       "Data setup",
-      #column(
-        #width = 12,
+      column(
+        width = 4,
         shinydashboard::box(
           width = NULL,
           #height = "800px",
@@ -827,7 +827,7 @@ tabPanel(
           actionButton("btnSetup", "Run", icon = icon("cogs"))
         )
       ) #cierra el box de parametros de setup
-      #)
+      )
       ), #cierra pan setup
     ####PROJECTION####
     tabPanel("Projection setup",
