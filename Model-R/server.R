@@ -217,7 +217,7 @@ function(input, output, session) {
 
       if (!file.exists(modelsDir)) {
         showModal(modalDialog(
-          title = "Project succesfully created!",
+          title = "Project succesfully created! Click anywhere to continue",
           paste0("Project directory: ", modelsDir),
           easyClose = TRUE
         ))
@@ -233,7 +233,7 @@ function(input, output, session) {
       #actually load things
       if (dir.exists(modelsDir) & modelsDir != "./www/results/") {
         showModal(modalDialog(
-          title = paste0("Project ", input$modelsDir.load, " succefully loaded!"),
+          title = paste0("Project ", input$modelsDir.load, " succefully loaded! Click anywhere to continue"),
           paste0("Output files are displayed at the 'Outputs' tab."),
           easyClose = TRUE
         ))
@@ -1122,9 +1122,10 @@ function(input, output, session) {
     # sdmdata png map
     output$sdmdata_png <- renderImage({
       list(
-        src = list.files(path = paste0(modelsDir.sp, "/present"), recursive = T, full.names = T, pattern = "sdmdata_.*png$")[1],
-        contentType = "image/png",
-        alt = "This is alternate text"
+        src = list.files(path = paste0(modelsDir.sp, "/present"), recursive = T,
+                         full.names = T, pattern = "sdmdata_.*png$")[1],
+        contentType = "image/png"
+        #alt = "This is alternate text"
       )
     })
 

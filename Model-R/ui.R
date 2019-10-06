@@ -827,6 +827,18 @@ tabPanel(
           actionButton("btnSetup", "Run", icon = icon("cogs"))
         )
       ) #cierra el box de parametros de setup
+      ),#cierra columna de 4
+      column(
+        width = 6,
+        tabsetPanel(
+        tabPanel("sdmdata",
+        imageOutput("sdmdata_png", height = 300)
+        ),
+        tabPanel("smdatatable",
+                 DT::dataTableOutput("sdmdata_table")
+
+                 )
+      )
       )
       ), #cierra pan setup
     ####PROJECTION####
@@ -1045,34 +1057,40 @@ tabPanel(
 
             )#fecha box parametros final
           ),#fecha col
+      column(
+        width = 8,
+
+      tabsetPanel(
         tabPanel("bioclim",
-                 column(width = 12,
+                 column(width = 8,
                         leafletOutput("mapafinalbc"))),
         tabPanel("brt",
-                 column(width = 12,
+                 column(width = 8,
                         leafletOutput("mapafinalbrt"))),
         tabPanel("domain",
-                 column(width = 12,
+                 column(width = 8,
                         leafletOutput("mapafinaldo"))),
         tabPanel("GLM",
-                 column(width = 12,
+                 column(width = 8,
                         leafletOutput("mapafinalglm"))),
         tabPanel("mahal",
-                 column(width = 12,
+                 column(width = 8,
                         leafletOutput("mapafinalmh"))),
         tabPanel("maxent",
-                 column(width = 12,
+                 column(width = 8,
                         leafletOutput("mapafinalmax"))),
         tabPanel("RF",
-                 column(width = 12,
+                 column(width = 8,
                         leafletOutput("mapafinalrf"))),
         tabPanel("SVME",
-                 column(width = 12,
+                 column(width = 8,
                         leafletOutput("mapafinalsvme"))),
         tabPanel("SVMK",
-                 column(width = 12,
+                 column(width = 8,
                         leafletOutput("mapafinalsvmk")))#cierra svmk
-      ),#fecha final panel
+      )
+      )
+        ),#fecha final panel
     ####ensemble----
     tabPanel(
       "Ensemble models",
@@ -1108,11 +1126,10 @@ tabPanel(
               width = 12,
               h4("SDM data"),
               column(
-                width = 8,
-                DT::dataTableOutput("sdmdata_table")
+                width = 8
                 ),
-              column(width = 4,
-                     imageOutput("sdmdata_png", height = 300)
+              column(width = 4
+                     #imageOutput("sdmdata_png", height = 300)
                      )
             ), #fecha box
             column(width = 12,
