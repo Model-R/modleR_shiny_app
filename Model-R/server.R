@@ -8,38 +8,12 @@
 ## RAFAEL OLIVEIRA LIMA    ##
 ## RENATA DE T. CAPELLÃO   ##
 ## SARA RIBEIRO MORTARA    ##
-## MARIA LUISA MONDELLI    ##
+## MARIA LUIZA MONDELLI    ##
 ##                         ##
 ## 21 DE SETEMBRO DE 2019  ##
 #############################
 
 # Thanks to Steven Worthington for function ipak https://gist.github.com/stevenworthington/3178163 (HT Karlo Guidoni Martins)
-
-pck <- c(
-  "devtools",
-  "shinydashboard",
-  "leaflet",
-  "R.utils",
-  "raster",
-  "rjson",
-  "maps",
-  "rgdal",
-  "raster",
-  "dismo",
-  "rgbif",
-  "XML",
-  "randomForest",
-  "kernlab",
-  "data.table",
-  "DT",
-  "shinyjs",
-  "sdmpredictors",
-  "rJava"
-)
-sapply(pck, library, character.only = TRUE)
-#precisamos disto para testar
-devtools::load_all("../../modleR")
-#library("ModelR")
 
 #isto também tem que sair
 #jar <- paste0(system.file(package = "dismo"), "/java/maxent.jar")
@@ -49,147 +23,6 @@ devtools::load_all("../../modleR")
   #unzip("maxent.zip", files = "maxent.jar", exdir = system.file("java", package = "dismo"))
   #unlink("maxent.zip")
 #}
-
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
-#funcoes ----
-panel.reg <- function(x, y, bg = NA, cex = 1, col.regres = "red", ...) {
-  points(x, y, cex = cex)
-  abline(stats::lm(y ~ x), col = col.regres, ...)
-}
-
-panel.cor <- function(x, y, digits = 2, prefix = "", ...) {
-  usr <- par("usr")
-  on.exit(par(usr))
-  par(usr = c(0, 1, 0, 1))
-  r <- cor(x, y)
-  txt <- format(c(r, 0.123456789), digits = digits)[1]
-  txt <- paste0(prefix, txt)
-  text(0.5, 0.5, txt, cex = 1.5)
-}
-
-panel.hist <- function(x, ...) {
-  usr <- par("usr")
-  on.exit(par(usr))
-  par(usr = c(usr[1:2], 0, 1.5))
-  h <- hist(x, plot = FALSE)
-  breaks <- h$breaks
-  nB <- length(breaks)
-  y <- h$counts
-  y <- y / max(y)
-  rect(breaks[-nB], 0, breaks[-1], y, col = "gray", ...)
-}
-
-mk.dirs <- function(dir_path) {
-  if (!file.exists(dir_path)) {
-    mk.dirs(dirname(dir_path))
-    dir.create(dir_path, recursive = FALSE, mode = "777")
-  }
-}
-
-getOccurrences_gbif <- function(species_name) {
-  key <- rgbif::name_backbone(name = species_name)$speciesKey
-  if (!is.null(key)) {
-    gbif_data <- rgbif::occ_search(
-      hasCoordinate = TRUE,
-      hasGeospatialIssue = F,
-      taxonKey = key,
-      return = "data"
-    )
-    gbif_data <- subset(gbif_data, !is.na(decimalLongitude) & !is.na(decimalLatitude))
-    occur.data <- data.frame(gbif_data$name, gbif_data$decimalLongitude, gbif_data$decimalLatitude)
-    colnames(occur.data) <- c("name", "lon", "lat")
-    return(occur.data)
-  } else {
-    showModal(modalDialog(
-      title = "No results!",
-      paste0("Please insert a valid species scientific name."),
-      easyClose = TRUE
-    ))
-  }
-}
-
-getOccurrences_jabot <- function(species_name) {
-  pTaxon <- gsub(" ", "_", species_name)
-  json_file <- paste0("https://model-r.jbrj.gov.br/execjabot.php?especie=", pTaxon)
-  json_data <- rjson::fromJSON(file = json_file, method = "C")
-  final_data <- do.call(rbind, json_data)
-  jabot_data <- final_data[, c("taxoncompleto", "longitude", "latitude")]
-  occur.data <- data.frame(as.character(jabot_data[, 1]), as.numeric(jabot_data[, 2]), as.numeric(jabot_data[, 3]))
-  colnames(occur.data) <- c("name", "lon", "lat")
-  return(occur.data)
-}
-
-#map preview partitions ----
-MapPreview.partitions <- function(algorithm = algorithm, part = 1) {
-  #finaldir <- list.files(paste0(modelsDir, "/", species_name, "/present/final_models/"), full.names = T, pattern = paste0(algorithm, "_raw_mean.tif^"))
-  #tif_file <- finaldir[finaldir == paste0(species_name, "_", algorithm, "_raw_mean.tif")]
-  part_file <- list.files(paste0(modelsDir, "/", species_name, "/present/partitions/"),
-                              pattern = paste0(algorithm, ".tif$"),
-                              full.names = T)[part]
-
-  if (file.exists(raw_mean_file)) {
-    r <- raster::raster(raw_mean_file)
-    pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), raster::values(r), na.color = "transparent")
-    occ_points <<- coordinates(occurrences)
-    lng <<- occ_points[, 1]
-    lat <<- occ_points[, 2]
-    map <- leaflet() %>%
-      addTiles() %>%
-      addRasterImage(r, colors = pal, opacity = 0.7) %>%
-      addLegend(pal = pal, values = raster::values(r), title = "") %>%
-      addCircles(color = "red", lat = lat, lng = lng, weight = 2, fill = TRUE) %>%
-      addRectangles(ext11, ext31, ext21, ext41, color = "red", fill = FALSE, dashArray = "5,5", weight = 2)
-  } else {
-    message(paste0( "No paritions were found for", algorithm))
-  }
-}
-#map preview final ----
-MapPreview.final <- function(algorithm = algorithm) {
-  #finaldir <- list.files(paste0(modelsDir, "/", species_name, "/present/final_models/"), full.names = T, pattern = paste0(algorithm, "_raw_mean.tif^"))
-  #tif_file <- finaldir[finaldir == paste0(species_name, "_", algorithm, "_raw_mean.tif")]
-  raw_mean_file <- list.files(paste0(modelsDir, "/", species_name, "/present/final_models/"),
-                              pattern = paste0(algorithm, "_raw_mean.tif$"),
-                              ##ö this has to be which, not only raw_mean
-                              full.names = T)
-
-  if (file.exists(raw_mean_file)) {
-    r <- raster::raster(raw_mean_file)
-    pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), raster::values(r), na.color = "transparent")
-    occ_points <<- coordinates(occurrences)
-    lng <<- occ_points[, 1]
-    lat <<- occ_points[, 2]
-    map <- leaflet() %>%
-      addTiles() %>%
-      addRasterImage(r, colors = pal, opacity = 0.7) %>%
-      addLegend(pal = pal, values = raster::values(r), title = "") %>%
-      addCircles(color = "red", lat = lat, lng = lng, weight = 2, fill = TRUE) %>%
-      addRectangles(ext11, ext31, ext21, ext41, color = "red", fill = FALSE, dashArray = "5,5", weight = 2)
-  } else {
-    message(paste0( "No final_models were selected for", algorithm))
-  }
-}
-#map previewn ensemble----
-MapPreview.ensemble <- function() {
-  #finaldir <- list.files(paste0(modelsDir, "/", species_name, "/present/ensemble/"))
-  #tif_file <- finaldir[finaldir == paste0(species_name, "_raw_mean_ensemble_mean.tif")]
-  raw_mean_file <- list.files(paste0(modelsDir, "/", species_name, "/present/ensemble/"), pattern = "_raw_mean_median.tif$", full.names = T)
-  if (file.exists(raw_mean_file)) {
-    r <- raster::raster(raw_mean_file)
-    pal <- colorNumeric(c("#FFFFFF", "#FDBB84", "#31A354"), raster::values(r), na.color = "transparent")
-    occ_points <<- coordinates(occurrences)
-    lng <<- occ_points[, 1]
-    lat <<- occ_points[, 2]
-    map <- leaflet() %>%
-      addTiles() %>%
-      addRasterImage(r, colors = pal, opacity = 0.7) %>%
-      addLegend(pal = pal, values = raster::values(r), title = "") %>%
-      addCircles(color = "red", lat = lat, lng = lng, weight = 2, fill = TRUE) %>%
-      addRectangles(ext11, ext31, ext21, ext41, color = "red", fill = FALSE, dashArray = "5,5", weight = 2)
-  }
-}
-#options----
-options(shiny.maxRequestSize = 100 * 1024^2)
-dirColors <- c(`1` = "#595490", `2` = "#527525", `3` = "#A93F35", `4` = "#BA48AA")
 
 #startapp----
 function(input, output, session) {
@@ -254,6 +87,7 @@ function(input, output, session) {
   # Load species occurrence dataset from gbif/jabot databases----
   loadspdata <- eventReactive(input$btnsearch_spdata, {
     species_name <<- input$species_name
+    print(paste0('CHECK BIO_DATASOURCE - ', input$bio_datasource))
     if (input$bio_datasource == "package_dataset") {
         occur.data <- modleR::coordenadas[[1]]#a primeira especie do dataset interno
         occurrences <<- occur.data[, c(2,3)]
@@ -817,7 +651,7 @@ function(input, output, session) {
         progress$set(message = "Processing...", value = 0)
         modelsDir.sp <<- paste(modelsDir, species_name, sep = "/")
         on.exit(progress$close())
-
+        print(paste0('CHECK partition_type: ', input$partition_type))
         if (input$partition_type == "crossvalidation") {
           cv_n <- input$cv_n
           cv_partitions <- input$cv_partitions
@@ -836,6 +670,9 @@ function(input, output, session) {
           geo_filt_dist <- NULL
         }
         #setup_sdmdata
+        print(paste0('CHECK env_filt: ',input$env_filt))
+        print(paste0('CHECK env_dist: ',input$env_dist)) 
+        print(paste0('CHECK max_env_dist: ',input$max_env_dist) )
         setup_sdmdata(
           species_name = species_name,
           occurrences = occurrences,
@@ -957,31 +794,42 @@ function(input, output, session) {
         on.exit(progress$close())
 
 #final_model
-        algof <<- paste(input$algorithms)
-        #wp <<- paste(ifelse(input$weigh_yesno == F, NULL, input$weight_par))
+        #algof <<- paste(input$algorithms)
         #sp <<- input$select_partitions
         #spp <<- input$select_par
         #spv <<- input$select_par_val
         #cl <<- input$consensus_level
-      #wmf <<- paste(input$which_models_final, collapse = ",")
-      #wmf <<- paste(input$which_models_final)
+        #wmf <<- paste(input$which_models_final, collapse = ",")
+        #wmf <<- paste(input$which_models_final)
         #uf <<- input$incertidumbre
-
+        
+        if (input$weigh_yesno == F){ weight <- NULL }else{ weight <- input$weight_par } #[Malu]: ifelse não funciona para atribuir NULL 
+        
+        #CHECKS
+        print(paste0('CHECK algo - ', input$algorithms))
+        print(paste0('CHECK incertidumbre - ', input$incertidumbre))
+        print(paste0('CHECK consensuslevel - ', input$consensus_level))
+        print(paste0('CHECK which_models_final - ', str(input$which_models_final)))
+        print(paste0('CHECK select_par - ', input$select_par))
+        print(paste0('CHECK select_par_val - ', input$select_par_val))
+        print(paste0('CHECK select_partitions - ', input$select_partitions))
+        print(paste0('CHECK weight - ', is.null(weight)))
+        
         final_model(
           species_name = species_name,
-          algorithms = algof,
-          weight_par = NULL,
-          select_partitions = F, #sp,
-          select_par = NULL,#spp,
-          select_par_val = NULL,#spv,
-          cut_level = c("spec_sens"),#note to self não sei se gosto de cut_level como nome do parametro nunca lembro o que é
+          algorithms = input$algorithms,
+          weight_par = weight, # [Malu]: verificar se os resultados estão consistentes
+          select_partitions = input$select_partitions,
+          select_par = input$select_par,
+          select_par_val = input$select_par_val,
+          cut_level = c("spec_sens"), #note to self não sei se gosto de cut_level como nome do parametro nunca lembro o que é
           scale_models = TRUE,
-          consensus_level = 0.5,#cl,
+          consensus_level = input$consensus_level,
           models_dir = modelsDir,
           final_dir = "final_models",
           proj_dir = "present", #parametrizar
-          which_models = "raw_mean",#wmf,
-          uncertainty = F, #parametrizar
+          which_models = input$which_models_final,
+          uncertainty = input$incertidumbre,
           write_png = T,
           write_final = T,
           overwrite = T
