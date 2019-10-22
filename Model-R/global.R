@@ -115,6 +115,9 @@ which_models_final <-
   setNames(as.character(which_models_final$value),
            which_models_final$key)
 
+buffer_type <- read.csv('./data/buffer_type.csv')
+buffer_type <- 
+  setNames(as.character(buffer_type$value), buffer_type$key)
 
 
 ## GLOBAL SERVER FUNCTIONS ####
