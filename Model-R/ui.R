@@ -16,7 +16,7 @@
 
 #### DASHBOARD #####
 header <- shinydashboard::dashboardHeader(title = "modleR 3.0")
-body <- dashboardBody(
+body <- dashboardBody(useShinyjs(),
   fluidRow(
     tabBox(
       side = "left",
@@ -817,8 +817,8 @@ body <- dashboardBody(
               radioButtons(
                 "select_par",
                 "Select partitions by:",
-                choices = c("TSS", "AUC", "pROC"),
-                selected = "TSS"
+                choices = c("TSS", "AUC", "pROC")
+                #selected = "TSS"
                 ),
               sliderInput(
                 "select_par_val",
@@ -848,17 +848,17 @@ body <- dashboardBody(
               choices = which_models_final,
               selected = "raw_mean"
             ), #end checkbox
-            conditionalPanel(
-              "'bin_consensus' %in% input.which_models_final",
-              sliderInput(
-                "consensus_level",
-                "Cut binary models at:",
-                min = 0,
-                max = 1,
-                value = 0.5,
-                step = 0.1
-              )
-            ),
+            shinyjs::hidden(
+              div(
+                id = "cut_bin_final",
+                sliderInput(
+                  "consensus_level",
+                  "Cut binary models at:",
+                  min = 0,
+                  max = 1,
+                  value = 0.5,
+                  step = 0.1
+            ))),
             checkboxInput(
               "incertidumbre",
               "Calculate uncertainty?",
@@ -903,21 +903,40 @@ body <- dashboardBody(
       tabPanel(
         "Ensemble models",
         column(
-          width = 6,
-          tabBox(
-            side = "left",
-            title = "",
+          width = 2,
+          shinydashboard::box(
             width = NULL,
-            tabPanel("",
-                     side = "left",
-                     shinydashboard::box(
-                       width = NULL,
-                       actionButton("btnEnsemble", "Run", icon = icon("cogs")),
-                       leafletOutput("mapaensemble")
-                     )
-            )#fecha ensemble tab
-          )#fecha el box con los modelos
-        )#fecha col
+            actionButton("btnEnsemble", "Run", icon = icon("cogs")),
+            checkboxGroupInput(
+              inputId = "whichmodelsensemble",
+              label = "Which output should be created?",
+              choices = which_models_ensemble
+            ), #end checkbox
+            # [Malu]: Conditionalpanel não funcionava, solução foi usar div - tratando no server tb
+            shinyjs::hidden(
+              div(
+                id = "cut_bin_ensemble",
+                sliderInput(
+                  "consensus_level_ensemble",
+                  "Cut binary models at:",
+                  min = 0,
+                  max = 1,
+                  value = 0.5,
+                  step = 0.1
+              ))),
+            checkboxInput(
+              "consensus_ensemble",
+              "Apply a consensus between algorithms?",
+              value = F)
+          ) #end box
+        ), #end column 2
+        column(
+          width = 10,
+          shinydashboard::box(
+            width = NULL,
+            leafletOutput("mapaensemble")
+            ) #end box
+        )#fecha col 10
       ),#fecha panel
       #### RESULTS ####
       tabPanel(

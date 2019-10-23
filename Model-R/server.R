@@ -28,6 +28,7 @@
 function(input, output, session) {
 
   ###### SET PROJECT DIRECTORY #####
+  
   # Create new project----
   observeEvent(input$btnrefreshprojeto, {
     if (input$select_project == "new_proj") {
@@ -779,6 +780,22 @@ function(input, output, session) {
 
   ###SOLO final model ----
 
+  observeEvent(input$whichmodelsensemble,{
+    if ('bin_consensus' %in% input$whichmodelsensemble){
+      shinyjs::show("cut_bin_ensemble")
+    }else{
+      shinyjs::hide("cut_bin_ensemble")
+    }
+  })
+  
+  observeEvent(input$which_models_final,{
+    if ('bin_consensus' %in% input$which_models_final){
+      shinyjs::show("cut_bin_final")
+    }else{
+      shinyjs::hide("cut_bin_final")
+    }
+  })
+  
   # btnFinal-----
   observeEvent(input$btnFinal, {
     #se algum algoritmo é marcado
@@ -793,7 +810,7 @@ function(input, output, session) {
 
         on.exit(progress$close())
 
-#final_model
+      #final_model
         #algof <<- paste(input$algorithms)
         #sp <<- input$select_partitions
         #spp <<- input$select_par
@@ -803,7 +820,22 @@ function(input, output, session) {
         #wmf <<- paste(input$which_models_final)
         #uf <<- input$incertidumbre
         
-        if (input$weigh_yesno == F){ weight <- NULL }else{ weight <- input$weight_par } #[Malu]: ifelse não funciona para atribuir NULL 
+        # Verifica select partitions
+        # [Malu]: ifelse não funciona para atribuir NULL, por isso if e else separados
+        if (input$select_partitions == F){ 
+          select_par <- NULL 
+          select_par_val <- NULL
+        }else{ 
+          select_par <- input$select_par 
+          select_par_val <- input$select_par_val
+        } 
+        
+        # Verifica weight partitions
+        if (input$weigh_yesno == F){
+          weight <- NULL 
+        }else{ 
+          weight <- input$weight_par
+        } 
         
         #CHECKS
         print(paste0('CHECK algo - ', input$algorithms))
@@ -813,15 +845,15 @@ function(input, output, session) {
         print(paste0('CHECK select_par - ', input$select_par))
         print(paste0('CHECK select_par_val - ', input$select_par_val))
         print(paste0('CHECK select_partitions - ', input$select_partitions))
-        print(paste0('CHECK weight - ', is.null(weight)))
+        print(paste0('CHECK weight - ', input$weigh_yesno, ' - ', weight))
         
         final_model(
           species_name = species_name,
           algorithms = input$algorithms,
           weight_par = weight, # [Malu]: verificar se os resultados estão consistentes
           select_partitions = input$select_partitions,
-          select_par = input$select_par,
-          select_par_val = input$select_par_val,
+          select_par = select_par, 
+          select_par_val = select_par_val,
           cut_level = c("spec_sens"), #note to self não sei se gosto de cut_level como nome do parametro nunca lembro o que é
           scale_models = TRUE,
           consensus_level = input$consensus_level,
@@ -835,16 +867,16 @@ function(input, output, session) {
           overwrite = T
         )
 
-#output mapas
+    #output mapas
         output$mapafinalbc <- renderLeaflet({
           input$btnFinal
           MapPreview.final(algorithm = "bioclim")
         })
-        output$mapafinalbrt <- renderLeaflet({
+       output$mapafinalbrt <- renderLeaflet({
           input$btnFinal
           MapPreview.final(algorithm = "brt")
         })
-        output$mapafinaldo <- renderLeaflet({
+       output$mapafinaldo <- renderLeaflet({
           input$btnFinal
           MapPreview.final(algorithm = "domain")
         })
@@ -897,33 +929,40 @@ function(input, output, session) {
 
         on.exit(progress$close())
 
- modleR::ensemble_model(
-    species_name = species_name,
-    occurrences = occurrences,
-    models_dir = modelsDir,
-    final_dir = "final_models",
-    ensemble_dir = "ensemble",
-    proj_dir = "present",
-    which_final = c("raw_mean"),#parametrizar tudo
-    consensus = T,
-    consensus_level = 0.5,
-    write_ensemble = T,
-    overwrite = T
-  )
-  #preview ensemble
-  output$mapaensemble <- renderLeaflet({
-    input$btnEnsemble
-    MapPreview.ensemble()
-  })
-  #ensemble
-      } else {
-        showModal(modalDialog(
-          title = "Error!",
-          "Please inform species occurrence data, predictor variables and species name.",
-          easyClose = TRUE
-        ))
-      }#error
-  })#termina observeevent y btmensemble
+        print(paste0('CHECK which_models_ensemble - ', input$whichmodelsensemble))
+        print(paste0('CHECK consensus - ', input$consensus_ensemble))
+        print(paste0('CHECK consensus_level - ', input$consensus_level_ensemble))
+        
+        print(paste0('teste ---- ', 'bin_consensus' %in% input$whichmodelsensemble))
+        
+        modleR::ensemble_model(
+          species_name = species_name,
+          occurrences = occurrences,
+          models_dir = modelsDir,
+          final_dir = "final_models",
+          ensemble_dir = "ensemble",
+          proj_dir = "present",
+          which_final = input$whichmodelsensemble,
+          consensus = input$consensus_ensemble,
+          consensus_level = input$consensus_level_ensemble,
+          write_ensemble = T,
+          overwrite = T
+        )
+        
+        #preview ensemble
+        output$mapaensemble <- renderLeaflet({
+          input$btnEnsemble
+          MapPreview.ensemble()
+        })
+        #ensemble
+            } else {
+              showModal(modalDialog(
+                title = "Error!",
+                "Please inform species occurrence data, predictor variables and species name.",
+                easyClose = TRUE
+              ))
+            }#error
+        })#termina observeevent y btmensemble
 
 
   #### PLOTTING RESULTS ####
