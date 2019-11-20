@@ -90,7 +90,7 @@ function(input, output, session) {
     species_name <<- input$species_name
     print(paste0('CHECK BIO_DATASOURCE - ', input$bio_datasource))
     if (input$bio_datasource == "package_dataset") {
-        occur.data <- modleR::coordenadas[[1]]#a primeira especie do dataset interno
+        occur.data <- modleR::example_occs[[1]]#a primeira especie do dataset interno
         occurrences <<- occur.data[, c(2,3)]
     }
     if (input$bio_datasource == "gbif") {
@@ -764,7 +764,7 @@ function(input, output, session) {
           mask = NULL,
           write_png = T,
           write_bin_cut = T,
-          threshold = "spec_sens",
+          dismo_threshold = "spec_sens",
           conf_mat = F,
           equalize = T,
           proc_threshold = 0.5)
