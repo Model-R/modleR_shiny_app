@@ -802,8 +802,7 @@ body <- dashboardBody(useShinyjs(),
             actionButton("btnFinal", "Run", icon = icon("cogs")),
             checkboxGroupInput(
               "algorithms",
-              "Make final models for the following algorithms:",
-              algorithms
+              "Make final models for the following algorithms:"
             ) #end checkbox
           ), #end box run final
           shinydashboard::box(
@@ -868,34 +867,8 @@ body <- dashboardBody(useShinyjs(),
         ),#fecha col
         column(
           width = 8,
-          tabsetPanel(
-            tabPanel("bioclim",
-                     column(width = 8,
-                            leafletOutput("mapafinalbc"))),
-            tabPanel("brt",
-                     column(width = 8,
-                            leafletOutput("mapafinalbrt"))),
-            tabPanel("domain",
-                     column(width = 8,
-                            leafletOutput("mapafinaldo"))),
-            tabPanel("GLM",
-                     column(width = 8,
-                            leafletOutput("mapafinalglm"))),
-            tabPanel("mahal",
-                     column(width = 8,
-                            leafletOutput("mapafinalmh"))),
-            tabPanel("maxent",
-                     column(width = 8,
-                            leafletOutput("mapafinalmax"))),
-            tabPanel("RF",
-                     column(width = 8,
-                            leafletOutput("mapafinalrf"))),
-            tabPanel("SVME",
-                     column(width = 8,
-                            leafletOutput("mapafinalsvme"))),
-            tabPanel("SVMK",
-                     column(width = 8,
-                            leafletOutput("mapafinalsvmk")))#cierra svmk
+          tabsetPanel(id = 'final_tabs',
+                      tabPanel("Results")
           )
         )
       ), #end final panel

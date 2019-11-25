@@ -727,14 +727,36 @@ function(input, output, session) {
   observeEvent(input$btnModelar, {
     #se algum algoritmo é marcado
     if (any(
-      input$domain,
-      input$maxent,
       input$bioclim,
-      input$mahal,
+      input$domain,
+      input$brt,
       input$glm,
+      input$mahal,
+      input$maxent,
       input$rf,
       input$svme,
       input$svmk)) {
+      
+      #Important: must be ordered as the algorithms (global variable)
+      which_algo <- c(input$bioclim,
+                     input$domain,
+                     input$brt,
+                     input$glm,
+                     input$mahal,
+                     input$maxent,
+                     input$rf,
+                     input$svme,
+                     input$svmk
+                     )
+     
+      print(paste0('CHECK any modeling - ', which(which_algo)))
+      algorithms2final <- algorithms[which(which_algo)]
+      #Updating the checkbox of the final tab according to the algorithms used in modeling
+      updateCheckboxGroupInput(session, "algorithms",
+                               label = "Make final models for the following algorithms: ",
+                               choices = algorithms2final
+      )
+      
       #se há occurrences, preditores e species_name --aqui é que deveria ter no caso de carregar um projeto preexistente
       if (exists("occurrences") && exists("predictors") && exists("species_name")) {
         #rodar tudo
@@ -776,6 +798,10 @@ function(input, output, session) {
         ))
       }#error
     } #termina el loop del modelo geral los tres pasos
+    x <- 'bioclim'
+    # Update algorithm options - Final tab
+    
+    
   })#termina observeevent y btmmodelar
 
   ###SOLO final model ----
@@ -866,45 +892,110 @@ function(input, output, session) {
           write_final = T,
           overwrite = T
         )
+        
+        #Output maps
+        if ('bioclim' %in% input$algorithms){
+          insertTab(inputId = "final_tabs",
+                    tabPanel("Bioclim", 
+                             renderLeaflet({
+                               input$btnFinal
+                               MapPreview.final(algorithm = "bioclim")
+                              })),
+                    target = 'Results'
+          )
+        }
+        
+        if ('brt' %in% input$algorithms){
+          insertTab(inputId = "final_tabs",
+                    tabPanel("BRT", 
+                             renderLeaflet({
+                               input$btnFinal
+                               MapPreview.final(algorithm = "brt")
+                             })),
+                    target = 'Results'
+          )
+        }
 
-    #output mapas
-        output$mapafinalbc <- renderLeaflet({
-          input$btnFinal
-          MapPreview.final(algorithm = "bioclim")
-        })
-       output$mapafinalbrt <- renderLeaflet({
-          input$btnFinal
-          MapPreview.final(algorithm = "brt")
-        })
-       output$mapafinaldo <- renderLeaflet({
-          input$btnFinal
-          MapPreview.final(algorithm = "domain")
-        })
-        output$mapafinalglm <- renderLeaflet({
-          input$btnFinal
-          MapPreview.final(algorithm = "glm")
-        })
-        output$mapafinalmh <- renderLeaflet({
-          input$btnFinal
-          MapPreview.final(algorithm = "mahal")
-        })
-        output$mapafinalmax <- renderLeaflet({
-          input$btnFinal
-          MapPreview.final(algorithm = "maxent")
-        })
-        output$mapafinalrf <- renderLeaflet({
-          input$btnFinal
-          MapPreview.final(algorithm = "rf")
-        })
-        output$mapafinalsvme <- renderLeaflet({
-          input$btnFinal
-          MapPreview.final(algorithm = "svme")
-        })
-        output$mapafinalsvmk <- renderLeaflet({
-          input$btnFinal
-          MapPreview.final(algorithm = "svmk")
-        })
-
+        if ('domain' %in% input$algorithms){
+          insertTab(inputId = "final_tabs",
+                    tabPanel("Domain", 
+                             renderLeaflet({
+                               input$btnFinal
+                               MapPreview.final(algorithm = "domain")
+                             })),
+                    target = 'Results'
+          )
+        }
+        
+        if ('glm' %in% input$algorithms){
+          insertTab(inputId = "final_tabs",
+                    tabPanel("GLM", 
+                             renderLeaflet({
+                               input$btnFinal
+                               MapPreview.final(algorithm = "glm")
+                             })),
+                    target = 'Results'
+          )
+        }
+        
+        if ('mahal' %in% input$algorithms){
+          insertTab(inputId = "final_tabs",
+                    tabPanel("Mahalanobis", 
+                             renderLeaflet({
+                               input$btnFinal
+                               MapPreview.final(algorithm = "mahal")
+                             })),
+                    target = 'Results'
+          )
+        }
+        
+        if ('maxent' %in% input$algorithms){
+          insertTab(inputId = "final_tabs",
+                    tabPanel("Maxent", 
+                             renderLeaflet({
+                               input$btnFinal
+                               MapPreview.final(algorithm = "maxent")
+                             })),
+                    target = 'Results'
+          )
+        }
+        
+        if ('rf' %in% input$algorithms){
+          insertTab(inputId = "final_tabs",
+                    tabPanel("RandomForest", 
+                             renderLeaflet({
+                               input$btnFinal
+                               MapPreview.final(algorithm = "rf")
+                             })),
+                    target = 'Results'
+          )
+        }
+        
+        if ('svme' %in% input$algorithms){
+          insertTab(inputId = "final_tabs",
+                    tabPanel("SVM (e1071)", 
+                             renderLeaflet({
+                               input$btnFinal
+                               MapPreview.final(algorithm = "svme")
+                             })),
+                    target = 'Results'
+          )
+        }
+        
+        if ('svmk' %in% input$algorithms){
+          insertTab(inputId = "final_tabs",
+                    tabPanel("SVM (kernlabs)", 
+                             renderLeaflet({
+                               input$btnFinal
+                               MapPreview.final(algorithm = "svmk")
+                             })),
+                    target = 'Results'
+          )
+        }
+        
+        #Remove 'Results' tab - only needed as a reference to add previous tabs 
+        removeTab(inputId = "final_tabs", target = "Results")
+        
       } else {
         showModal(modalDialog(
           title = "Error!",
