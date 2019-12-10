@@ -360,3 +360,17 @@ dirColors <-
     `3` = "#A93F35",
     `4` = "#BA48AA"
   )
+
+
+tweaks <- 
+  list(tags$head(tags$style(HTML("
+                                 .multicol { 
+                                   height: 100px;
+                                   -webkit-column-count: 4; /* Chrome, Safari, Opera */ 
+                                   -moz-column-count: 4;    /* Firefox */ 
+                                   column-count: 4; 
+                                   -moz-column-fill: auto;
+                                   -column-fill: auto;
+                                 } 
+                                 ")) 
+  ))

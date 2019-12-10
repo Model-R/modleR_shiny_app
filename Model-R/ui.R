@@ -17,7 +17,10 @@
 #### DASHBOARD #####
 header <- shinydashboard::dashboardHeader(title = "modleR 3.0")
 body <- dashboardBody(useShinyjs(),
-  fluidRow(
+  fluidRow(tweaks,
+           tags$head(
+             tags$style(HTML("hr {border-top: 2px solid #C6C1C0;}"))
+           ),
     tabBox(
       side = "left",
       title = "Steps",
@@ -215,7 +218,7 @@ body <- dashboardBody(useShinyjs(),
             height = "600px",
             selected = "Select predictors",
             
-            ####A SELECAO DE VARIAVEIS TEM QUE IR ANTES DO EXTENT POR ISSO ESTÁ DANDO EXTENTS DO NOT OVERLAP!!!!!
+           ####A SELECAO DE VARIAVEIS TEM QUE IR ANTES DO EXTENT POR ISSO ESTÁ DANDO EXTENTS DO NOT OVERLAP!!!!!
             # tabPanel: Modeling extent ####
             tabPanel(
               "Modeling extent",
@@ -225,6 +228,7 @@ body <- dashboardBody(useShinyjs(),
                 width = NULL,
                 height = "600px",
                 selected = "Study area extent",
+                source('download.R', local = T)$value,
                 tabPanel(
                   "Study area extent",
                   shinydashboard::box(
@@ -802,7 +806,8 @@ body <- dashboardBody(useShinyjs(),
             actionButton("btnFinal", "Run", icon = icon("cogs")),
             checkboxGroupInput(
               "algorithms",
-              "Make final models for the following algorithms:"
+              "Make final models for the following algorithms:",
+              algorithms
             ) #end checkbox
           ), #end box run final
           shinydashboard::box(
@@ -867,8 +872,34 @@ body <- dashboardBody(useShinyjs(),
         ),#fecha col
         column(
           width = 8,
-          tabsetPanel(id = 'final_tabs',
-                      tabPanel("Results")
+          tabsetPanel(
+            tabPanel("bioclim",
+                     column(width = 8,
+                            leafletOutput("mapafinalbc"))),
+            tabPanel("brt",
+                     column(width = 8,
+                            leafletOutput("mapafinalbrt"))),
+            tabPanel("domain",
+                     column(width = 8,
+                            leafletOutput("mapafinaldo"))),
+            tabPanel("GLM",
+                     column(width = 8,
+                            leafletOutput("mapafinalglm"))),
+            tabPanel("mahal",
+                     column(width = 8,
+                            leafletOutput("mapafinalmh"))),
+            tabPanel("maxent",
+                     column(width = 8,
+                            leafletOutput("mapafinalmax"))),
+            tabPanel("RF",
+                     column(width = 8,
+                            leafletOutput("mapafinalrf"))),
+            tabPanel("SVME",
+                     column(width = 8,
+                            leafletOutput("mapafinalsvme"))),
+            tabPanel("SVMK",
+                     column(width = 8,
+                            leafletOutput("mapafinalsvmk")))#cierra svmk
           )
         )
       ), #end final panel
