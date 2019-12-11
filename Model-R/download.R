@@ -56,7 +56,7 @@ tabPanel(
                             checkboxGroupInput(
                               "download_gcm_past_wc_lgm",
                               "General Circulation Models (GCM):",
-                              choices = gcm_past_wc_lgm)
+                              choices = gcm_past_wc_lgm, inline = TRUE)
                             ) #end conditionalPanel
            ) #end conditionalPanel
 
@@ -71,8 +71,37 @@ tabPanel(
   
   shinydashboard::box(collapsible = T,
     width = NULL,
-    title = "BIORACLE"
-  )
+    title = "BIORACLE",
+    h5(tags$b("Project model across timescales:")),
+    checkboxInput("download_forecasting_bo",
+                  label = "Future"),
+    conditionalPanel("input.download_forecasting_bo == 1",
+                     h5(tags$b("Choose dates:")),
+                     checkboxInput("download_future_bo_2100",
+                                 label = "2100"
+                                 ), #end checkboxInput
+                     conditionalPanel("input.download_future_bo_2100 == 1",
+                                      checkboxGroupInput("download_scenario_bo_2100",
+                                                  "Scenario:",
+                                                  choices = c("A1B", "A2", "B1"),
+                                                  selected = "A1B",
+                                                  inline = TRUE
+                                                  ), #end selectInput
+                                      tags$hr()
+                                      ), #end conditionalPanel
+                     checkboxInput("download_future_bo_2200",
+                                   label = "2200"
+                     ), #end checkboxInput
+                     conditionalPanel("input.download_future_bo_2200 == 1",
+                                      checkboxGroupInput("download_scenario_bo_2200",
+                                                  "Scenario:",
+                                                  choices = c("A1B", "B1"),
+                                                  selected = "A1B", 
+                                                  inline = TRUE
+                                                  )#end selectInput
+                                      ) #end conditionalPanel
+                     )
+    )
   
   #   shinydashboard::box(
   #     width = NULL,
