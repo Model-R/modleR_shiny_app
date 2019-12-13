@@ -26,7 +26,7 @@ body <- dashboardBody(useShinyjs(),
       title = "Steps",
       width = NULL,
       height = "1000px",#si esto no se pone queda gris detrás
-      
+
       #### WELCOME ####
       tabPanel(
         "Project",
@@ -59,7 +59,7 @@ body <- dashboardBody(useShinyjs(),
                                      ) #end modelsDis.load
                     ), #end conditionalPanel
                     conditionalPanel("input.select_project == 'new_proj'",
-                                     textInput("modelsDir.new", 
+                                     textInput("modelsDir.new",
                                                label = "Insert project name:",
                                                value = ""
                                      ) #end modelsDir.new
@@ -76,7 +76,7 @@ body <- dashboardBody(useShinyjs(),
                                 choices = c("Create new project" = "new_proj")
                     ), #end select_project
                     conditionalPanel("input.select_project == 'new_proj' ",
-                                     textInput("modelsDir.new", label = "Insert project name: ", 
+                                     textInput("modelsDir.new", label = "Insert project name: ",
                                                value = "")
                     ), #end conditionalPanel
                     actionButton("btnrefreshprojeto", "Submit", icon = icon("ok", lib = "glyphicon"))
@@ -110,7 +110,7 @@ body <- dashboardBody(useShinyjs(),
           ) #end tabPanel
         ) #end column
       ),#end tabPanel Project
-      
+
       #### OCCURRENCE DATA ####
       tabPanel(
         "Species occurrence data",
@@ -147,8 +147,8 @@ body <- dashboardBody(useShinyjs(),
                                    checkboxInput("header", "Header", TRUE),
                                    radioButtons("sep",
                                                 "Separator",
-                                                c("Comma" = ",", 
-                                                  "Semicolon" = ";", 
+                                                c("Comma" = ",",
+                                                  "Semicolon" = ";",
                                                   "Tab" = "\t"),
                                                 ",",
                                                 inline = TRUE
@@ -161,18 +161,18 @@ body <- dashboardBody(useShinyjs(),
                                                 '"',
                                                 inline = TRUE
                                    ), #end radioButtons quote
-                                   actionButton("btnsearch_spdatacsv", 
-                                                "Viewer", 
+                                   actionButton("btnsearch_spdatacsv",
+                                                "Viewer",
                                                 icon = icon("search")
                                    ) #end actionButton
                   ), #end conditionalPanel
                   conditionalPanel("input.bio_datasource != 'csv' ",
                                    helpText("Insert species scientific name"),
-                                   textInput("species_name", 
-                                             label = "Species name:", 
+                                   textInput("species_name",
+                                             label = "Species name:",
                                              value = "Abarema_langsdorffii"),
-                                   actionButton("btnsearch_spdata", 
-                                                "Search", 
+                                   actionButton("btnsearch_spdata",
+                                                "Search",
                                                 icon = icon("search")
                                    ) #end actionButton
                   ) #end conditionalPanel
@@ -186,7 +186,7 @@ body <- dashboardBody(useShinyjs(),
                                         width = NULL,
                                         DT::dataTableOutput("spdata_table")
                                       ), #end box
-                                      actionButton("btn_saveDatasetRaw", 
+                                      actionButton("btn_saveDatasetRaw",
                                                    "Save species dataset",
                                                    icon = icon("next")
                                       ) #end actionButton
@@ -204,8 +204,8 @@ body <- dashboardBody(useShinyjs(),
           ) #end tabBox
         ) #end column
       ), #end tabPanels occurrence data
-      
-      
+
+
       #### ENVIRONMENTAL DATA ####
       tabPanel(
         "Environmental data",
@@ -217,7 +217,7 @@ body <- dashboardBody(useShinyjs(),
             width = 12,
             height = "600px",
             selected = "Select predictors",
-            
+
            ####A SELECAO DE VARIAVEIS TEM QUE IR ANTES DO EXTENT POR ISSO ESTÁ DANDO EXTENTS DO NOT OVERLAP!!!!!
             # tabPanel: Modeling extent ####
             tabPanel(
@@ -227,7 +227,7 @@ body <- dashboardBody(useShinyjs(),
                 title = "",
                 width = NULL,
                 height = "600px",
-                selected = "Study area extent",
+                selected = "Download",
                 source('download.R', local = T)$value,
                 tabPanel(
                   "Study area extent",
@@ -277,7 +277,7 @@ body <- dashboardBody(useShinyjs(),
                     ) #end box
                   ) #end column
                 ), #ends tabPanel study area extent
-                
+
                 # tabPanel: Select predictors ####
                 tabPanel(
                   "Select predictors",
@@ -311,7 +311,7 @@ body <- dashboardBody(useShinyjs(),
                                          ) # end checkboxGroupInput
                                        } # end if
                       ), #ends conditionalPanel others
-                      
+
                       # BIOORACLE ####
                       conditionalPanel("input.tipodadoabiotico == 'BIOORACLE' ",
                                        selectInput(
@@ -355,20 +355,20 @@ body <- dashboardBody(useShinyjs(),
                                            choices = pred_vars_bo_fut
                                          ) # end checkboxGroupInput
                                        ),
-                                       
+
                                        conditionalPanel(
                                          "input.forecasting_bo == 'current_bo'",
                                          checkboxGroupInput("pred_vars_bo",
                                                             "Select variables: ",
-                                                            choices = pred_vars_bo 
+                                                            choices = pred_vars_bo
                                          )# end checkboxGroupInput pred_vasr_bo
                                        ) #end conditionalPanel current_bo
                       ), #end conditionalPanel bioracle
-                      
+
                       # WorldClim ####
                       conditionalPanel("input.tipodadoabiotico == 'WorldClim' ",
-                                       selectInput("resolution", 
-                                                   "Resolution:", 
+                                       selectInput("resolution",
+                                                   "Resolution:",
                                                    choices = resolution,
                                                    selected = "10min"),
                                        selectInput("forecasting_wc",
@@ -385,7 +385,7 @@ body <- dashboardBody(useShinyjs(),
                                            conditionalPanel(
                                              "input.forecasting_wc == 'future_wc' ",
                                              selectInput("future_dates_wc",
-                                                         "Choose period: ", 
+                                                         "Choose period: ",
                                                          choices = future_dates_wc),
                                              selectInput(
                                                "rcp_wc",
@@ -399,9 +399,9 @@ body <- dashboardBody(useShinyjs(),
                                            ), #end conditionalPanel
                                            conditionalPanel(
                                              "input.forecasting_wc == 'past_wc'",
-                                             selectInput("past_dates_wc", 
+                                             selectInput("past_dates_wc",
                                                          "Choose period: ",
-                                                         choices = past_dates_wc, 
+                                                         choices = past_dates_wc,
                                                          selected = "mid"),
                                              conditionalPanel(
                                                "input.past_dates_wc == 'mid'",
@@ -410,7 +410,7 @@ body <- dashboardBody(useShinyjs(),
                                                  "General Circulation Models (GCM)",
                                                  choices = gcm_past_wc_mid)
                                              ), #end conditionalPanel
-                                             
+
                                              conditionalPanel(
                                                "input.past_dates_wc == 'lgm' ",
                                                selectInput(
@@ -421,7 +421,7 @@ body <- dashboardBody(useShinyjs(),
                                            ) #end conditionalPanel
                                          ) #end box
                                        ),
-                                       
+
                                        checkboxGroupInput(
                                          "pred_vars_wc",
                                          "Select variables: ",
@@ -431,7 +431,7 @@ body <- dashboardBody(useShinyjs(),
                       ) #end worldclim
                     ) #end box
                   ), #end column
-                  
+
                   # Correlation ####
                   column(
                     width = 8,
@@ -454,7 +454,7 @@ body <- dashboardBody(useShinyjs(),
           )
         )
       ),#ends env data
-      
+
       ####DATA CLEANING AND SETUP####
       tabPanel("Data cleaning",
                column(
@@ -553,7 +553,7 @@ body <- dashboardBody(useShinyjs(),
               title = "Calibration area settings",
               #height = 800,
               status = "danger",
-              
+
               ######
               #####pseudoabsence sampling
               sliderInput(
@@ -597,7 +597,7 @@ body <- dashboardBody(useShinyjs(),
               checkboxInput("exclusion",
                             "Set a minimum distance from occurrences?",
                             value = FALSE),
-              
+
               conditionalPanel(
                 condition = "input.exclusion",
                 sliderInput(
@@ -639,7 +639,7 @@ body <- dashboardBody(useShinyjs(),
               checkboxInput("geo_filt",
                             "Thin occurrences that are too close?",
                             value = FALSE),
-              
+
               conditionalPanel(
                 condition = "input.geo_filt",
                 textInput(#make it a slider?
@@ -665,7 +665,7 @@ body <- dashboardBody(useShinyjs(),
             ),
             tabPanel("smdatatable",
                      DT::dataTableOutput("sdmdata_table")
-                     
+
             )
           )
         )
@@ -689,7 +689,7 @@ body <- dashboardBody(useShinyjs(),
                                 solidHeader = TRUE,
                                 leafletOutput("mapapontosextend2", height = 500)
                               ),
-                              
+
                               shinydashboard::box(
                                 width = 4,
                                 solidHeader = TRUE,
@@ -770,7 +770,7 @@ body <- dashboardBody(useShinyjs(),
                 choices = c("maxTSS")
               )
             )
-            
+
           )#cierra el box
         )#cierra la columna
       ),#fecha el panel modeling
@@ -796,7 +796,7 @@ body <- dashboardBody(useShinyjs(),
                  ) #end tabBox left
                ) #end column
       ), #end projection
-      
+
       # tabPanel: Final models #####
       tabPanel(
         "Final models",
@@ -832,7 +832,7 @@ body <- dashboardBody(useShinyjs(),
                 value = 0.5,
                 step = 0.1)
             ), #end conditionalPanel
-            
+
             checkboxInput(
               "weigh_yesno",
               "Weigh partitions?",
@@ -867,7 +867,7 @@ body <- dashboardBody(useShinyjs(),
               "incertidumbre",
               "Calculate uncertainty?",
               value = F)
-            
+
           )#fecha box parametros final
         ),#fecha col
         column(
@@ -1011,7 +1011,7 @@ body <- dashboardBody(useShinyjs(),
                 )#col
               )#col output 12
             ), #output list
-            
+
             tabPanel(
               "Projections",
               column(
