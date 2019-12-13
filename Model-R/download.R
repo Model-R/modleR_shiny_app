@@ -1,13 +1,42 @@
 # tabPanel: Select predictors ####
 tabPanel(
   "Download",
+  actionButton(
+    "btnAtualizaSelecaoVariaveis2",
+    "Download"
+  ),
+  shinydashboard::box(
+         width = NULL,
+         status = "danger",
+         selectInput(
+           "dtipodadoabiotico",
+           "Variables dataset:",
+           choices = env_datasource,
+           selected = "WorldClim"
+         ), #end selectInput
+              #others
+              conditionalPanel("input.dtipodadoabiotico == 'Others' ",
+                               helpText("All layers should have the same spatial extent, resolution, origin, and projection"),
+                               helpText("Before loading multi-file variables, make sure that all corresponding files are placed in the same directory."),
+                               #fileInput(outros, "Select the folder with the environmental variables"),
+                               if (length(list.files("ex/outros/", full.names = T, pattern = c(".*")) > 0)) {
+                                 lista_outros <- list.files("ex/outros/", full.names = F, pattern = ".tif|.bil|.grd")
+                                 checkboxGroupInput(
+                                   "dpred_vars_other",
+                                   "Select rasters: ",
+                                   choiceNames = c(lista_outros),
+                                   choiceValues = c(lista_outros)
+                                 ) # end checkboxGroupInput
+                               } # end if
+              ), #ends conditionalPanel others
+         conditionalPanel("input.dtipodadoabiotico == 'WorldClim'",
   shinydashboard::box(collapsible = T,
     width = NULL,
     title = "WordClim v.1.4",
-    checkboxGroupInput("download_resolution_wc", 
-                       "Resolution:", 
+    checkboxGroupInput("download_resolution_wc",#tag
+                       "Resolution:",
                        choices = resolution,
-                       selected = "10min", 
+                       selected = "10min",
                        inline = TRUE),
     h5(tags$b("Project model across timescales:")),
     checkboxInput("download_future_wc",
@@ -15,7 +44,7 @@ tabPanel(
     conditionalPanel(
       "input.download_future_wc == 1", # se future for marcado
       checkboxGroupInput("download_future_dates_wc",
-                  "Choose period: ", 
+                  "Choose period: ",
                   choices = future_dates_wc,
                   inline =  TRUE),
       checkboxGroupInput("download_rcp_wc",
@@ -23,7 +52,7 @@ tabPanel(
                          choices = rcp_wc,
                          inline = TRUE),
       tags$div(align = 'top',
-               class = 'multicol', 
+               class = 'multicol',
                checkboxGroupInput("download_gcm_future_wc",
                          "General Circulation Models (GCM):",
                          choices = gcm_future_wc,
@@ -33,19 +62,19 @@ tabPanel(
       ), #end future conditionalPanel
     checkboxInput("download_past_wc",
                   label = 'Past'),
-    
+
     conditionalPanel(
            "input.download_past_wc == 1",
-           # checkboxGroupInput("download_past_dates_wc", 
+           # checkboxGroupInput("download_past_dates_wc",
            #             "Choose period: ",
-           #             choices = past_dates_wc, 
+           #             choices = past_dates_wc,
            #             selected = "mid"),
            h5(tags$b("Choose period:")),
            checkboxInput("download_mid_wc",
                          label = 'Mid Holocene'),
            conditionalPanel("input.download_mid_wc == 1",
                             tags$div(align = 'top',
-                                     class = 'multicol', 
+                                     class = 'multicol',
                                      checkboxGroupInput("download_gcm_past_wc_mid",
                                                         "General Circulation Models (GCM):",
                                                         choices = gcm_past_wc_mid))
@@ -60,15 +89,16 @@ tabPanel(
                             ) #end conditionalPanel
            ) #end conditionalPanel
 
-    # tags$div(align = 'left', 
-    #          class = 'multicol', 
+    # tags$div(align = 'left',
+    #          class = 'multicol',
     #         checkboxGroupInput("download_pred_vars_wc",
     #                            "Select variables: ",
     #                            pred_vars_wc,
     #                            selected = c("bio1", "bio2", "bio3"),
     #                            inline = FALSE)) #end checkbox
   ),
-  
+),#ends conditional panel worldclim
+conditionalPanel("input.dtipodadoabiotico == 'BIOORACLE' ",
   shinydashboard::box(collapsible = T,
     width = NULL,
     title = "BIORACLE",
@@ -96,13 +126,14 @@ tabPanel(
                                       checkboxGroupInput("download_scenario_bo_2200",
                                                   "Scenario:",
                                                   choices = c("A1B", "B1"),
-                                                  selected = "A1B", 
+                                                  selected = "A1B",
                                                   inline = TRUE
                                                   )#end selectInput
                                       ) #end conditionalPanel
                      )
     )
-  
+)#ends conditional panel bioracle?
+  ####APAGAR desde aqui até----
   #   shinydashboard::box(
   #     width = NULL,
   #     status = "danger",
@@ -127,7 +158,7 @@ tabPanel(
   #                        ) # end checkboxGroupInput
   #                      } # end if
   #     ), #ends conditionalPanel others
-  #     
+  ####AQUI
   #     # BIOORACLE ####
   #     conditionalPanel("input.dtipodadoabiotico == 'BIOORACLE' ",
   #                      selectInput(
@@ -171,20 +202,20 @@ tabPanel(
   #                          choices = pred_vars_bo_fut
   #                        ) # end checkboxGroupInput
   #                      ),
-  #                      
+  #
   #                      conditionalPanel(
   #                        "input.dforecasting_bo == 'current_bo'",
   #                        checkboxGroupInput("dpred_vars_bo",
   #                                           "Select variables: ",
-  #                                           choices = pred_vars_bo 
+  #                                           choices = pred_vars_bo
   #                        )# end checkboxGroupInput pred_vasr_bo
   #                      ) #end conditionalPanel current_bo
   #     ), #end conditionalPanel bioracle
-  #     
+  #
   #     # WorldClim ####
   #     conditionalPanel("input.dtipodadoabiotico == 'WorldClim' ",
-  #                      selectInput("dresolution", 
-  #                                  "Resolution:", 
+  #                      selectInput("dresolution",
+  #                                  "Resolution:",
   #                                  choices = resolution,
   #                                  selected = "10min"),
   #                      selectInput("dforecasting_wc",
@@ -201,7 +232,7 @@ tabPanel(
   #                          conditionalPanel(
   #                            "input.dforecasting_wc == 'future_wc' ",
   #                            selectInput("dfuture_dates_wc",
-  #                                        "Choose period: ", 
+  #                                        "Choose period: ",
   #                                        choices = future_dates_wc),
   #                            selectInput(
   #                              "drcp_wc",
@@ -215,9 +246,9 @@ tabPanel(
   #                          ), #end conditionalPanel
   #                          conditionalPanel(
   #                            "input.dforecasting_wc == 'past_wc'",
-  #                            selectInput("dpast_dates_wc", 
+  #                            selectInput("dpast_dates_wc",
   #                                        "Choose period: ",
-  #                                        choices = past_dates_wc, 
+  #                                        choices = past_dates_wc,
   #                                        selected = "mid"),
   #                            conditionalPanel(
   #                              "input.dpast_dates_wc == 'mid'",
@@ -226,7 +257,7 @@ tabPanel(
   #                                "General Circulation Models (GCM)",
   #                                choices = gcm_past_wc_mid)
   #                            ), #end conditionalPanel
-  #                            
+  #
   #                            conditionalPanel(
   #                              "input.dpast_dates_wc == 'lgm' ",
   #                              selectInput(
@@ -237,7 +268,7 @@ tabPanel(
   #                          ) #end conditionalPanel
   #                        ) #end box
   #                      ),
-  #                      
+  #
   #                      checkboxGroupInput(
   #                        "dpred_vars_wc",
   #                        "Select variables: ",
@@ -246,5 +277,5 @@ tabPanel(
   #                      ) #end checkbox
   #     ) #end worldclim
   #   ) #end box
-  # )
+  )#end box
 ) #end tabPanel select prd
