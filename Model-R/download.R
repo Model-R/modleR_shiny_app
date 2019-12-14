@@ -36,7 +36,7 @@ tabPanel(
     checkboxGroupInput("download_resolution_wc",#tag
                        "Resolution:",
                        choices = resolution,
-                       selected = "10min",
+                       selected = "10m",
                        inline = TRUE),
     h5(tags$b("Download data for different time periods:")),
     checkboxInput("download_present_wc",
@@ -139,32 +139,6 @@ conditionalPanel("input.dtipodadoabiotico == 'BIOORACLE' ",
                      )
     )
 )#ends conditional panel bioracle?
-  ####APAGAR desde aqui até----
-  #   shinydashboard::box(
-  #     width = NULL,
-  #     status = "danger",
-  #     selectInput(
-  #       "dtipodadoabiotico",
-  #       "Variables dataset:",
-  #       choices = env_datasource,
-  #       selected = "WorldClim"
-  #     ), #end selectInput
-  #     #others
-  #     conditionalPanel("input.dtipodadoabiotico == 'Others' ",
-  #                      helpText("All layers should have the same spatial extent, resolution, origin, and projection"),
-  #                      helpText("Before loading multi-file variables, make sure that all corresponding files are placed in the same directory."),
-  #                      #fileInput(outros, "Select the folder with the environmental variables"),
-  #                      if (length(list.files("ex/outros/", full.names = T, pattern = c(".*")) > 0)) {
-  #                        lista_outros <- list.files("ex/outros/", full.names = F, pattern = ".tif|.bil|.grd")
-  #                        checkboxGroupInput(
-  #                          "dpred_vars_other",
-  #                          "Select rasters: ",
-  #                          choiceNames = c(lista_outros),
-  #                          choiceValues = c(lista_outros)
-  #                        ) # end checkboxGroupInput
-  #                      } # end if
-  #     ), #ends conditionalPanel others
-  ####AQUI
   #     # BIOORACLE ####
   #     conditionalPanel("input.dtipodadoabiotico == 'BIOORACLE' ",
   #                      selectInput(
